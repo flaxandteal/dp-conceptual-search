@@ -1,5 +1,7 @@
 from sanic import Blueprint
+
 from ..response import json
+from ..exceptions.requests import BadRequest
 
 from . import hits_to_json, aggs_to_json
 from .paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
@@ -8,9 +10,6 @@ from .search_engine import SearchEngine, get_client, get_index
 from ..requests import get_form_param
 
 search_blueprint = Blueprint('search', url_prefix='/search')
-
-
-_INDEX = "ons*"
 
 
 def execute_search(request, search_term, sort_by, **kwargs):
@@ -108,4 +107,4 @@ async def search(request):
             type_filters=type_filters)
 
         return json(response)
-    return json({"error": "no query provided"})
+    raise BadRequest("no query provided")
