@@ -18,6 +18,7 @@ def _get_param(request, key, required, args, generator, default):
 def get_request_param(request, key, required, default=None):
     """
     Simple util function for extracting parameters from requests.
+    :param request: Sanic request
     :param key:
     :param required:
     :param default:
@@ -34,6 +35,14 @@ def get_request_param(request, key, required, default=None):
 
 
 def get_form_param(request, key, required, default=None):
+    """
+
+    :param request: Sanic request
+    :param key:
+    :param required:
+    :param default:
+    :return:
+    """
     value = _get_param(
         request,
         key,

@@ -1,3 +1,4 @@
+import logging
 from sanic.request import Request
 from sanic.handlers import ErrorHandler
 from sanic.exceptions import SanicException
@@ -23,6 +24,13 @@ def create_app():
     from sanic import Sanic
     from server.search.routes import search_blueprint
 
+    logging.basicConfig(
+        filename='dp-conceptual-search.log',
+        format='%(asctime)s - %(name)s - %(levelname)s - %(funcName)s() - %(message)s',
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
     app = Sanic()
     app.blueprint(search_blueprint)
 
@@ -37,12 +45,14 @@ def create_app():
         :return:
         """
         from .security import hash_value
+        from sanic.log import logger
         assert isinstance(request, Request)
 
         for key in ["_ga", "_gid"]:
             if key in request.cookies:
                 value = request.cookies.pop(key)
                 request.cookies[key] = hash_value(value)
-        print("Cookies=%s" % request.cookies)
+
+        logger.debug("Intercepted request cookies: %s" % request.cookies)
 
     return app
