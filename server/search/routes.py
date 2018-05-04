@@ -1,7 +1,7 @@
 from sanic import Blueprint
+from sanic.exceptions import InvalidUsage
 
 from ..response import json
-from ..exceptions.requests import BadRequest
 
 from . import hits_to_json, aggs_to_json
 from .paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
@@ -107,4 +107,4 @@ async def search(request):
             type_filters=type_filters)
 
         return json(response)
-    raise BadRequest("no query provided")
+    raise InvalidUsage("no query provided")

@@ -1,3 +1,4 @@
+from sanic.request import Request
 from sanic.handlers import ErrorHandler
 from sanic.exceptions import SanicException
 
@@ -10,10 +11,7 @@ class CustomHandler(ErrorHandler):
 
         # Some exceptions are trivial and built into Sanic (404s, etc)
         if not isinstance(exception, SanicException):
-            if hasattr(exception, "status_code"):
-                exception = SanicException(status_code=exception.status_code, message=exception.message)
-            else:
-                print(exception)
+            print(exception)
 
         # Then, we must finish handling the exception by returning
         # our response to the client
@@ -30,5 +28,21 @@ def create_app():
 
     handler = CustomHandler()
     app.error_handler = handler
+
+    @app.middleware('request')
+    async def hash_ga_ids(request):
+        """
+        Intercepts all requests and hashes Google Analytics IDs
+        :param request:
+        :return:
+        """
+        from .security import hash_value
+        assert isinstance(request, Request)
+
+        for key in ["_ga", "_gid"]:
+            if key in request.cookies:
+                value = request.cookies.pop(key)
+                request.cookies[key] = hash_value(value)
+        print("Cookies=%s" % request.cookies)
 
     return app
