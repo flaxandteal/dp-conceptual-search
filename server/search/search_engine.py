@@ -1,6 +1,6 @@
 import os
 
-from elasticsearch import Elasticsearch
+from elasticsearch_async import Elasticsearch
 from elasticsearch_dsl import Search as Search_api
 
 from . import fields
