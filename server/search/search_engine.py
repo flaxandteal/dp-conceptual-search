@@ -19,10 +19,6 @@ def get_index():
     return _INDEX
 
 
-def get_search_engine(index):
-    return SearchEngine(using=get_client(), index=index)
-
-
 """
 TODO - Implement MultiSearch:
 http://elasticsearch-dsl.readthedocs.io/en/latest/search_dsl.html?highlight=multisearch#multisearch
@@ -94,7 +90,7 @@ class SearchEngine(Search_api):
         type_filters = kwargs.get("type_filters", None)
 
         if type_filters is not None:
-            if hasattr(type_filters, "__iter__") is False:
+            if isinstance(type_filters, str) or hasattr(type_filters, "__iter__") is False:
                 type_filters = [type_filters]
             s = s.filter("terms", type=type_filters)
 

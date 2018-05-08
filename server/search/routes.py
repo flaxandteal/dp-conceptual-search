@@ -2,8 +2,6 @@ from sanic import Blueprint
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
-# from ..response import json
-
 from . import hits_to_json
 from .sort_by import SortFields
 from .search_engine import SearchEngine, get_index
