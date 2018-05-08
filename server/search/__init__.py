@@ -115,7 +115,7 @@ def hits_to_json(
             "took": content_response.took,
             "results": marshall_hits(content_response.hits),
             "docCounts": {},
-            "paginator": paginator,
+            "paginator": paginator.to_dict(),
             "sortBy": sort_by
 
         },

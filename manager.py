@@ -4,8 +4,8 @@ app = create_app()
 
 
 def run():
-    app.run(host='0.0.0.0', port=5050)
+    app.run(host='0.0.0.0', port=5050, workers=4)
 
 
 if __name__ == "__main__":
-    app.run()
+    run()

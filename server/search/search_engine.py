@@ -1,8 +1,4 @@
 import os
-from asyncio import get_event_loop
-
-from elasticsearch_async import AsyncElasticsearch
-# from elasticsearch_async import Elasticsearch
 from elasticsearch_dsl import Search as Search_api
 from elasticsearch_dsl.connections import connections
 
@@ -14,8 +10,6 @@ from .queries import content_query, type_counts_query
 from .filter_functions import content_filter_functions
 from .content_types import home_page_census, product_page
 
-search_url = os.environ.get('ELASTICSEARCH_HOST', 'http://localhost:9200')
-
 _INDEX = os.environ.get('SEARCH_INDEX', 'ons*')
 
 # _CLIENT = AsyncElasticsearch(search_url)
@@ -23,13 +17,6 @@ _INDEX = os.environ.get('SEARCH_INDEX', 'ons*')
 
 def get_index():
     return _INDEX
-
-
-def get_client(loop=get_event_loop()):
-    """
-    :return:
-    """
-    return AsyncElasticsearch(search_url, loop=loop)
 
 
 def get_search_engine(index):

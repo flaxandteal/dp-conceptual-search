@@ -1,0 +1,4 @@
+sanic==0.7.0
+six==1.11.0
+elasticsearch_async==6.0.0
+elasticsearch_dsl==6.1.0

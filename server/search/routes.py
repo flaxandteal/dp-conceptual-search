@@ -1,11 +1,12 @@
 from sanic import Blueprint
+from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
-from ..response import json
+# from ..response import json
 
 from . import hits_to_json
 from .sort_by import SortFields
-from .search_engine import SearchEngine, get_client, get_index
+from .search_engine import SearchEngine, get_index
 from ..requests import get_form_param
 
 search_blueprint = Blueprint('search', url_prefix='/search')
@@ -62,7 +63,7 @@ async def execute_search(request, search_term, sort_by, **kwargs):
     current_app = request.app
 
     # Get the Elasticsearch client
-    client = get_client(loop=current_app.loop)
+    client = current_app.es_client
 
     # Perform the search
 
@@ -92,9 +93,6 @@ async def execute_search(request, search_term, sort_by, **kwargs):
 
 @search_blueprint.route('/ons', methods=["POST"])
 async def search(request):
-    from datetime import datetime
-
-    start = datetime.now()
     search_term = request.args.get("q", None)
     if search_term is not None:
         # Get any content type filters
@@ -110,9 +108,6 @@ async def search(request):
             search_term,
             sort_by,
             type_filters=type_filters)
-
-        end = datetime.now()
-        print("Duration: {}".format(end-start))
 
         return json(response)
     raise InvalidUsage("no query provided")
