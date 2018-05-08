@@ -90,6 +90,9 @@ def execute_search(request, search_term, sort_by, **kwargs):
 
 @search_blueprint.route('/ons', methods=["POST"])
 async def search(request):
+    from datetime import datetime
+
+    start = datetime.now()
     search_term = request.args.get("q", None)
     if search_term is not None:
         # Get any content type filters
@@ -105,6 +108,9 @@ async def search(request):
             search_term,
             sort_by,
             type_filters=type_filters)
+
+        end = datetime.now()
+        print('Duration: {}'.format(end - start))
 
         return json(response)
     raise InvalidUsage("no query provided")
