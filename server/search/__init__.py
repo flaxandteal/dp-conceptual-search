@@ -1,4 +1,5 @@
 from .hit import Hit
+from .paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
 
 
 def aggs_to_json(aggregations, key):
@@ -78,19 +79,30 @@ def marshall_hits(hits):
 
 def hits_to_json(
         content_response,
-        aggregations,
-        paginator,
+        type_counts_response,
+        page_number,
+        page_size,
         sort_by,
         featured_result_response=None):
     """
     Replicates the JSON response of Babbage
     :param content_response:
-    :param aggregations:
-    :param paginator:
+    :param type_counts_response:
     :param sort_by:
     :param featured_result_response:
     :return:
     """
+
+    # Init Paginator
+    paginator = Paginator(
+        content_response.hits.total,
+        MAX_VISIBLE_PAGINATOR_LINK,
+        page_number,
+        page_size)
+
+    # Format the output
+    aggregations, total_hits = aggs_to_json(
+        type_counts_response.aggregations, "docCounts")
 
     featured_result_hits = []
     if featured_result_response is not None:
@@ -103,7 +115,7 @@ def hits_to_json(
             "took": content_response.took,
             "results": marshall_hits(content_response.hits),
             "docCounts": {},
-            "paginator": paginator,
+            "paginator": paginator.to_dict(),
             "sortBy": sort_by
 
         },

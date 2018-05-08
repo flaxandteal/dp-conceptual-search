@@ -37,6 +37,18 @@ def create_app():
     handler = CustomHandler()
     app.error_handler = handler
 
+    # Initialise a single AsyncElasticsearch client for each worker after app start (in order to share event loop)
+    @app.listener("after_server_start")
+    def prepare_es_client(sanic, loop):
+        import os
+        from elasticsearch_async import AsyncElasticsearch
+
+        assert isinstance(sanic, Sanic)
+
+        search_url = os.environ.get('ELASTICSEARCH_HOST', 'http://localhost:9200')
+        search_timeout = int(os.environ.get('ELASTICSEARCH_TIMEOUT', 1000))
+        sanic.es_client = AsyncElasticsearch(search_url, loop=loop, timeout=search_timeout)
+
     @app.middleware('request')
     async def hash_ga_ids(request):
         """

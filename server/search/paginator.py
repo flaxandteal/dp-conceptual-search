@@ -56,6 +56,9 @@ class Paginator(object):
         page_list = range(self.start, self.end + 1)
         return page_list
 
+    def to_dict(self):
+        return self.__json__()
+
     def __json__(self):
         return {
             "numberOfPages": self.number_of_pages,
