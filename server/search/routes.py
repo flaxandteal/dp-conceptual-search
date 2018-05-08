@@ -3,8 +3,7 @@ from sanic.exceptions import InvalidUsage
 
 from ..response import json
 
-from . import hits_to_json, aggs_to_json
-from .paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
+from . import hits_to_json
 from .sort_by import SortFields
 from .search_engine import SearchEngine, get_client, get_index
 from ..requests import get_form_param
@@ -12,78 +11,81 @@ from ..requests import get_form_param
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-def execute_search(request, search_term, sort_by, **kwargs):
-    """
-    Simple search API to query Elasticsearch
-    """
-    # Get the Elasticsearch client
-    client = get_client()
-
-    # Perform the search
-    ons_index = get_index()
-
+async def execute_type_counts_query(search_term, client):
     # Init SearchEngine
-    s = SearchEngine(using=client, index=ons_index)
+    index = get_index()
+    s = SearchEngine(using=client, index=index)
 
     # Define type counts (aggregations) query
     s = s.type_counts_query(search_term)
 
     # Execute
-    type_counts_response = s.execute()
+    type_counts_response = await s.execute()
 
-    # Format the output
-    aggregations, total_hits = aggs_to_json(
-        type_counts_response.aggregations, "docCounts")
+    return type_counts_response
 
-    # Setup initial paginator
-    page_number = int(get_form_param(request, "page", False, 1))
-    page_size = int(get_form_param(request, "size", False, 10))
 
-    paginator = None
-    if total_hits > 0:
-        paginator = Paginator(
-            total_hits,
-            MAX_VISIBLE_PAGINATOR_LINK,
-            page_number,
-            page_size)
-
-    # Perform the content query to populate the SERP
-
+async def execute_content_query(search_term, sort_by, page_number, page_size, client, **kwargs):
     # Init SearchEngine
-    s = SearchEngine(using=client, index=ons_index)
+    index = get_index()
+    s = SearchEngine(using=client, index=index)
 
     # Define the query with sort and paginator
     s = s.content_query(
-        search_term, sort_by=sort_by, paginator=paginator, **kwargs)
+        search_term, sort_by=sort_by, current_page=page_number, size=page_size, **kwargs)
 
     # Execute the query
-    content_response = s.execute()
+    content_response = await s.execute()
 
-    # Update the paginator
-    paginator = Paginator(
-        content_response.hits.total,
-        MAX_VISIBLE_PAGINATOR_LINK,
-        page_number,
-        page_size)
+    return content_response
 
-    # Check for featured results
+
+async def execute_featured_results_query(search_term, client):
+    # Init the SearchEngine
+    index = get_index()
+    s = SearchEngine(using=client, index=index)
+
+    # Define the query
+    s = s.featured_result_query(search_term)
+
+    # Execute the query
+    featured_result_response = await s.execute()
+
+    return featured_result_response
+
+
+async def execute_search(request, search_term, sort_by, **kwargs):
+    """
+    Simple search API to query Elasticsearch
+    """
+    # Get the event loop
+    current_app = request.app
+
+    # Get the Elasticsearch client
+    client = get_client(loop=current_app.loop)
+
+    # Perform the search
+
+    # Get page_number/size params
+    page_number = int(get_form_param(request, "page", False, 1))
+    page_size = int(get_form_param(request, "size", False, 10))
+
+    # Execute type counts query
+    type_counts_response = execute_type_counts_query(search_term, client)
+
+    # Perform the content query to populate the SERP
+    content_response = execute_content_query(search_term, sort_by, page_number, page_size, client, **kwargs)
+
     featured_result_response = None
-    # Only do this if we have results and are on the first page
-    if total_hits > 0 and paginator.current_page <= 1:
-        # Init the SearchEngine
-        s = SearchEngine(using=client, index=ons_index)
-
-        # Define the query
-        s = s.featured_result_query(search_term)
-
-        # Execute the query
-        featured_result_response = s.execute()
+    if page_number == 1:
+        featured_result_response = await execute_featured_results_query(search_term, client)
 
     # Return the hits as JSON
     return hits_to_json(
-        content_response,
-        aggregations,
-        paginator,
+        await content_response,
+        await type_counts_response,
+        page_number,
+        page_size,
         sort_by.name,
         featured_result_response=featured_result_response)
 
@@ -100,7 +102,7 @@ async def search(request):
         sort_by = SortFields[sort_by_str]
 
         # Execute the search
-        response = execute_search(
+        response = await execute_search(
             request,
             search_term,
             sort_by,

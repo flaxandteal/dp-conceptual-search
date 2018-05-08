@@ -1,7 +1,10 @@
 import os
+from asyncio import get_event_loop
 
-from elasticsearch_async import Elasticsearch
+from elasticsearch_async import AsyncElasticsearch
+# from elasticsearch_async import Elasticsearch
 from elasticsearch_dsl import Search as Search_api
+from elasticsearch_dsl.connections import connections
 
 from . import fields
 from .search_type import SearchType
@@ -15,22 +18,22 @@ search_url = os.environ.get('ELASTICSEARCH_HOST', 'http://localhost:9200')
 
 _INDEX = os.environ.get('SEARCH_INDEX', 'ons*')
 
+# _CLIENT = AsyncElasticsearch(search_url)
+
 
 def get_index():
     return _INDEX
 
 
-def get_client(timeout=1000, maxsize=25):
+def get_client(loop=get_event_loop()):
     """
-    :param maxsize: The maximum number of connections that urllib3 can open to each node
-    :param timeout:
     :return:
     """
-    return Elasticsearch(search_url, timeout=timeout, maxsize=maxsize)
+    return AsyncElasticsearch(search_url, loop=loop)
 
 
-def get_search_engine(index, timeout=1000):
-    return SearchEngine(using=get_client(timeout=timeout), index=index)
+def get_search_engine(index):
+    return SearchEngine(using=get_client(), index=index)
 
 
 """
@@ -62,32 +65,28 @@ class SearchEngine(Search_api):
         return s
 
     @staticmethod
-    def build_content_query(search_term, paginator=None, **kwargs):
+    def build_content_query(search_term, **kwargs):
         """
         Builds the default ONS content query (from babbage)
         :param search_term:
-        :param paginator:
         :param kwargs:
         :return:
         """
         function_scores = kwargs.pop(
             "function_scores", content_filter_functions())
 
-        if paginator is not None:
-            from_start = 0 if paginator.current_page <= 1 else (
-                paginator.current_page - 1) * paginator.size
+        query = {
+            "query": content_query(
+                search_term,
+                function_scores=function_scores).to_dict()}
 
-            query = {
-                "from": from_start,
-                "size": paginator.size,
-                "query": content_query(
-                    search_term,
-                    function_scores=function_scores).to_dict()}
-        else:
-            query = {
-                "query": content_query(
-                    search_term,
-                    function_scores=function_scores).to_dict()}
+        if "current_page" in kwargs and "size" in kwargs:
+            current_page = kwargs["current_page"]
+            size = kwargs["size"]
+            from_start = 0 if current_page <= 1 else (current_page - 1) * size
+
+            query["from"] = from_start
+            query["size"] = size
         return query
 
     def _execute_query(self, query, **kwargs):
@@ -135,19 +134,21 @@ class SearchEngine(Search_api):
     def content_query(
             self,
             search_term,
-            paginator=None,
+            current_page=1,
+            size=10,
             **kwargs):
         """
         Builds and executes the standard ONS content query (from babbage)
         :param search_term:
-        :param paginator:
+        :param current_page:
+        :param size:
         :param kwargs:
         :return:
         """
 
         # Build the standard content query
         query = SearchEngine.build_content_query(
-            search_term, paginator=paginator, **kwargs)
+            search_term, current_page=current_page, size=size, **kwargs)
 
         # Execute
         return self._execute_query(query, **kwargs)
@@ -203,3 +204,25 @@ class SearchEngine(Search_api):
         s = s.params(search_type=search_type)
 
         return s
+
+    async def execute(self, ignore_cache=False):
+        """
+        Execute the search and return an instance of ``Response`` wrapping all
+        the data.
+
+        :arg response_class: optional subclass of ``Response`` to use instead.
+        """
+
+        es = connections.get_connection(self._using)
+        response = es.search(
+            index=self._index,
+            doc_type=self._doc_type,
+            body=self.to_dict(),
+            **self._params
+        )
+        self._response = self._response_class(
+            self,
+            await response
+        )
+
+        return self._response
