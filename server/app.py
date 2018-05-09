@@ -20,10 +20,50 @@ class CustomHandler(ErrorHandler):
         return super().default(request, exception)
 
 
+def get_elasticsearch_client(async=True, **kwargs):
+    """
+    Initialises an Elasticsearch client. Supports asynchronous calls (must supply
+    :param async:
+    :param kwargs:
+    :return:
+    """
+    import os
+    from sanic.log import logger
+
+    search_url = os.environ.get('ELASTICSEARCH_HOST', 'http://localhost:9200')
+    search_timeout = int(os.environ.get('ELASTICSEARCH_TIMEOUT', 1000))
+
+    if async:
+        from elasticsearch_async import AsyncElasticsearch
+
+        logger.info("Initialising async Elasticsearch client URL:%s timeout:%d" % (search_url, search_timeout))
+
+        loop = kwargs.get("loop", None)
+        if loop is None:
+            import sys
+            logger.error("AsyncElasticsearch client requires the Sanic event loop!")
+            sys.exit(1)
+
+        return AsyncElasticsearch(search_url, loop=loop, timeout=search_timeout)
+    else:
+        from elasticsearch_async import Elasticsearch
+
+        logger.info("Initialising Elasticsearch client URL:%s timeout:%d" % (search_url, search_timeout))
+
+        return Elasticsearch(search_url, timeout=search_timeout)
+
+
 def create_app():
     from sanic import Sanic
     from server.search.routes import search_blueprint
 
+    # Initialise app
+    app = Sanic()
+
+    # Register blueprint(s)
+    app.blueprint(search_blueprint)
+
+    # Setup logging
     logging.basicConfig(
         filename='dp-conceptual-search.log',
         format='%(asctime)s - %(name)s - %(levelname)s - %(funcName)s() - %(message)s',
@@ -31,23 +71,18 @@ def create_app():
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
-    app = Sanic()
-    app.blueprint(search_blueprint)
-
+    # Setup custom error handler
     handler = CustomHandler()
     app.error_handler = handler
 
     # Initialise a single AsyncElasticsearch client for each worker after app start (in order to share event loop)
     @app.listener("after_server_start")
-    def prepare_es_client(sanic, loop):
+    def prepare_dbs(current_app, loop):
         import os
-        from elasticsearch_async import AsyncElasticsearch
+        assert isinstance(current_app, Sanic)
 
-        assert isinstance(sanic, Sanic)
-
-        search_url = os.environ.get('ELASTICSEARCH_HOST', 'http://localhost:9200')
-        search_timeout = int(os.environ.get('ELASTICSEARCH_TIMEOUT', 1000))
-        sanic.es_client = AsyncElasticsearch(search_url, loop=loop, timeout=search_timeout)
+        do_async = os.getenv("ELASTICSEARCH_ASYNC_ENABLED", "true").lower() == "true"
+        app.es_client = get_elasticsearch_client(async=do_async, loop=loop)
 
     @app.middleware('request')
     async def hash_ga_ids(request):
@@ -56,15 +91,12 @@ def create_app():
         :param request:
         :return:
         """
-        from .security import hash_value
-        from sanic.log import logger
+        from .anonymize import hash_value
         assert isinstance(request, Request)
 
         for key in ["_ga", "_gid"]:
             if key in request.cookies:
                 value = request.cookies.pop(key)
                 request.cookies[key] = hash_value(value)
-
-        logger.debug("Intercepted request cookies: %s" % request.cookies)
 
     return app

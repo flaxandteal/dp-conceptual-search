@@ -12,8 +12,6 @@ from .content_types import home_page_census, product_page
 
 _INDEX = os.environ.get('SEARCH_INDEX', 'ons*')
 
-# _CLIENT = AsyncElasticsearch(search_url)
-
 
 def get_index():
     return _INDEX
@@ -194,18 +192,25 @@ class SearchEngine(Search_api):
         the data.
 
         :arg response_class: optional subclass of ``Response`` to use instead.
+        :param ignore_cache: optional argument to ignore response cache and re-execute the query
         """
+        import inspect
 
-        es = connections.get_connection(self._using)
-        response = es.search(
-            index=self._index,
-            doc_type=self._doc_type,
-            body=self.to_dict(),
-            **self._params
-        )
-        self._response = self._response_class(
-            self,
-            await response
-        )
+        if ignore_cache or not hasattr(self, '_response'):
+            es = connections.get_connection(self._using)
+            response = es.search(
+                index=self._index,
+                doc_type=self._doc_type,
+                body=self.to_dict(),
+                **self._params
+            )
+
+            if inspect.isawaitable(response):
+                response = await response
+
+            self._response = self._response_class(
+                self,
+                response
+            )
 
         return self._response
