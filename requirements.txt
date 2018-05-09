@@ -1,3 +1,4 @@
+aiohttp
 sanic==0.7.0
 six==1.11.0
 elasticsearch_async==6.0.0
