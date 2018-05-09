@@ -56,6 +56,10 @@ def get_elasticsearch_client(async=True, **kwargs):
 def create_app():
     from sanic import Sanic
     from server.search.routes import search_blueprint
+    import asyncio
+    import uvloop
+
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     # Initialise app
     app = Sanic()
