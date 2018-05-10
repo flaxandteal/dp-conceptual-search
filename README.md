@@ -11,6 +11,8 @@ dp-conceptual-search
 | ELASTIC_SEARCH_SERVER        | http://localhost:9200   | URL of Elasticsearch cluster.
 | ELASTIC_SEARCH_TIMEOUT       | 1000                    | Timeout of Elasticsearch requests in seconds.
 | SEARCH_INDEX                 | ons*                    | The Elasticsearch index to be queried.
+| BIND_HOST                    | 0.0.0.0                 | The host to bind to.
+| BIND_PORT                    | 5000                    | The port to bind to.
 
 # Running
 
