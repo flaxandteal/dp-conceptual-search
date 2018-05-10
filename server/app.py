@@ -84,6 +84,7 @@ def create_app(testing=False):
     @app.listener("after_server_start")
     def prepare_dbs(current_app, loop):
         import os
+        from sanic.log import logger
         assert isinstance(current_app, Sanic)
 
         if current_app.config["TESTING"] is False:
@@ -91,6 +92,7 @@ def create_app(testing=False):
             app.es_client = get_elasticsearch_client(async=do_async, loop=loop)
         else:
             from tests.server.search.test_search_client import FakeElasticsearch
+            logger.warn("Test client active, using FakeElasticsearch client")
             app.es_client = FakeElasticsearch()
 
     @app.middleware('request')
