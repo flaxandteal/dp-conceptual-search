@@ -1,4 +1,3 @@
-import logging
 from sanic.request import Request
 from sanic.handlers import ErrorHandler
 from sanic.exceptions import SanicException
@@ -57,8 +56,10 @@ def create_app(testing=False):
     from sanic import Sanic
     from sanic.response import json
     from server.search.routes import search_blueprint
+
     import asyncio
     import uvloop
+    import logging
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -69,6 +70,10 @@ def create_app(testing=False):
     # Register blueprint(s)
     app.blueprint(search_blueprint)
 
+    # Setup custom error handler
+    handler = CustomHandler()
+    app.error_handler = handler
+
     # Setup logging
     logging.basicConfig(
         filename='dp-conceptual-search.log',
@@ -76,10 +81,6 @@ def create_app(testing=False):
         level=logging.INFO,
         datefmt='%Y-%m-%d %H:%M:%S'
     )
-
-    # Setup custom error handler
-    handler = CustomHandler()
-    app.error_handler = handler
 
     @app.route("/healthcheck")
     def health_check(requst):
@@ -94,11 +95,24 @@ def create_app(testing=False):
 
         if current_app.config["TESTING"] is False:
             do_async = os.getenv("ELASTIC_SEARCH_ASYNC_ENABLED", "true").lower() == "true"
-            app.es_client = get_elasticsearch_client(async=do_async, loop=loop)
+            current_app.es_client = get_elasticsearch_client(async=do_async, loop=loop)
+            current_app.es_is_async = do_async
         else:
             from tests.server.search.test_search_client import FakeElasticsearch
             logger.warn("Test client active, using FakeElasticsearch client")
-            app.es_client = FakeElasticsearch()
+            current_app.es_client = FakeElasticsearch()
+
+    @app.listener("after_server_stop")
+    async def shutdown_dbs(current_app, loop):
+        if hasattr(current_app, "es_client") and hasattr(current_app.es_client, "transport"):
+            if hasattr(current_app.es_client.transport, "connection_pool") \
+                    and hasattr(current_app.es_client.transport.connection_pool, "connections"):
+                # Manually shutdown ES connections (await if async)
+                for conn in current_app.es_client.transport.connection_pool.connections:
+                    if current_app.es_is_async:
+                        await conn.close()
+                    else:
+                        conn.close()
 
     @app.middleware('request')
     async def hash_ga_ids(request):

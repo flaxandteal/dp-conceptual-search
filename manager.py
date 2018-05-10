@@ -4,7 +4,10 @@ app = create_app()
 
 
 def run(host, port):
-    app.run(host=host, port=port, workers=1)
+    try:
+        app.run(host=host, port=port, workers=1)
+    except KeyboardInterrupt:
+        print("Here!")
 
 
 if __name__ == "__main__":
