@@ -3,9 +3,13 @@ from server.app import create_app
 app = create_app()
 
 
-def run():
-    app.run(host='0.0.0.0', port=5000, workers=1)
+def run(host, port):
+    app.run(host=host, port=port, workers=1)
 
 
 if __name__ == "__main__":
-    run()
+    import os
+
+    host = os.getenv("BIND_HOST", '0.0.0.0')
+    post = int(os.getenv("BIND_PORT", 5000))
+    run(host, post)
