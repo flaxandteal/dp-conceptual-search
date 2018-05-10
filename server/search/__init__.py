@@ -10,9 +10,9 @@ def aggs_to_json(aggregations, key):
 
         result = {}
         for item in buckets:
-            key = item["key"]
+            item_key = item["key"]
             count = item["doc_count"]
-            result[key] = count
+            result[item_key] = count
             total += count
 
         return result, total

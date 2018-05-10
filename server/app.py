@@ -30,8 +30,8 @@ def get_elasticsearch_client(async=True, **kwargs):
     import os
     from sanic.log import logger
 
-    search_url = os.environ.get('ELASTICSEARCH_HOST', 'http://localhost:9200')
-    search_timeout = int(os.environ.get('ELASTICSEARCH_TIMEOUT', 1000))
+    search_url = os.environ.get('ELASTIC_SEARCH_SERVER', 'http://localhost:9200')
+    search_timeout = int(os.environ.get('ELASTIC_SEARCH_TIMEOUT', 1000))
 
     if async:
         from elasticsearch_async import AsyncElasticsearch
@@ -53,7 +53,7 @@ def get_elasticsearch_client(async=True, **kwargs):
         return Elasticsearch(search_url, timeout=search_timeout)
 
 
-def create_app():
+def create_app(testing=False):
     from sanic import Sanic
     from server.search.routes import search_blueprint
     import asyncio
@@ -63,6 +63,7 @@ def create_app():
 
     # Initialise app
     app = Sanic()
+    app.config["TESTING"] = testing
 
     # Register blueprint(s)
     app.blueprint(search_blueprint)
@@ -79,14 +80,18 @@ def create_app():
     handler = CustomHandler()
     app.error_handler = handler
 
-    # Initialise a single AsyncElasticsearch client for each worker after app start (in order to share event loop)
+    # Initialise a single (Async) Elasticsearch client for each worker after app start (in order to share event loop)
     @app.listener("after_server_start")
     def prepare_dbs(current_app, loop):
         import os
         assert isinstance(current_app, Sanic)
 
-        do_async = os.getenv("ELASTICSEARCH_ASYNC_ENABLED", "true").lower() == "true"
-        app.es_client = get_elasticsearch_client(async=do_async, loop=loop)
+        if current_app.config["TESTING"] is False:
+            do_async = os.getenv("ELASTIC_SEARCH_ASYNC_ENABLED", "true").lower() == "true"
+            app.es_client = get_elasticsearch_client(async=do_async, loop=loop)
+        else:
+            from tests.server.search.test_search_client import FakeElasticsearch
+            app.es_client = FakeElasticsearch()
 
     @app.middleware('request')
     async def hash_ga_ids(request):
