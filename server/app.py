@@ -55,6 +55,7 @@ def get_elasticsearch_client(async=True, **kwargs):
 
 def create_app(testing=False):
     from sanic import Sanic
+    from sanic.response import json
     from server.search.routes import search_blueprint
     import asyncio
     import uvloop
@@ -79,6 +80,10 @@ def create_app(testing=False):
     # Setup custom error handler
     handler = CustomHandler()
     app.error_handler = handler
+
+    @app.route("/healthcheck")
+    def health_check(requst):
+        return json({}, 200)
 
     # Initialise a single (Async) Elasticsearch client for each worker after app start (in order to share event loop)
     @app.listener("after_server_start")
