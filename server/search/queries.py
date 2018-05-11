@@ -45,11 +45,13 @@ def multi_match(field_list, search_term, **kwargs):
     return q
 
 
-def content_query(search_term, function_scores=None):
+def content_query(search_term, function_scores=None, compute_additional_keywords=False):
     """
     Returns the default ONS content query
+
     :param search_term:
     :param function_scores:
+    :param compute_additional_keywords:
     :return:
     """
     q = query.DisMax(
@@ -71,6 +73,22 @@ def content_query(search_term, function_scores=None):
             match(fields.searchBoost, search_term, type="boolean", operator="AND", boost=100.0)
         ]
     )
+
+    if compute_additional_keywords:
+        from ..word_embedding.supervised_models import SupervisedModels, load_model
+        model = load_model(SupervisedModels.ONS)
+
+        search_vector = model.get_sentence_vector(search_term)
+        additional_keywords, similarity = model.get_labels_for_vector(search_vector, 10)
+        additional_keywords = [k.replace("_", " ") for k in additional_keywords]
+
+        # Add query to dis_max
+        keywords_query = query.Bool(should=[query.Match(**{fields.keywords.name: k}) for k in additional_keywords])
+
+        q_dict = q.to_dict()
+        q_dict["dis_max"]["queries"].append(keywords_query.to_dict())
+
+        q = query.DisMax(**q_dict["dis_max"])
 
     if function_scores is None:
         return q

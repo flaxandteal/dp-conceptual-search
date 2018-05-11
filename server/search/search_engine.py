@@ -56,10 +56,12 @@ class SearchEngine(Search_api):
         function_scores = kwargs.pop(
             "function_scores", content_filter_functions())
 
+        compute_additional_keywords = kwargs.pop("compute_additional_keywords", False)
+
         query = {
             "query": content_query(
                 search_term,
-                function_scores=function_scores).to_dict()}
+                function_scores=function_scores, compute_additional_keywords=compute_additional_keywords).to_dict()}
 
         if "current_page" in kwargs and "size" in kwargs:
             current_page = kwargs["current_page"]
@@ -129,7 +131,7 @@ class SearchEngine(Search_api):
 
         # Build the standard content query
         query = SearchEngine.build_content_query(
-            search_term, current_page=current_page, size=size, **kwargs)
+            search_term, current_page=current_page, size=size, compute_additional_keywords=True, **kwargs)
 
         # Execute
         return self._execute_query(query, **kwargs)

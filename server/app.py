@@ -82,6 +82,10 @@ def create_app(testing=False):
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
+    # Trigger loading of models - TODO imporove this
+    from .word_embedding import supervised_models
+    supervised_models.init()
+
     @app.route("/healthcheck")
     async def health_check(request):
         import inspect
