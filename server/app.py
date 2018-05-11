@@ -83,8 +83,12 @@ def create_app(testing=False):
     )
 
     @app.route("/healthcheck")
-    def health_check(requst):
-        return json({}, 200)
+    async def health_check(request):
+        import inspect
+        es_health = request.app.es_client.cluster.health()
+        if inspect.isawaitable(es_health):
+            es_health = await es_health
+        return json(es_health, 200)
 
     # Initialise a single (Async) Elasticsearch client for each worker after app start (in order to share event loop)
     @app.listener("after_server_start")
