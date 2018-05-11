@@ -3,5 +3,5 @@
 pushd dp-conceptual-search
   pip install -r requirements.txt
   pip install -r requirements_test.txt
-  nosetests
+  nosetests -v
 popd
