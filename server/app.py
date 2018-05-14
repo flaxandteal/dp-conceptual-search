@@ -2,6 +2,9 @@ from sanic.request import Request
 from sanic.handlers import ErrorHandler
 from sanic.exceptions import SanicException
 
+from pythonjsonlogger import jsonlogger
+from datetime import datetime
+
 
 class CustomHandler(ErrorHandler):
 
@@ -19,7 +22,25 @@ class CustomHandler(ErrorHandler):
         return super().default(request, exception)
 
 
-def get_elasticsearch_client(async=True, **kwargs):
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super(
+            CustomJsonFormatter,
+            self).add_fields(
+            log_record,
+            record,
+            message_dict)
+        if not log_record.get('timestamp'):
+            # this doesn't use record.created, so it is slightly off
+            now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            log_record['timestamp'] = now
+        if log_record.get('level'):
+            log_record['level'] = "[%s]" % log_record['level'].upper()
+        else:
+            log_record['level'] = "[%s]" % record.levelname
+
+
+def get_elasticsearch_client(do_async=True, **kwargs):
     """
     Initialises an Elasticsearch client. Supports asynchronous calls (must supply
     :param async:
@@ -34,7 +55,7 @@ def get_elasticsearch_client(async=True, **kwargs):
         'http://localhost:9200')
     search_timeout = int(os.environ.get('ELASTIC_SEARCH_TIMEOUT', 1000))
 
-    if async:
+    if do_async:
         from elasticsearch_async import AsyncElasticsearch
 
         logger.info(
@@ -68,52 +89,12 @@ def create_app(testing=False):
     import asyncio
     import uvloop
 
-    import logging.config
-    from structlog import configure, processors, stdlib, threadlocal
+    from.log_config import default_log_config
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
-    log_config = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'json': {
-                'format': '%(message)s %(lineno)d %(pathname)s',
-                'class': 'pythonjsonlogger.jsonlogger.JsonFormatter'
-            }
-        },
-        'handlers': {
-            'json': {
-                'class': 'logging.StreamHandler',
-                'formatter': 'json'
-            }
-        },
-        'loggers': {
-            '': {
-                'handlers': ['json'],
-                'level': logging.INFO
-            }
-        }
-    }
-
-    configure(
-        context_class=threadlocal.wrap_dict(dict),
-        logger_factory=stdlib.LoggerFactory(),
-        wrapper_class=stdlib.BoundLogger,
-        processors=[
-            stdlib.filter_by_level,
-            stdlib.add_logger_name,
-            stdlib.add_log_level,
-            stdlib.PositionalArgumentsFormatter(),
-            processors.TimeStamper(fmt="iso"),
-            processors.StackInfoRenderer(),
-            processors.format_exc_info,
-            processors.UnicodeDecoder(),
-            stdlib.render_to_log_kwargs]
-    )
-
     # Initialise app
-    app = Sanic(log_config=log_config)
+    app = Sanic(log_config=default_log_config)
     app.config["TESTING"] = testing
 
     # Register blueprint(s)
@@ -122,13 +103,6 @@ def create_app(testing=False):
     # Setup custom error handler
     handler = CustomHandler()
     app.error_handler = handler
-
-    # Setup logging
-    logging.basicConfig(
-        filename='dp-conceptual-search.log',
-        format='%(asctime)s - %(name)s - %(levelname)s - %(funcName)s() - %(message)s',
-        level=logging.INFO,
-        datefmt='%Y-%m-%d %H:%M:%S')
 
     @app.route("/healthcheck")
     async def health_check(request):
@@ -141,7 +115,7 @@ def create_app(testing=False):
     # Initialise a single (Async) Elasticsearch client for each worker after
     # app start (in order to share event loop)
     @app.listener("after_server_start")
-    def prepare_dbs(current_app, loop):
+    async def prepare_dbs(current_app, loop):
         import os
         from sanic.log import logger
         assert isinstance(current_app, Sanic)
@@ -151,7 +125,7 @@ def create_app(testing=False):
                 "ELASTIC_SEARCH_ASYNC_ENABLED",
                 "true").lower() == "true"
             current_app.es_client = get_elasticsearch_client(
-                async=do_async, loop=loop)
+                do_async=do_async, loop=loop)
             current_app.es_is_async = do_async
         else:
             from tests.server.search.test_search_client import FakeElasticsearch
@@ -161,13 +135,13 @@ def create_app(testing=False):
     @app.listener("after_server_stop")
     async def shutdown_dbs(current_app, loop):
         if hasattr(
-                current_app,
-                "es_client") and hasattr(
+            current_app,
+            "es_client") and hasattr(
                 current_app.es_client,
                 "transport"):
             if hasattr(
-                    current_app.es_client.transport,
-                    "connection_pool") and hasattr(
+                current_app.es_client.transport,
+                "connection_pool") and hasattr(
                     current_app.es_client.transport.connection_pool,
                     "connections"):
                 # Manually shutdown ES connections (await if async)
