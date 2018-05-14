@@ -1,3 +1,3 @@
 #!/bin/bash
 
-~/anaconda3/bin/pipreqs .
+~/anaconda3/bin/pipreqs --force .
