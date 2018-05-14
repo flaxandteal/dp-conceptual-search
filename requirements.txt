@@ -1,7 +1,6 @@
 sanic==0.7.0
-structlog==18.1.0
 elasticsearch_dsl==6.1.0
-elasticsearch_async==6.0.0
-elasticsearch==6.2.0
 uvloop==0.9.1
-python-json-logger==0.1.8
+elasticsearch==6.2.0
+elasticsearch_async==6.0.0
+python_json_logger==0.1.8
