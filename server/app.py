@@ -40,47 +40,6 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
             log_record['level'] = "[%s]" % record.levelname
 
 
-def get_elasticsearch_client(do_async=True, **kwargs):
-    """
-    Initialises an Elasticsearch client. Supports asynchronous calls (must supply
-    :param async:
-    :param kwargs:
-    :return:
-    """
-    import os
-    from sanic.log import logger
-
-    search_url = os.environ.get(
-        'ELASTIC_SEARCH_SERVER',
-        'http://localhost:9200')
-    search_timeout = int(os.environ.get('ELASTIC_SEARCH_TIMEOUT', 1000))
-
-    if do_async:
-        from elasticsearch_async import AsyncElasticsearch
-
-        logger.info(
-            "Initialising async Elasticsearch client URL:%s timeout:%d" %
-            (search_url, search_timeout))
-
-        loop = kwargs.get("loop", None)
-        if loop is None:
-            import sys
-            logger.error(
-                "AsyncElasticsearch client requires the Sanic event loop!")
-            sys.exit(1)
-
-        return AsyncElasticsearch(
-            search_url, loop=loop, timeout=search_timeout)
-    else:
-        from elasticsearch_async import Elasticsearch
-
-        logger.info(
-            "Initialising Elasticsearch client URL:%s timeout:%d" %
-            (search_url, search_timeout))
-
-        return Elasticsearch(search_url, timeout=search_timeout)
-
-
 def create_app(testing=False):
     from sanic import Sanic
     from sanic.response import json
@@ -90,6 +49,7 @@ def create_app(testing=False):
     import uvloop
 
     from.log_config import default_log_config
+    from .sanic_es import SanicElasticsearch
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -104,6 +64,10 @@ def create_app(testing=False):
     handler = CustomHandler()
     app.error_handler = handler
 
+    # Initialise Elasticsearch client
+    SanicElasticsearch(app)
+
+    # Define healthcheck API
     @app.route("/healthcheck")
     async def health_check(request):
         import inspect
@@ -111,45 +75,6 @@ def create_app(testing=False):
         if inspect.isawaitable(es_health):
             es_health = await es_health
         return json(es_health, 200)
-
-    # Initialise a single (Async) Elasticsearch client for each worker after
-    # app start (in order to share event loop)
-    @app.listener("after_server_start")
-    async def prepare_dbs(current_app, loop):
-        import os
-        from sanic.log import logger
-        assert isinstance(current_app, Sanic)
-
-        if current_app.config["TESTING"] is False:
-            do_async = os.getenv(
-                "ELASTIC_SEARCH_ASYNC_ENABLED",
-                "true").lower() == "true"
-            current_app.es_client = get_elasticsearch_client(
-                do_async=do_async, loop=loop)
-            current_app.es_is_async = do_async
-        else:
-            from tests.server.search.test_search_client import FakeElasticsearch
-            logger.warn("Test client active, using FakeElasticsearch client")
-            current_app.es_client = FakeElasticsearch()
-
-    @app.listener("after_server_stop")
-    async def shutdown_dbs(current_app, loop):
-        if hasattr(
-            current_app,
-            "es_client") and hasattr(
-                current_app.es_client,
-                "transport"):
-            if hasattr(
-                current_app.es_client.transport,
-                "connection_pool") and hasattr(
-                    current_app.es_client.transport.connection_pool,
-                    "connections"):
-                # Manually shutdown ES connections (await if async)
-                for conn in current_app.es_client.transport.connection_pool.connections:
-                    if current_app.es_is_async:
-                        await conn.close()
-                    else:
-                        conn.close()
 
     @app.middleware('request')
     async def hash_ga_ids(request):
