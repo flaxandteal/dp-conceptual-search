@@ -31,7 +31,11 @@ async def execute_content_query(search_term, sort_by, page_number, page_size, cl
 
     # Define the query with sort and paginator
     s = s.content_query(
-        search_term, sort_by=sort_by, current_page=page_number, size=page_size, **kwargs)
+        search_term,
+        sort_by=sort_by,
+        current_page=page_number,
+        size=page_size,
+        **kwargs)
 
     # Execute the query
     content_response = await s.execute()
@@ -73,7 +77,8 @@ async def execute_search(request, search_term, sort_by, **kwargs):
     type_counts_response = execute_type_counts_query(search_term, client)
 
     # Perform the content query to populate the SERP
-    content_response = execute_content_query(search_term, sort_by, page_number, page_size, client, **kwargs)
+    content_response = execute_content_query(
+        search_term, sort_by, page_number, page_size, client, **kwargs)
 
     featured_result_response = None
     if page_number == 1:
