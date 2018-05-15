@@ -37,14 +37,13 @@ def create_app():
     SanicElasticsearch(app)
 
     @app.middleware('request')
-    async def hash_ga_ids(request):
+    async def hash_ga_ids(request: Request):
         """
         Intercepts all requests and hashes Google Analytics IDs
         :param request:
         :return:
         """
         from .anonymize import hash_value
-        assert isinstance(request, Request)
 
         for key in ["_ga", "_gid"]:
             if key in request.cookies:

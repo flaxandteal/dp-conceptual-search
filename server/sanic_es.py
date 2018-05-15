@@ -78,7 +78,7 @@ class SanicElasticsearch(object):
                 _app.es_client = FakeElasticsearch()
 
         @app.listener("after_server_stop")
-        async def shutdown_dbs(_app, loop):
+        async def shutdown_dbs(_app: Sanic, loop):
             from elasticsearch_async import AsyncElasticsearch
 
             if hasattr(_app, "es_client") and \
