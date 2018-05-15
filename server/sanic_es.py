@@ -67,7 +67,7 @@ class SanicElasticsearch(object):
 
         @app.listener("after_server_start")
         async def elastic_search_configure(_app: Sanic, loop):
-            if _app.config["TESTING"] is False:
+            if _app.config.get("TESTING", False) is False:
                 _app.es_client = get_elastic_search_client(loop=loop)
             else:
                 from tests.server.search.test_search_client import FakeElasticsearch
