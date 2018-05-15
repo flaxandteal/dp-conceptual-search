@@ -1,6 +1,7 @@
 sanic==0.7.0
-elasticsearch_dsl==6.1.0
-uvloop==0.9.1
 elasticsearch==6.2.0
 elasticsearch_async==6.0.0
+elasticsearch_dsl==6.1.0
+uvloop==0.9.1
 python_json_logger==0.1.8
+sanic_prometheus==0.1.4

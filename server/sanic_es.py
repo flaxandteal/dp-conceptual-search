@@ -67,7 +67,7 @@ class SanicElasticsearch(object):
 
         @app.listener("after_server_start")
         async def elastic_search_configure(_app: Sanic, loop):
-            if _app.config["TESTING"] is False:
+            if _app.config.get("TESTING", False) is False:
                 _app.es_client = get_elastic_search_client(loop=loop)
             else:
                 from tests.server.search.test_search_client import FakeElasticsearch
@@ -78,13 +78,16 @@ class SanicElasticsearch(object):
                 _app.es_client = FakeElasticsearch()
 
         @app.listener("after_server_stop")
-        async def shutdown_dbs(_app, loop):
+        async def shutdown_dbs(_app: Sanic, loop):
             from elasticsearch_async import AsyncElasticsearch
 
             if hasattr(_app, "es_client") and \
                     hasattr(_app.es_client, "transport"):
-                if hasattr(_app.es_client.transport, "connection_pool") and \
-                        hasattr(_app.es_client.transport.connection_pool, "connections"):
+                if hasattr(
+                        _app.es_client.transport,
+                        "connection_pool") and hasattr(
+                        _app.es_client.transport.connection_pool,
+                        "connections"):
                     # Manually shutdown ES connections (await if async)
                     for conn in _app.es_client.transport.connection_pool.connections:
                         if isinstance(_app.es_client, AsyncElasticsearch):
