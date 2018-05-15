@@ -74,10 +74,10 @@ async def execute_search(request, search_term, sort_by, **kwargs):
     page_size = int(get_form_param(request, "size", False, 10))
 
     # Execute type counts query
-    type_counts_response = execute_type_counts_query(search_term, client)
+    type_counts_response = await execute_type_counts_query(search_term, client)
 
     # Perform the content query to populate the SERP
-    content_response = execute_content_query(
+    content_response = await execute_content_query(
         search_term, sort_by, page_number, page_size, client, **kwargs)
 
     featured_result_response = None
@@ -86,8 +86,8 @@ async def execute_search(request, search_term, sort_by, **kwargs):
 
     # Return the hits as JSON
     return hits_to_json(
-        await content_response,
-        await type_counts_response,
+        content_response,
+        type_counts_response,
         page_number,
         page_size,
         sort_by.name,

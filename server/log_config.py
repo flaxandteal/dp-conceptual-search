@@ -1,6 +1,27 @@
 import os
 
+from pythonjsonlogger import jsonlogger
+from datetime import datetime
+
 log_level = os.getenv("SEARCH_LOG_LEVEL", "INFO")
+
+
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super(
+            CustomJsonFormatter,
+            self).add_fields(
+            log_record,
+            record,
+            message_dict)
+        if not log_record.get('timestamp'):
+            # this doesn't use record.created, so it is slightly off
+            now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            log_record['timestamp'] = now
+        if log_record.get('level'):
+            log_record['level'] = log_record['level'].upper()
+        else:
+            log_record['level'] = record.levelname
 
 
 def log_format(x):
@@ -13,13 +34,13 @@ supported_keys = [
     'pathname',
     'funcName',
     'lineno',
-    'module',
+    # 'module',
     'message',
     'name',
     'process',
-    'processName',
-    'thread',
-    'threadName'
+    # 'processName',
+    # 'thread',
+    # 'threadName'
 ]
 
 custom_format = ' '.join(log_format(supported_keys))
@@ -30,7 +51,7 @@ default_log_config = {
     'formatters': {
         'standard': {
             'format': custom_format,
-            'class': 'server.app.CustomJsonFormatter'
+            'class': 'server.log_config.CustomJsonFormatter'
         },
     },
     'handlers': {

@@ -83,8 +83,11 @@ class SanicElasticsearch(object):
 
             if hasattr(_app, "es_client") and \
                     hasattr(_app.es_client, "transport"):
-                if hasattr(_app.es_client.transport, "connection_pool") and \
-                        hasattr(_app.es_client.transport.connection_pool, "connections"):
+                if hasattr(
+                        _app.es_client.transport,
+                        "connection_pool") and hasattr(
+                        _app.es_client.transport.connection_pool,
+                        "connections"):
                     # Manually shutdown ES connections (await if async)
                     for conn in _app.es_client.transport.connection_pool.connections:
                         if isinstance(_app.es_client, AsyncElasticsearch):

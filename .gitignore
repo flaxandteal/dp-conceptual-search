@@ -1,7 +1,9 @@
 .idea/
+.coverage
 *.log
 **/*.pyc
 **/**/*.pyc
 
+cover/
 tests/server/search/.cache/
 supervised_models/
