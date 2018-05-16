@@ -4,7 +4,7 @@ from sanic.request import Request
 def create_app():
     import os
     from sanic import Sanic
-    from server.healthcheck.routes import healthcheck_blueprint
+    from server.healthcheck.routes import health_check_blueprint
     from server.search.routes import search_blueprint
 
     import asyncio
@@ -24,7 +24,7 @@ def create_app():
 
     # Register blueprint(s)
     app.blueprint(search_blueprint)
-    app.blueprint(healthcheck_blueprint)
+    app.blueprint(health_check_blueprint)
 
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
         from sanic_prometheus import monitor
