@@ -100,8 +100,7 @@ def type_counts_query():
     type_count_query = {
         "docCounts": {
             "terms": {
-                "field": "_type",
-                "size": 0
+                "field": "_type"
             }
         }
     }

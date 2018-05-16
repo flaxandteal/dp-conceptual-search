@@ -7,6 +7,7 @@ dp-conceptual-search
 
 | Environment variable         | Default                 | Description
 | ---------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------
+| SEARCH_CONFIG                | development             | Specifies which config_*.py file to use.
 | ELASTIC_SEARCH_ASYNC_ENABLED | true                    | Specify whether to use synchronous or asynchronous Elasticsearch client.
 | ELASTIC_SEARCH_SERVER        | http://localhost:9200   | URL of Elasticsearch cluster.
 | ELASTIC_SEARCH_TIMEOUT       | 1000                    | Timeout of Elasticsearch requests in seconds.
@@ -22,7 +23,7 @@ gunicorn server (supports multi-processing for multiple workers and threads per 
 
 # Testing
 
-To run the tests use: ```nosetests```
+To run the tests use: ```python manager.py test```
 
 ### Licence
 
