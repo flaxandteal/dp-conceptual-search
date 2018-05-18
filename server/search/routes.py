@@ -3,10 +3,12 @@ from sanic.request import Request
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
+from server.requests import get_form_param
+
 from . import hits_to_json
 from .sort_by import SortFields
-from .search_engine import SearchEngine, get_index
-from ..requests import get_form_param
+from .search_engine import get_index
+from .search_engine import SearchEngine
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
@@ -25,7 +27,13 @@ def execute_type_counts_query(search_term: str, client):
     return type_counts_response
 
 
-def execute_content_query(search_term: str, sort_by: SortFields, page_number: int, page_size: int, client, **kwargs):
+def execute_content_query(
+        search_term: str,
+        sort_by: SortFields,
+        page_number: int,
+        page_size: int,
+        client,
+        **kwargs):
     # Init SearchEngine
     index = get_index()
     s = SearchEngine(using=client, index=index)
@@ -83,7 +91,8 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
 
     featured_result_response = None
     if page_number == 1:
-        featured_result_response = execute_featured_results_query(search_term, client)
+        featured_result_response = execute_featured_results_query(
+            search_term, client)
 
     # Return the hits as JSON
     response = await hits_to_json(
@@ -93,7 +102,7 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
         page_size,
         sort_by.name,
         featured_result_response=featured_result_response)
-    
+
     return response
 
 

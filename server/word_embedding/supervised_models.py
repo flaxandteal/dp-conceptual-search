@@ -150,7 +150,9 @@ class SupervisedModel(object):
 def init():
     import os
 
-    supervised_model_dir = os.getenv("SUPERVISED_MODEL_DIR", "./supervised_models")
+    supervised_model_dir = os.getenv(
+        "SUPERVISED_MODEL_DIR",
+        "./supervised_models")
     for model_name in SupervisedModels:
         fname = "%s/%s" % (supervised_model_dir, model_name)
         model = fastText.load_model(fname)

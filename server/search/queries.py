@@ -1,5 +1,5 @@
 from . import fields
-from elasticsearch_dsl import query
+from elasticsearch_dsl import query as Q
 
 
 def _get_field_name(field):
@@ -8,7 +8,7 @@ def _get_field_name(field):
     return field
 
 
-def match(field, search_term, **kwargs):
+def match(field, search_term, **kwargs) -> Q.Query:
     field_name = _get_field_name(field)
 
     query_dict = {
@@ -20,11 +20,11 @@ def match(field, search_term, **kwargs):
     for item in kwargs:
         query_dict[field_name][item] = kwargs[item]
 
-    q = query.Match(**query_dict)
+    q = Q.Match(**query_dict)
     return q
 
 
-def multi_match(field_list, search_term, **kwargs):
+def multi_match(field_list, search_term, **kwargs) -> Q.Query:
     if hasattr(field_list, "__iter__") is False:
         field_list = [field_list]
 
@@ -41,11 +41,11 @@ def multi_match(field_list, search_term, **kwargs):
     for item in kwargs:
         query_dict[item] = kwargs[item]
 
-    q = query.MultiMatch(**query_dict)
+    q = Q.MultiMatch(**query_dict)
     return q
 
 
-def content_query(search_term, function_scores=None, compute_additional_keywords=False):
+def content_query(search_term, compute_additional_keywords=False) -> Q.Query:
     """
     Returns the default ONS content query
 
@@ -54,9 +54,9 @@ def content_query(search_term, function_scores=None, compute_additional_keywords
     :param compute_additional_keywords:
     :return:
     """
-    q = query.DisMax(
+    q = Q.DisMax(
         queries=[
-            query.Bool(
+            Q.Bool(
                 should=[
                     match(fields.title_no_dates, search_term, type="boolean", boost=10.0,
                           minimum_should_match="1<-2 3<80% 5<60%"),
@@ -79,24 +79,30 @@ def content_query(search_term, function_scores=None, compute_additional_keywords
         model = load_model(SupervisedModels.ONS)
 
         search_vector = model.get_sentence_vector(search_term)
-        additional_keywords, similarity = model.get_labels_for_vector(search_vector, 10)
-        additional_keywords = [k.replace("_", " ") for k in additional_keywords]
+        additional_keywords, similarity = model.get_labels_for_vector(
+            search_vector, 10)
+        additional_keywords = [k.replace("_", " ")
+                               for k in additional_keywords]
 
         # Add query to dis_max
-        keywords_query = query.Bool(should=[query.Match(**{fields.keywords.name: k}) for k in additional_keywords])
+        keywords_query = Q.Bool(
+            should=[Q.Match(**{fields.keywords.name: k}) for k in additional_keywords])
 
         q_dict = q.to_dict()
         q_dict["dis_max"]["queries"].append(keywords_query.to_dict())
 
-        q = query.DisMax(**q_dict["dis_max"])
+        q = Q.DisMax(**q_dict["dis_max"])
 
-    if function_scores is None:
-        return q
-    else:
-        return query.FunctionScore(query=q, functions=function_scores)
+    return q
 
 
-def type_counts_query():
+def function_score_content_query(
+        query: Q.Query,
+        function_scores: list) -> Q.Query:
+    return Q.FunctionScore(query=query, functions=function_scores)
+
+
+def type_counts_query() -> dict:
     type_count_query = {
         "docCounts": {
             "terms": {

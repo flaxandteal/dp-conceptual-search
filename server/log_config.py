@@ -23,6 +23,11 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         else:
             log_record['level'] = record.levelname
 
+        if log_record.get('status') and not isinstance(
+                log_record['status'], str):
+            # Convert to str to stay consistent with other apps
+            log_record['status'] = str(log_record['status'])
+
 
 def log_format(x):
     return ['%({0:s})'.format(i) for i in x]
