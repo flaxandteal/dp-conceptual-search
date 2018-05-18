@@ -8,15 +8,18 @@ from server.requests import get_form_param
 from . import hits_to_json
 from .sort_by import SortFields
 from .search_engine import get_index
-# from .search_engine import SearchEngine
-from .conceptual_search.conceptual_search_engine import ConceptualSearchEngine as SearchEngine
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-def execute_type_counts_query(search_term: str, client):
+def execute_type_counts_query(search_term: str, client, conceptual_search: bool):
     # Init SearchEngine
     index = get_index()
+
+    if conceptual_search:
+        from .conceptual_search.conceptual_search_engine import ConceptualSearchEngine as SearchEngine
+    else:
+        from .search_engine import SearchEngine
     s = SearchEngine(using=client, index=index)
 
     # Define type counts (aggregations) query
@@ -34,9 +37,15 @@ def execute_content_query(
         page_number: int,
         page_size: int,
         client,
+        conceptual_search: bool,
         **kwargs):
     # Init SearchEngine
     index = get_index()
+
+    if conceptual_search:
+        from .conceptual_search.conceptual_search_engine import ConceptualSearchEngine as SearchEngine
+    else:
+        from .search_engine import SearchEngine
     s = SearchEngine(using=client, index=index)
 
     # Define the query with sort and paginator
@@ -53,9 +62,14 @@ def execute_content_query(
     return content_response
 
 
-def execute_featured_results_query(search_term: str, client):
+def execute_featured_results_query(search_term: str, client, conceptual_search: bool):
     # Init the SearchEngine
     index = get_index()
+
+    if conceptual_search:
+        from .conceptual_search.conceptual_search_engine import ConceptualSearchEngine as SearchEngine
+    else:
+        from .search_engine import SearchEngine
     s = SearchEngine(using=client, index=index)
 
     # Define the query
@@ -78,22 +92,23 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
     client = current_app.es_client
 
     # Perform the search
+    conceptual_search = request.args.get("conceptual", "false").lower() == "true"
 
     # Get page_number/size params
     page_number = int(get_form_param(request, "page", False, 1))
     page_size = int(get_form_param(request, "size", False, 10))
 
     # Execute type counts query
-    type_counts_response = execute_type_counts_query(search_term, client)
+    type_counts_response = execute_type_counts_query(search_term, client, conceptual_search)
 
     # Perform the content query to populate the SERP
     content_response = execute_content_query(
-        search_term, sort_by, page_number, page_size, client, **kwargs)
+        search_term, sort_by, page_number, page_size, client, conceptual_search, **kwargs)
 
     featured_result_response = None
     if page_number == 1:
         featured_result_response = execute_featured_results_query(
-            search_term, client)
+            search_term, client, conceptual_search)
 
     # Return the hits as JSON
     response = await hits_to_json(
