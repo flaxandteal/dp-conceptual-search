@@ -8,7 +8,8 @@ from server.requests import get_form_param
 from . import hits_to_json
 from .sort_by import SortFields
 from .search_engine import get_index
-from .search_engine import SearchEngine
+# from .search_engine import SearchEngine
+from .conceptual_search.conceptual_search_engine import ConceptualSearchEngine as SearchEngine
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
