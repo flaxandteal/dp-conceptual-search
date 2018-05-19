@@ -3,7 +3,7 @@ from sanic.request import Request
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
-from server.requests import get_form_param
+from server.requests import get_request_param, get_form_param
 
 from . import hits_to_json
 from .sort_by import SortFields
@@ -12,7 +12,10 @@ from .search_engine import get_index
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-def execute_type_counts_query(search_term: str, client, conceptual_search: bool):
+def execute_type_counts_query(
+        search_term: str,
+        client,
+        conceptual_search: bool):
     # Init SearchEngine
     index = get_index()
 
@@ -62,7 +65,10 @@ def execute_content_query(
     return content_response
 
 
-def execute_featured_results_query(search_term: str, client, conceptual_search: bool):
+def execute_featured_results_query(
+        search_term: str,
+        client,
+        conceptual_search: bool):
     # Init the SearchEngine
     index = get_index()
 
@@ -92,18 +98,26 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
     client = current_app.es_client
 
     # Perform the search
-    conceptual_search = request.args.get("conceptual", "false").lower() == "true"
+    conceptual_search = get_request_param(
+        request, "conceptual", False, "true").lower() == "true"
 
     # Get page_number/size params
     page_number = int(get_form_param(request, "page", False, 1))
     page_size = int(get_form_param(request, "size", False, 10))
 
     # Execute type counts query
-    type_counts_response = execute_type_counts_query(search_term, client, conceptual_search)
+    type_counts_response = execute_type_counts_query(
+        search_term, client, conceptual_search)
 
     # Perform the content query to populate the SERP
     content_response = execute_content_query(
-        search_term, sort_by, page_number, page_size, client, conceptual_search, **kwargs)
+        search_term,
+        sort_by,
+        page_number,
+        page_size,
+        client,
+        conceptual_search,
+        **kwargs)
 
     featured_result_response = None
     if page_number == 1:
@@ -124,7 +138,7 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
 
 @search_blueprint.route('/ons', methods=["POST"])
 async def search(request: Request):
-    search_term = request.args.get("q", None)
+    search_term = get_request_param(request, "q", True)
     if search_term is not None:
         # Get any content type filters
         type_filters = get_form_param(request, "filter", False, None)

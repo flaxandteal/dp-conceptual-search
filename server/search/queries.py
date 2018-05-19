@@ -45,7 +45,7 @@ def multi_match(field_list, search_term, **kwargs) -> Q.Query:
     return q
 
 
-def content_query(search_term) -> Q.Query:
+def content_query(search_term) -> Q.DisMax:
     """
     Returns the default ONS content query
 

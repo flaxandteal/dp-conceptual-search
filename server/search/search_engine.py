@@ -73,12 +73,13 @@ class BaseSearchEngine(abc.ABC, Search):
 
         return s
 
-    def build_query(self, query: Q.Query, **kwargs):
+    def build_query(self, query: dict, **kwargs):
         s = self._clone()
 
-        query = {
-            "query": query.to_dict()
-        }
+        if "query" not in query:
+            query = {
+                "query": query
+            }
 
         if "aggs" in kwargs:
             query["aggs"] = kwargs.pop("aggs")
@@ -182,8 +183,9 @@ class SearchEngine(BaseSearchEngine):
                 function_scores)
 
         # Prepare and execute
+        query_dict = query.to_dict()
         return self.build_query(
-            query,
+            query_dict,
             current_page=current_page,
             size=size,
             **kwargs)

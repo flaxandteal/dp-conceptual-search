@@ -37,6 +37,7 @@ class ScriptLanguage(Enum):
 def word_vector_keywords_query(
         search_term: str,
         model: SupervisedModel) -> Q.Query:
+
     search_vector = model.get_sentence_vector(search_term)
     additional_keywords, similarity = model.get_labels_for_vector(
         search_vector, 10)
@@ -48,26 +49,15 @@ def word_vector_keywords_query(
 
     terms = Q.Terms(**{fields.keywords.name: additional_keywords})
 
-    # Add query to dis_max
-    keywords_query = Q.Bool(should=[Q.Match(**{fields.title.name: search_term}), terms])
-    return keywords_query
+    return terms
 
 
-def word_vector_function_score(search_term, model: SupervisedModel) -> Q.Query:
-    wv = model.get_sentence_vector(search_term)
+def content_query(search_term, model: SupervisedModel) -> Q.Query:
+    from server.search.queries import content_query
 
-    query = word_vector_keywords_query(search_term, model)
+    query = content_query(search_term)
+    terms_query = word_vector_keywords_query(search_term, model)
 
-    params = {
-        "cosine": True,
-        "field": fields.embedding_vector.name,
-        "vector": wv.tolist()
-    }
-    script_score = {
-        "lang": ScriptLanguage.KNN.value,
-        "params": params,
-        "script": Scripts.BINARY_VECTOR_SCORE.value
-    }
-    q = FunctionScore(query=query, boost_mode="replace", script_score=script_score)
+    query = Q.DisMax(queries=[query, terms_query])
 
-    return q
+    return query

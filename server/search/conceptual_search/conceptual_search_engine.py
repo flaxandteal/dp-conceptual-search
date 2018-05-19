@@ -26,6 +26,7 @@ class ConceptualSearchEngine(SearchEngine):
             body["_source"] = {
                 "excludes": [embedding_vector.name]
             }
+
             response = es.search(
                 index=self._index,
                 doc_type=self._doc_type,
@@ -43,6 +44,53 @@ class ConceptualSearchEngine(SearchEngine):
 
         return self._response
 
+    def build_query(self, query: dict, **kwargs):
+        from server.search.fields import embedding_vector
+        from server.search.conceptual_search.conceptual_search_queries import Scripts, ScriptLanguage
+
+        if "search_term" in kwargs:
+            search_term = kwargs.pop("search_term")
+            window_size = kwargs.pop("window_size", 100)
+            score_mode = kwargs.pop("score_mode", "multiply")
+
+            wv = ConceptualSearchEngine.word_embedding_model.get_sentence_vector(
+                search_term)
+
+            params = {
+                "cosine": True,
+                "field": embedding_vector.name,
+                "vector": wv.tolist()
+            }
+            script_score = {
+                "lang": ScriptLanguage.KNN.value,
+                "params": params,
+                "script": Scripts.BINARY_VECTOR_SCORE.value
+            }
+
+            rescore_query_dict = {
+                "query": query,
+                "rescore": {
+                    "window_size": window_size,
+                    "query": {
+                        "score_mode": score_mode,
+                        "rescore_query": {
+                            "function_score": {
+                                "script_score": script_score
+                            }
+                        },
+                        "query_weight": 0.0,
+                        "rescore_query_weight": 1.0
+                    }
+                }
+            }
+            return super(
+                ConceptualSearchEngine,
+                self).build_query(
+                rescore_query_dict,
+                **kwargs)
+
+        return super(ConceptualSearchEngine, self).build_query(query, **kwargs)
+
     def content_query(
             self,
             search_term: str,
@@ -57,12 +105,25 @@ class ConceptualSearchEngine(SearchEngine):
         :param kwargs:
         :return:
         """
-        from .conceptual_search_queries import word_vector_function_score
+        from .conceptual_search_queries import content_query
 
-        query = word_vector_function_score(search_term, ConceptualSearchEngine.word_embedding_model)
+        # TODO - test with/without script scoring
+        query = content_query(
+            search_term, ConceptualSearchEngine.word_embedding_model)
         # Prepare and execute
+        query_dict = query.to_dict()
         return self.build_query(
-            query,
+            query_dict,
+            search_term=search_term,
             current_page=current_page,
             size=size,
             **kwargs)
+
+    def featured_result_query(self, search_term):
+        """
+        Builds and executes the standard ONS featured result query (from babbage)
+        :param search_term:
+        :return:
+        """
+        return super(ConceptualSearchEngine,
+                     self).featured_result_query(search_term)
