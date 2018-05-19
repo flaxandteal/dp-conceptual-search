@@ -52,6 +52,8 @@ class ConceptualSearchEngine(SearchEngine):
             search_term = kwargs.pop("search_term")
             window_size = kwargs.pop("window_size", 100)
             score_mode = kwargs.pop("score_mode", "multiply")
+            query_weight = kwargs.pop("query_weight", 0.0)
+            rescore_query_weight = kwargs.pop("rescore_query_weight", 1.0)
 
             wv = ConceptualSearchEngine.word_embedding_model.get_sentence_vector(
                 search_term)
@@ -75,14 +77,16 @@ class ConceptualSearchEngine(SearchEngine):
                         "score_mode": score_mode,
                         "rescore_query": {
                             "function_score": {
+                                # "boost_mode": "replace",
                                 "script_score": script_score
                             }
                         },
-                        "query_weight": 0.0,
-                        "rescore_query_weight": 1.0
+                        "query_weight": query_weight,
+                        "rescore_query_weight": rescore_query_weight
                     }
                 }
             }
+
             return super(
                 ConceptualSearchEngine,
                 self).build_query(
