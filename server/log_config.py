@@ -22,6 +22,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
             log_record['level'] = log_record['level'].upper()
         else:
             log_record['level'] = record.levelname
+        log_record['namespace'] = 'dp-conceptual-search'
 
         if log_record.get('status') and not isinstance(
                 log_record['status'], str):
