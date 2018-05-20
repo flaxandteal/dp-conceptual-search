@@ -136,8 +136,13 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
     return response
 
 
-@search_blueprint.route('/ons', methods=["POST"])
+@search_blueprint.route('/ons', methods=["GET", "POST"])
 async def search(request: Request):
+    """
+    TODO - Implement MultiSearch API
+    :param request:
+    :return:
+    """
     search_term = get_request_param(request, "q", True)
     if search_term is not None:
         # Get any content type filters

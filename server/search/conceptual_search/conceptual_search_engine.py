@@ -8,42 +8,6 @@ class ConceptualSearchEngine(SearchEngine):
     def __init__(self, *args, **kwargs):
         super(ConceptualSearchEngine, self).__init__(*args, **kwargs)
 
-    async def execute(self, ignore_cache=False):
-        """
-        Execute the search and return an instance of ``Response`` wrapping all
-        the data.
-
-        :arg response_class: optional subclass of ``Response`` to use instead.
-        :param ignore_cache: optional argument to ignore response cache and re-execute the query
-        """
-        import inspect
-        from elasticsearch_dsl.connections import connections
-        from server.search.fields import embedding_vector
-
-        if ignore_cache or not hasattr(self, '_response'):
-            es = connections.get_connection(self._using)
-            body = self.to_dict()
-            body["_source"] = {
-                "excludes": [embedding_vector.name]
-            }
-
-            response = es.search(
-                index=self._index,
-                doc_type=self._doc_type,
-                body=body,
-                **self._params
-            )
-
-            if inspect.isawaitable(response):
-                response = await response
-
-            self._response = self._response_class(
-                self,
-                response
-            )
-
-        return self._response
-
     def build_query(self, query: dict, **kwargs):
         from server.search.fields import embedding_vector
         from server.search.conceptual_search.conceptual_search_queries import Scripts, ScriptLanguage
@@ -109,6 +73,7 @@ class ConceptualSearchEngine(SearchEngine):
         :param kwargs:
         :return:
         """
+        from server.search.fields import embedding_vector
         from .conceptual_search_queries import content_query
 
         # TODO - test with/without script scoring
@@ -116,12 +81,16 @@ class ConceptualSearchEngine(SearchEngine):
             search_term, ConceptualSearchEngine.word_embedding_model)
         # Prepare and execute
         query_dict = query.to_dict()
-        return self.build_query(
+
+        s = self.build_query(
             query_dict,
             search_term=search_term,
             current_page=current_page,
             size=size,
             **kwargs)
+
+        s = s.source(exclude=[embedding_vector.name]) # Exclude embedding vector for source
+        return s
 
     def featured_result_query(self, search_term):
         """
