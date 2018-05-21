@@ -9,13 +9,13 @@ def test():
     print(
         check_output(['nosetests',
                       '-v',
-                      '-s',])
-                      # '--with-coverage',
-                      # '--cover-package=server',
-                      # '--cover-branches',
-                      # '--cover-erase',
-                      # '--cover-html',
-                      # '--cover-html-dir=cover'])
+                      '-s', ])
+        # '--with-coverage',
+        # '--cover-package=server',
+        # '--cover-branches',
+        # '--cover-erase',
+        # '--cover-html',
+        # '--cover-html-dir=cover'])
     )
 
 

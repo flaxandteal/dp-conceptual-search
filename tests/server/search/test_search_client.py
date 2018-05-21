@@ -16,6 +16,42 @@ def get_random_id(size=DEFAULT_ELASTICSEARCH_ID_SIZE):
                    for _ in range(size))
 
 
+class FakeTransport(object):
+    def __init__(self, default_mimetype='application/json'):
+        from elasticsearch.serializer import JSONSerializer, Deserializer, DEFAULT_SERIALIZERS
+
+        _serializers = DEFAULT_SERIALIZERS.copy()
+
+        self.serializer = JSONSerializer()
+        self.deserializer = Deserializer(_serializers, default_mimetype)
+
+    def perform_request(self, *args, **kwargs):
+        return {
+            "_index": "ons1525855224872",
+            "_type": "test",
+            "_id": "/economy/inflationandpriceindices",
+            "_score": 0.021380631,
+            "_source": {
+                "uri": "/economy/inflationandpriceindices",
+                "type": "product_page",
+                "description": {
+                    "title": "Inflation and price indices",
+                    "summary": "The rate of increase in prices for goods and services. Measures of inflation and prices include consumer price inflation, producer price inflation, the house price index, index of private housing rental prices, and construction output price indices. ",
+                    "keywords": [
+                        "Consumer Price Index,Retail Price Index,Producer Price Index,Services Producer Price Indices,Index of Private Housing Rental Prices,CPIH,RPIJ"],
+                    "metaDescription": "The rate of increase in prices for goods and services. Measures of inflation and prices include consumer price inflation, producer price inflation, the house price index, index of private housing rental prices, and construction output price indices. ",
+                    "unit": "",
+                    "preUnit": "",
+                    "source": ""
+                },
+                "searchBoost": []
+            },
+            "highlight": {
+                "description.keywords": [" Price Index,<strong>Retail Price Index</strong>"]
+            }
+        }
+
+
 class FakeElasticsearch(Elasticsearch):
     __documents_dict = None
 
@@ -48,6 +84,53 @@ class FakeElasticsearch(Elasticsearch):
                 }
             ]
         }
+
+        self._aggregations = {
+            "docCounts": {
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0,
+                "buckets": [
+                    {
+                        "key": "timeseries",
+                        "doc_count": 360
+                    },
+                    {
+                        "key": "article_download",
+                        "doc_count": 21
+                    },
+                    {
+                        "key": "bulletin",
+                        "doc_count": 16
+                    },
+                    {
+                        "key": "static_methodology_download",
+                        "doc_count": 4
+                    },
+                    {
+                        "key": "article",
+                        "doc_count": 3
+                    },
+                    {
+                        "key": "dataset_landing_page",
+                        "doc_count": 2
+                    },
+                    {
+                        "key": "static_foi",
+                        "doc_count": 1
+                    },
+                    {
+                        "key": "static_methodology",
+                        "doc_count": 1
+                    },
+                    {
+                        "key": "static_qmi",
+                        "doc_count": 1
+                    }
+                ]
+            }
+        }
+
+        self.transport = FakeTransport()
 
     @query_params()
     def ping(self, params=None):
@@ -305,6 +388,54 @@ class FakeElasticsearch(Elasticsearch):
                 hits.append(match)
             result['hits']['hits'] = hits
 
+        return result
+
+    @query_params(
+        '_source',
+        '_source_exclude',
+        '_source_include',
+        'allow_no_indices',
+        'analyze_wildcard',
+        'analyzer',
+        'default_operator',
+        'df',
+        'expand_wildcards',
+        'explain',
+        'fielddata_fields',
+        'fields',
+        'from_',
+        'ignore_unavailable',
+        'lenient',
+        'lowercase_expanded_terms',
+        'preference',
+        'q',
+        'request_cache',
+        'routing',
+        'scroll',
+        'search_type',
+        'size',
+        'sort',
+        'stats',
+        'suggest_field',
+        'suggest_mode',
+        'suggest_size',
+        'suggest_text',
+        'terminate_after',
+        'timeout',
+        'track_scores',
+        'version')
+    def msearch(self, **kwargs):
+        result = {"responses": []}
+
+        if "body" in kwargs and isinstance(kwargs["body"], list):
+            body = kwargs.pop("body")
+            for i in range(len(body)):
+                if isinstance(body[i], dict) and "query" in body[i]:
+                    query = body[i]
+                    search_result = self.search(body=body, **kwargs)
+                    if "aggs" in query:
+                        search_result["aggregations"] = self._aggregations
+                    result["responses"].append(search_result)
         return result
 
     @query_params('consistency', 'parent', 'refresh', 'replication', 'routing',

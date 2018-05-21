@@ -5,7 +5,7 @@ def create_app():
     import os
     import asyncio
     import uvloop
-    
+
     from sanic import Sanic
     from server.healthcheck.routes import health_check_blueprint
     from server.search.routes import search_blueprint
@@ -28,7 +28,8 @@ def create_app():
 
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
         from sanic_prometheus import monitor
-        monitor(app).expose_endpoint()  # adds /metrics endpoint to your Sanic server
+        # adds /metrics endpoint to your Sanic server
+        monitor(app).expose_endpoint()
 
     # Setup custom error handler
     app.error_handler = CustomHandler()
