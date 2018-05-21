@@ -3,12 +3,12 @@ from sanic.request import Request
 
 def create_app():
     import os
+    import asyncio
+    import uvloop
+    
     from sanic import Sanic
     from server.healthcheck.routes import health_check_blueprint
     from server.search.routes import search_blueprint
-
-    import asyncio
-    import uvloop
 
     from .log_config import default_log_config
     from .error_handlers import CustomHandler
