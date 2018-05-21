@@ -1,4 +1,5 @@
 from sanic import Blueprint
+from sanic.request import Request
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
@@ -10,7 +11,7 @@ from ..requests import get_form_param
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-async def execute_type_counts_query(search_term, client):
+def execute_type_counts_query(search_term: str, client):
     # Init SearchEngine
     index = get_index()
     s = SearchEngine(using=client, index=index)
@@ -19,27 +20,31 @@ async def execute_type_counts_query(search_term, client):
     s = s.type_counts_query(search_term)
 
     # Execute
-    type_counts_response = await s.execute()
+    type_counts_response = s.execute()
 
     return type_counts_response
 
 
-async def execute_content_query(search_term, sort_by, page_number, page_size, client, **kwargs):
+def execute_content_query(search_term: str, sort_by: SortFields, page_number: int, page_size: int, client, **kwargs):
     # Init SearchEngine
     index = get_index()
     s = SearchEngine(using=client, index=index)
 
     # Define the query with sort and paginator
     s = s.content_query(
-        search_term, sort_by=sort_by, current_page=page_number, size=page_size, **kwargs)
+        search_term,
+        sort_by=sort_by,
+        current_page=page_number,
+        size=page_size,
+        **kwargs)
 
     # Execute the query
-    content_response = await s.execute()
+    content_response = s.execute()
 
     return content_response
 
 
-async def execute_featured_results_query(search_term, client):
+def execute_featured_results_query(search_term: str, client):
     # Init the SearchEngine
     index = get_index()
     s = SearchEngine(using=client, index=index)
@@ -48,12 +53,12 @@ async def execute_featured_results_query(search_term, client):
     s = s.featured_result_query(search_term)
 
     # Execute the query
-    featured_result_response = await s.execute()
+    featured_result_response = s.execute()
 
     return featured_result_response
 
 
-async def execute_search(request, search_term, sort_by, **kwargs):
+async def execute_search(request: Request, search_term: str, sort_by: SortFields, **kwargs) -> dict:
     """
     Simple search API to query Elasticsearch
     """
@@ -73,24 +78,27 @@ async def execute_search(request, search_term, sort_by, **kwargs):
     type_counts_response = execute_type_counts_query(search_term, client)
 
     # Perform the content query to populate the SERP
-    content_response = execute_content_query(search_term, sort_by, page_number, page_size, client, **kwargs)
+    content_response = execute_content_query(
+        search_term, sort_by, page_number, page_size, client, **kwargs)
 
     featured_result_response = None
     if page_number == 1:
-        featured_result_response = await execute_featured_results_query(search_term, client)
+        featured_result_response = execute_featured_results_query(search_term, client)
 
     # Return the hits as JSON
-    return hits_to_json(
-        await content_response,
-        await type_counts_response,
+    response = await hits_to_json(
+        content_response,
+        type_counts_response,
         page_number,
         page_size,
         sort_by.name,
         featured_result_response=featured_result_response)
+    
+    return response
 
 
 @search_blueprint.route('/ons', methods=["POST"])
-async def search(request):
+async def search(request: Request):
     search_term = request.args.get("q", None)
     if search_term is not None:
         # Get any content type filters

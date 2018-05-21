@@ -88,7 +88,11 @@ class SearchEngine(Search_api):
         type_filters = kwargs.get("type_filters", None)
 
         if type_filters is not None:
-            if isinstance(type_filters, str) or hasattr(type_filters, "__iter__") is False:
+            if isinstance(
+                    type_filters,
+                    str) or hasattr(
+                    type_filters,
+                    "__iter__") is False:
                 type_filters = [type_filters]
             s = s.filter("terms", type=type_filters)
 
