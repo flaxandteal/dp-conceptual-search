@@ -15,9 +15,9 @@ class ConceptualSearchEngine(SearchEngine):
         if "search_term" in kwargs:
             search_term = kwargs.pop("search_term")
             window_size = kwargs.pop("window_size", 100)
-            score_mode = kwargs.pop("score_mode", "multiply")
-            query_weight = kwargs.pop("query_weight", 0.0)
-            rescore_query_weight = kwargs.pop("rescore_query_weight", 1.0)
+            score_mode = kwargs.pop("score_mode", "max")
+            query_weight = kwargs.pop("query_weight", 1.0)
+            rescore_query_weight = kwargs.pop("rescore_query_weight", 10.0)
 
             wv = ConceptualSearchEngine.word_embedding_model.get_sentence_vector(
                 search_term)
@@ -41,7 +41,7 @@ class ConceptualSearchEngine(SearchEngine):
                         "score_mode": score_mode,
                         "rescore_query": {
                             "function_score": {
-                                # "boost_mode": "replace",
+                                "boost_mode": "replace",
                                 "script_score": script_score
                             }
                         },
@@ -66,7 +66,7 @@ class ConceptualSearchEngine(SearchEngine):
             size: int = 10,
             **kwargs):
         """
-        This is the only function we have to overwrite from SearchEngine!
+        Overwrite SearchEngine content query to use a vector rescore.
         :param search_term:
         :param current_page:
         :param size:
@@ -74,23 +74,40 @@ class ConceptualSearchEngine(SearchEngine):
         :return:
         """
         from server.search.fields import embedding_vector
+        from server.search.sort_by import SortFields
+
         from .conceptual_search_queries import content_query
 
-        # TODO - test with/without script scoring
-        query = content_query(
-            search_term, ConceptualSearchEngine.word_embedding_model)
-        # Prepare and execute
-        query_dict = query.to_dict()
+        # We only do this for relevancy sorting
+        sort_by = kwargs.pop("sort_by", SortFields.relevance)
+        if isinstance(sort_by, SortFields) and sort_by == SortFields.relevance:
 
-        s = self.build_query(
-            query_dict,
-            search_term=search_term,
-            current_page=current_page,
-            size=size,
-            **kwargs)
+            # TODO - test with/without script scoring
+            query = content_query(
+                search_term, ConceptualSearchEngine.word_embedding_model)
+            # Prepare and execute
+            query_dict = query.to_dict()
 
-        s = s.source(exclude=[embedding_vector.name]) # Exclude embedding vector for source
-        return s
+            s = self.build_query(
+                query_dict,
+                search_term=search_term,
+                current_page=current_page,
+                size=size,
+                **kwargs)
+
+            # Exclude embedding vector for source
+            s = s.source(exclude=[embedding_vector.name])
+            return s
+        else:
+            # Execute the regular content query with sorting
+            return super(
+                ConceptualSearchEngine,
+                self).content_query(
+                search_term,
+                current_page=current_page,
+                size=size,
+                sort_by=sort_by,
+                **kwargs)
 
     def featured_result_query(self, search_term):
         """
