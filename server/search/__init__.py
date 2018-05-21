@@ -2,8 +2,6 @@ from .hit import Hit
 from .sort_by import SortOrder
 from .paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
 
-from elasticsearch_dsl.response import Response
-
 
 def aggs_to_json(aggregations: dict, key: str) -> (dict, int):
     total = 0
@@ -81,67 +79,58 @@ def marshall_hits(hits) -> list:
 
 
 async def hits_to_json(
-        content_response: Response,
-        type_counts_response: Response,
+        responses,
         page_number: int,
         page_size: int,
-        sort_by: str,
-        featured_result_response: Response=None) -> dict:
+        sort_by: str) -> dict:
     """
     Replicates the JSON response of Babbage
-    :param content_response:
-    :param type_counts_response:
-    :param sort_by:
-    :param featured_result_response:
     :return:
     """
     import inspect
 
-    # Await content response
-    if inspect.isawaitable(content_response):
-        content_response = await content_response
+    if inspect.isawaitable(responses):
+        responses = await responses
 
-    # Init Paginator
-    paginator = Paginator(
-        content_response.hits.total,
-        MAX_VISIBLE_PAGINATOR_LINK,
-        page_number,
-        page_size)
+    result = {}
+    for response in responses:
+        if hasattr(
+                response,
+                "aggregations") and hasattr(
+                response.aggregations,
+                "docCounts"):
+            # Type counts query
+            aggregations, total_hits = aggs_to_json(
+                response.aggregations, "docCounts")
 
-    # Await type counts response
-    if inspect.isawaitable(type_counts_response):
-        type_counts_response = await type_counts_response
+            result["counts"] = {
+                "numberOfResults": response.hits.total,
+                "docCounts": aggregations
+            }
+        elif hasattr(response._search, "query_size") and response._search.query_size == 1:
+            # Featured result query
+            featured_result_hits = [h.to_dict()
+                                    for h in response.hits]
 
-    # Format the output
-    aggregations, total_hits = aggs_to_json(
-        type_counts_response.aggregations, "docCounts")
+            result["featuredResult"] = {
+                "numberOfResults": len(featured_result_hits),
+                "results": featured_result_hits
+            }
+        else:
+            # Content query - Init Paginator
+            paginator = Paginator(
+                response.hits.total,
+                MAX_VISIBLE_PAGINATOR_LINK,
+                page_number,
+                page_size)
 
-    # Await featured result
-    featured_result_hits = []
-    if featured_result_response is not None:
-        if inspect.isawaitable(featured_result_response):
-            featured_result_response = await featured_result_response
-        featured_result_hits = [h.to_dict()
-                                for h in featured_result_response.hits]
+            result["result"] = {
+                "numberOfResults": response.hits.total,
+                "took": response.took,
+                "results": marshall_hits(response.hits),
+                "docCounts": {},
+                "paginator": paginator.to_dict(),
+                "sortBy": sort_by
+            }
 
-    response = {
-        "result": {
-            "numberOfResults": content_response.hits.total,
-            "took": content_response.took,
-            "results": marshall_hits(content_response.hits),
-            "docCounts": {},
-            "paginator": paginator.to_dict(),
-            "sortBy": sort_by
-
-        },
-        "counts": {
-            "numberOfResults": content_response.hits.total,
-            "docCounts": aggregations
-        },
-        "featuredResult": {
-            "numberOfResults": len(featured_result_hits),
-            "results": featured_result_hits
-        },
-    }
-
-    return response
+    return result

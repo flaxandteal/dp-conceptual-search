@@ -15,8 +15,12 @@ def get_index():
 
 
 class BaseSearchEngine(abc.ABC, Search):
-    def __init__(self, *args, **kwargs):
-        super(BaseSearchEngine, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(BaseSearchEngine, self).__init__(**kwargs)
+
+    @property
+    def query_size(self):
+        return self.to_dict().get("size", 0)
 
     def highlight_fields(self):
         """
@@ -25,17 +29,13 @@ class BaseSearchEngine(abc.ABC, Search):
         """
         from server.search.fields import highlight_fields
 
-        s = self._clone()
-
         field_names = [field.name for field in highlight_fields]
 
-        s = s.highlight(
+        return self.highlight(
             *field_names,
             fragment_size=0,
             pre_tags=["<strong>"],
             post_tags=["</strong>"])
-
-        return s
 
     def search_type(self, search_type: SearchType):
         """
@@ -43,10 +43,8 @@ class BaseSearchEngine(abc.ABC, Search):
         :param search_type:
         :return:
         """
-        s = self._clone()
-        s = s.params(search_type=search_type)
 
-        return s
+        return self.params(search_type=search_type.value)
 
     def sort_by(self, sort_by: SortFields):
         """
@@ -56,25 +54,18 @@ class BaseSearchEngine(abc.ABC, Search):
         """
         from server.search.sort_by import query_sort
 
-        s = self._clone()
-        s = s.sort(
+        return self.sort(
             *query_sort(sort_by)
         )
 
-        return s
-
     def type_filter(self, type_filters):
-        s = self._clone()
 
         if not isinstance(type_filters, list):
             type_filters = [type_filters]
-        s = s.filter("terms", type=type_filters)
 
-        return s
+        return self.filter("terms", type=type_filters)
 
     def build_query(self, query: dict, **kwargs):
-        s = self._clone()
-
         if "query" not in query:
             query = {
                 "query": query
@@ -93,7 +84,9 @@ class BaseSearchEngine(abc.ABC, Search):
             query["size"] = size
 
         # Update query from dict
-        s.update_from_dict(query)
+        self.update_from_dict(query)
+
+        s = self._clone()
 
         # Add type filters?
         type_filters = kwargs.get("type_filters", None)
@@ -150,8 +143,8 @@ class BaseSearchEngine(abc.ABC, Search):
 
 class SearchEngine(BaseSearchEngine):
 
-    def __init__(self, *args, **kwargs):
-        super(SearchEngine, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(SearchEngine, self).__init__(**kwargs)
 
     def content_query(
             self,
@@ -210,8 +203,10 @@ class SearchEngine(BaseSearchEngine):
         from .content_types import home_page_census, product_page
 
         type_filters = [product_page.name, home_page_census.name]
-        return self.content_query(
+
+        s = self.content_query(
             search_term,
             function_scores=None,
             type_filters=type_filters,
             size=1)
+        return s
