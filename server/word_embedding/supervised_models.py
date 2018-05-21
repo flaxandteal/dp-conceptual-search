@@ -155,9 +155,9 @@ def init():
         "./supervised_models")
     for model_name in SupervisedModels:
         fname = "%s/%s" % (supervised_model_dir, model_name)
-        model = fastText.load_model(fname)
-
-        _models[model_name] = SupervisedModel(model)
+        if os.path.isfile(fname):
+            model = fastText.load_model(fname)
+            _models[model_name] = SupervisedModel(model)
 
 
 def load_model(model_name: SupervisedModels) -> SupervisedModel:
