@@ -10,4 +10,5 @@ test: build
 	python manager.py test
 
 fastText:
+	pip install Cython pybind11
 	cd lib/fastText && python setup.py install
