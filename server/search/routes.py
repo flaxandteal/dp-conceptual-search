@@ -3,65 +3,22 @@ from sanic.request import Request
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
+from server.requests import get_request_param, get_form_param
+
 from . import hits_to_json
 from .sort_by import SortFields
-from .search_engine import SearchEngine, get_index
-from ..requests import get_form_param
+from .search_engine import get_index
 
 search_blueprint = Blueprint('search', url_prefix='/search')
-
-
-def execute_type_counts_query(search_term: str, client):
-    # Init SearchEngine
-    index = get_index()
-    s = SearchEngine(using=client, index=index)
-
-    # Define type counts (aggregations) query
-    s = s.type_counts_query(search_term)
-
-    # Execute
-    type_counts_response = s.execute()
-
-    return type_counts_response
-
-
-def execute_content_query(search_term: str, sort_by: SortFields, page_number: int, page_size: int, client, **kwargs):
-    # Init SearchEngine
-    index = get_index()
-    s = SearchEngine(using=client, index=index)
-
-    # Define the query with sort and paginator
-    s = s.content_query(
-        search_term,
-        sort_by=sort_by,
-        current_page=page_number,
-        size=page_size,
-        **kwargs)
-
-    # Execute the query
-    content_response = s.execute()
-
-    return content_response
-
-
-def execute_featured_results_query(search_term: str, client):
-    # Init the SearchEngine
-    index = get_index()
-    s = SearchEngine(using=client, index=index)
-
-    # Define the query
-    s = s.featured_result_query(search_term)
-
-    # Execute the query
-    featured_result_response = s.execute()
-
-    return featured_result_response
 
 
 async def execute_search(request: Request, search_term: str, sort_by: SortFields, **kwargs) -> dict:
     """
     Simple search API to query Elasticsearch
     """
+    from .search_engine import SearchEngine
+    from server.search.multi_search import AsyncMultiSearch
+
     # Get the event loop
     current_app = request.app
 
@@ -74,32 +31,43 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
     page_number = int(get_form_param(request, "page", False, 1))
     page_size = int(get_form_param(request, "size", False, 10))
 
-    # Execute type counts query
-    type_counts_response = execute_type_counts_query(search_term, client)
+    type_counts_query = SearchEngine().type_counts_query(search_term)
 
-    # Perform the content query to populate the SERP
-    content_response = execute_content_query(
-        search_term, sort_by, page_number, page_size, client, **kwargs)
+    content_query = SearchEngine().content_query(
+        search_term,
+        sort_by=sort_by,
+        current_page=page_number,
+        size=page_size,
+        **kwargs)
 
-    featured_result_response = None
-    if page_number == 1:
-        featured_result_response = execute_featured_results_query(search_term, client)
+    featured_result_query = SearchEngine().featured_result_query(search_term)
+
+    # Create multi-search request
+    ms = AsyncMultiSearch(using=client, index=get_index())
+    ms = ms.add(type_counts_query)
+    ms = ms.add(content_query)
+    ms = ms.add(featured_result_query)
+
+    responses = ms.execute()
 
     # Return the hits as JSON
     response = await hits_to_json(
-        content_response,
-        type_counts_response,
+        responses,
         page_number,
         page_size,
-        sort_by.name,
-        featured_result_response=featured_result_response)
-    
+        sort_by.name)
+
     return response
 
 
-@search_blueprint.route('/ons', methods=["POST"])
+@search_blueprint.route('/ons', methods=["GET", "POST"])
 async def search(request: Request):
-    search_term = request.args.get("q", None)
+    """
+    TODO - Implement MultiSearch API
+    :param request:
+    :return:
+    """
+    search_term = request.args.get("q")
     if search_term is not None:
         # Get any content type filters
         type_filters = get_form_param(request, "filter", False, None)
