@@ -10,7 +10,7 @@ class ConceptualSearchEngine(SearchEngine):
 
     def build_query(self, query: dict, **kwargs):
         from server.search.fields import embedding_vector
-        from server.search.conceptual_search.conceptual_search_queries import Scripts, ScriptLanguage
+        from server.search.conceptual_search.conceptual_search_queries import vector_script_score
 
         if "search_term" in kwargs:
             search_term = kwargs.pop("search_term")
@@ -22,16 +22,7 @@ class ConceptualSearchEngine(SearchEngine):
             wv = ConceptualSearchEngine.word_embedding_model.get_sentence_vector(
                 search_term)
 
-            params = {
-                "cosine": True,
-                "field": embedding_vector.name,
-                "vector": wv.tolist()
-            }
-            script_score = {
-                "lang": ScriptLanguage.KNN.value,
-                "params": params,
-                "script": Scripts.BINARY_VECTOR_SCORE.value
-            }
+            script_score = vector_script_score(embedding_vector, wv)
 
             rescore_query_dict = {
                 "query": query,

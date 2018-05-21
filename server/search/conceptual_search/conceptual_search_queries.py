@@ -1,17 +1,25 @@
 from elasticsearch_dsl import query as Q
 
 from enum import Enum
+from numpy import ndarray
 
 from server.search import fields
 from server.word_embedding.supervised_models import SupervisedModel
 
 
-class ScriptScore(Q.Query):
-    name = "script_score"
+def vector_script_score(field: fields.Field, vector: ndarray) -> dict:
+    params = {
+        "cosine": True,
+        "field": field.name,
+        "vector": vector.tolist()
+    }
+    script_score = {
+        "lang": ScriptLanguage.KNN.value,
+        "params": params,
+        "script": Scripts.BINARY_VECTOR_SCORE.value
+    }
 
-
-class FunctionScore(Q.Query):
-    name = "function_score"
+    return script_score
 
 
 class Scripts(Enum):

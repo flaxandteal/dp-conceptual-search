@@ -19,7 +19,7 @@ def init_default_app():
     app = Sanic(log_config=default_log_config)
     app.config.from_pyfile('config_%s.py' % config_name)
 
-    # Trigger loading of models - TODO imporove this
+    # Trigger loading of models - TODO improve this
     from .word_embedding import supervised_models
     supervised_models.init()
 

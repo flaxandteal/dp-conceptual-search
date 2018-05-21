@@ -2,7 +2,6 @@ import abc
 import os
 
 from elasticsearch_dsl import Search
-from elasticsearch_dsl import query as Q
 
 from server.search.search_type import SearchType
 from server.search.sort_by import SortFields
