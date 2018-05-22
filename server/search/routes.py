@@ -8,7 +8,6 @@ from server.requests import get_form_param
 from server.search import hits_to_json
 from server.search.sort_by import SortFields
 from server.search.search_engine import get_index, BaseSearchEngine, SearchEngine
-from server.search.conceptual_search.conceptual_search_engine import ConceptualSearchEngine
 
 from typing import ClassVar
 
@@ -79,6 +78,8 @@ async def conceptual_search(request: Request):
     """
     conceptual_search_enabled = request.app.config.get("CONCEPTUAL_SEARCH_ENABLED", False)
     if conceptual_search_enabled:
+        from server.search.conceptual_search.conceptual_search_engine import ConceptualSearchEngine
+        
         search_term = request.args.get("q")
         if search_term is not None:
             response = await execute_search(request, ConceptualSearchEngine, search_term)
