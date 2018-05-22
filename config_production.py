@@ -1,3 +1,4 @@
-ENABLE_PROMETHEUS_METRICS = False  # Update when properly tested
-CONCEPTUAL_SEARCH = True
+from config_core import *
+
+ENABLE_PROMETHEUS_METRICS = False
 TESTING = False

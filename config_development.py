@@ -1,3 +1,4 @@
+from config_core import *
+
 ENABLE_PROMETHEUS_METRICS = True
-CONCEPTUAL_SEARCH = True
 TESTING = False
