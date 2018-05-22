@@ -3,21 +3,17 @@ from .sort_by import SortOrder
 from .paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
 
 
-def aggs_to_json(aggregations: dict, key: str) -> (dict, int):
+def buckets_to_json(buckets) -> (dict, int):
     total = 0
-    if key in aggregations:
-        aggs = aggregations.__dict__["_d_"][key]
-        buckets = aggs["buckets"]
 
-        result = {}
-        for item in buckets:
-            item_key = item["key"]
-            count = item["doc_count"]
-            result[item_key] = count
-            total += count
+    result = {}
+    for item in buckets:
+        item_key = item["key"]
+        count = item["doc_count"]
+        result[item_key] = count
+        total += count
 
-        return result, total
-    return {}, total
+    return result, total
 
 
 def get_var(input_dict: dict, accessor_string: str):
@@ -99,14 +95,16 @@ async def hits_to_json(
                 "aggregations") and hasattr(
                 response.aggregations,
                 "docCounts"):
-            # Type counts query
-            aggregations, total_hits = aggs_to_json(
-                response.aggregations, "docCounts")
+            aggs = response.aggregations.__dict__["_d_"]["docCounts"]
+            buckets = aggs["buckets"]
+            if len(buckets) > 0:
+                # Type counts query
+                aggregations, total_hits = buckets_to_json(buckets)
 
-            result["counts"] = {
-                "numberOfResults": response.hits.total,
-                "docCounts": aggregations
-            }
+                result["counts"] = {
+                    "numberOfResults": response.hits.total,
+                    "docCounts": aggregations
+                }
         elif hasattr(response._search, "query_size") and response._search.query_size == 1:
             # Featured result query
             featured_result_hits = [h.to_dict()

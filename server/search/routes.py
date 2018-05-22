@@ -3,7 +3,7 @@ from sanic.request import Request
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
-from server.requests import get_request_param, get_form_param
+from server.requests import get_form_param
 
 from . import hits_to_json
 from .sort_by import SortFields
@@ -17,19 +17,18 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
     Simple search API to query Elasticsearch
     """
     from server.search.multi_search import AsyncMultiSearch
+
     # Get the event loop
     current_app = request.app
 
     # Get the Elasticsearch client
     client = current_app.es_client
 
-    # Perform the search
-    conceptual_search = get_request_param(
-        request, "conceptual", False, "true").lower() == "true"
+    conceptual_search = current_app.config.get("CONCEPTUAL_SEARCH", False)
     if conceptual_search:
-        from .conceptual_search.conceptual_search_engine import ConceptualSearchEngine as SearchEngine
+        from server.search.conceptual_search.conceptual_search_engine import ConceptualSearchEngine as SearchEngine
     else:
-        from .search_engine import SearchEngine
+        from server.search.search_engine import SearchEngine
 
     # Get page_number/size params
     page_number = int(get_form_param(request, "page", False, 1))
@@ -67,7 +66,7 @@ async def execute_search(request: Request, search_term: str, sort_by: SortFields
 @search_blueprint.route('/ons', methods=["GET", "POST"])
 async def search(request: Request):
     """
-    TODO - Implement MultiSearch API
+
     :param request:
     :return:
     """
