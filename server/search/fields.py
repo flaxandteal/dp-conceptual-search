@@ -39,6 +39,7 @@ latestRelease = Field("description.latestRelease")
 published = Field("description.published")
 cancelled = Field("description.cancelled")
 topics = Field("topics")
+embedding_vector = Field("embedding_vector")
 
 field_list = [
     uri,

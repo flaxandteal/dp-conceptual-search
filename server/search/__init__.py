@@ -35,7 +35,7 @@ def _highlight(highlighted_text: str, val: str) -> str:
     return val
 
 
-def marshall_hits(hits: list) -> list:
+def marshall_hits(hits) -> list:
     """
     Substitues highlights into fields and returns valid JSON
     :param hits:

@@ -1,30 +1,27 @@
+from sanic import Sanic
 from sanic.request import Request
 
 
-def create_app():
+def init_default_app():
     import os
     import asyncio
     import uvloop
-
-    from sanic import Sanic
-    from server.healthcheck.routes import health_check_blueprint
-    from server.search.routes import search_blueprint
 
     from .log_config import default_log_config
     from .error_handlers import CustomHandler
     from .sanic_es import SanicElasticsearch
 
-    config_name = os.environ.get('SEARCH_CONFIG', 'development')
-
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
+    config_name = os.environ.get('SEARCH_CONFIG', 'development')
 
     # Initialise app
     app = Sanic(log_config=default_log_config)
     app.config.from_pyfile('config_%s.py' % config_name)
 
-    # Register blueprint(s)
-    app.blueprint(search_blueprint)
-    app.blueprint(health_check_blueprint)
+    # Trigger loading of models - TODO improve this
+    from .word_embedding import supervised_models
+    supervised_models.init()
 
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
         from sanic_prometheus import monitor
@@ -36,6 +33,23 @@ def create_app():
 
     # Initialise Elasticsearch client
     SanicElasticsearch(app)
+
+    register_blueprints(app)
+    return app
+
+
+def register_blueprints(app: Sanic):
+    # Register blueprint(s)
+    from server.search.routes import search_blueprint
+    from server.healthcheck.routes import health_check_blueprint
+    app.blueprint(search_blueprint)
+    app.blueprint(health_check_blueprint)
+
+
+def create_app():
+    app = init_default_app()
+
+    # Setup middleware
 
     @app.middleware('request')
     async def hash_ga_ids(request: Request):

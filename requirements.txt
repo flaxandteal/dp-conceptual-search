@@ -1,7 +1,12 @@
+Cython==0.27.3
+pybind11==2.2.3
+elasticsearch_dsl==6.1.0
+setuptools==38.4.0
 sanic==0.7.0
 elasticsearch==6.2.0
 elasticsearch_async==6.0.0
-elasticsearch_dsl==6.1.0
+numpy==1.14.0
 uvloop==0.9.1
 python_json_logger==0.1.8
-sanic_prometheus==0.1.4
+sanic_prometheus==0.1.5
+unicode==2.6

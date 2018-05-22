@@ -140,6 +140,23 @@ class BaseSearchEngine(abc.ABC, Search):
 
         return self._response
 
+    @abc.abstractmethod
+    def content_query(
+            self,
+            search_term: str,
+            current_page: int = 1,
+            size: int = 10,
+            **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def type_counts_query(self, search_term, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def featured_result_query(self, search_term):
+        pass
+
 
 class SearchEngine(BaseSearchEngine):
 
