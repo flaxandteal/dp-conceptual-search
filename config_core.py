@@ -1,3 +1,3 @@
 import os
 
-CONCEPTUAL_SEARCH = os.getenv("CONCEPTUAL_SEARCH_ENABLED", "False").lower() == "true"
+CONCEPTUAL_SEARCH_ENABLED = os.getenv("CONCEPTUAL_SEARCH_ENABLED", "False").lower() == "true"
