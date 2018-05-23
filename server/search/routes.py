@@ -21,7 +21,9 @@ async def execute_search(request: Request, search_engine_cls: ClassVar, search_t
     from server.search.multi_search import AsyncMultiSearch
 
     if not issubclass(search_engine_cls, BaseSearchEngine):
-        raise InvalidUsage("expected instance of 'BaseSearchEngine', got %s" % search_engine_cls)
+        raise InvalidUsage(
+            "expected instance of 'BaseSearchEngine', got %s" %
+            search_engine_cls)
 
     # Get the event loop
     current_app = request.app
@@ -64,7 +66,7 @@ async def execute_search(request: Request, search_engine_cls: ClassVar, search_t
         responses,
         page_number,
         page_size,
-        sort_by.name)
+        sort_by=sort_by)
 
     return json(response)
 
@@ -76,10 +78,11 @@ async def conceptual_search(request: Request):
     :param request:
     :return:
     """
-    conceptual_search_enabled = request.app.config.get("CONCEPTUAL_SEARCH_ENABLED", False)
+    conceptual_search_enabled = request.app.config.get(
+        "CONCEPTUAL_SEARCH_ENABLED", False)
     if conceptual_search_enabled:
         from server.search.conceptual_search.conceptual_search_engine import ConceptualSearchEngine
-        
+
         search_term = request.args.get("q")
         if search_term is not None:
             response = await execute_search(request, ConceptualSearchEngine, search_term)

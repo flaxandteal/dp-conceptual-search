@@ -1,0 +1,43 @@
+#!/bin/bash
+
+AWS_REGION=
+CONFIG_BUCKET=
+ECR_REPOSITORY_URI=
+GIT_COMMIT=
+
+INSTANCE=$(curl -s http://instance-data/latest/meta-data/instance-id)
+CONFIG=$(aws --region $AWS_REGION ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE" "Name=key,Values=Configuration" --output text | awk '{print $5}')
+
+(aws s3 cp s3://$CONFIG_BUCKET/conceptual-search/$CONFIG.asc . && gpg --decrypt $CONFIG.asc > $CONFIG) || exit $?
+
+if [[ $DEPLOYMENT_GROUP_NAME =~ [a-z]+-publishing ]]; then
+  DOCKER_NETWORK=publishing
+else
+  DOCKER_NETWORK=website
+fi
+
+if [[ $DEPLOYMENT_GROUP_NAME =~ [a-z]+-web ]]; then
+  if [[ $INSTANCE_NUMBER == 1 ]]; then
+    ELASTICSEARCH_HOST=$ELASTICSEARCH_1
+    CONTENT_SERVICE_URL=$CONTENT_SERVICE_URL_1
+  else
+    ELASTICSEARCH_HOST=$ELASTICSEARCH_2
+    CONTENT_SERVICE_URL=$CONTENT_SERVICE_URL_2
+  fi
+fi
+
+source $CONFIG && docker run -d                                         \
+  --env=SEARCH_CONFIG=$SEARCH_CONFIG                                    \
+  --env=ELASTIC_SEARCH_SERVER=$ELASTICSEARCH_HOST                       \
+  --env=ELASTIC_SEARCH_ASYNC_ENABLED=$ELASTIC_SEARCH_ASYNC_ENABLED      \
+  --env=ELASTIC_SEARCH_TIMEOUT=$ELASTIC_SEARCH_TIMEOUT                  \
+  --env=SEARCH_INDEX=$SEARCH_INDEX                                      \
+  --env=CONCEPTUAL_SEARCH_ENABLED=$CONCEPTUAL_SEARCH_ENABLED            \
+  --env=BIND_HOST=$BIND_HOST                                            \
+  --env=BIND_PORT=$BIND_PORT                                            \
+  --env=GA_SALT=$GA_SALT                                                \
+  --env=GA_SUBSTR_INDEX=$GA_SUBSTR_INDEX                                \
+  --name=conceptual-search                                              \
+  --net=$DOCKER_NETWORK                                                 \
+  --restart=always                                                      \
+  $ECR_REPOSITORY_URI/conceptual-search:$GIT_COMMIT

@@ -38,7 +38,8 @@ class AsyncMultiSearch(MultiSearch):
                     r = None
                 else:
                     r = Response(s, r)
-                out.append(r)
+                # Append the search request object and response
+                out.append((s, r))
 
             self._response = out
 

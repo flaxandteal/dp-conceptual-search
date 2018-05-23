@@ -1,5 +1,6 @@
 from .hit import Hit
-from .sort_by import SortOrder
+from .sort_by import SortOrder, SortFields
+from .search_engine import BaseSearchEngine
 from .paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
 
 
@@ -78,7 +79,7 @@ async def hits_to_json(
         responses,
         page_number: int,
         page_size: int,
-        sort_by: str) -> dict:
+        sort_by: SortFields=SortFields.relevance) -> dict:
     """
     Replicates the JSON response of Babbage
     :return:
@@ -89,7 +90,8 @@ async def hits_to_json(
         responses = await responses
 
     result = {}
-    for response in responses:
+    for search, response in responses:
+        assert isinstance(search, BaseSearchEngine), "Expected instance of BaseSearchEngine, got %s" % type(search)
         if hasattr(
                 response,
                 "aggregations") and hasattr(
@@ -105,7 +107,7 @@ async def hits_to_json(
                     "numberOfResults": response.hits.total,
                     "docCounts": aggregations
                 }
-        elif hasattr(response._search, "query_size") and response._search.query_size == 1:
+        elif search.query_size == 1:
             # Featured result query
             featured_result_hits = [h.to_dict()
                                     for h in response.hits]
@@ -128,7 +130,7 @@ async def hits_to_json(
                 "results": marshall_hits(response.hits),
                 "docCounts": {},
                 "paginator": paginator.to_dict(),
-                "sortBy": sort_by
+                "sortBy": sort_by.name
             }
 
     return result
