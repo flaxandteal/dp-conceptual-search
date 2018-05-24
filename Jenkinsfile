@@ -11,20 +11,11 @@ node {
             sh 'set +e && (git describe --exact-match HEAD || true) > git-tag'
         }
 
-        def branch   = env.JOB_NAME.replaceFirst('.+/', '')
         def revision = revisionFrom(readFile('git-tag').trim(), readFile('git-commit').trim())
 
         stage('Build') {
-            sh "make"
-        }
-
-        stage('Test') {
-            sh "make test"
-        }
-
-        stage('Image') {
             docker.withRegistry("https://${env.ECR_REPOSITORY_URI}", { ->
-                docker.build('conceptual-search', '--no-cache --pull --rm .').push(revision)
+                docker.build('dp-conceptual-search', '--no-cache --pull --rm .').push(revision)
             })
         }
 
@@ -40,8 +31,7 @@ node {
             sh "aws s3 cp conceptual-search-${revision}.tar.gz s3://${env.S3_REVISIONS_BUCKET}/"
         }
 
-        def deploymentGroups = deploymentGroupsFor(env.JOB_NAME.replaceFirst('.+/', ''))
-        if (deploymentGroups.size() < 1) return
+        if (env.JOB_NAME.replaceFirst('.+/', '') != 'develop') return
 
         stage('Deploy') {
             def appName = 'conceptual-search'
@@ -55,19 +45,6 @@ node {
             }
         }
     }
-}
-
-def deploymentGroupsFor(branch) {
-    if (branch == 'develop') {
-        return [env.CODEDEPLOY_FRONTEND_DEPLOYMENT_GROUP, env.CODEDEPLOY_PUBLISHING_DEPLOYMENT_GROUP]
-    }
-    if (branch == 'dd-develop') {
-        return [env.CODEDEPLOY_DISCOVERY_FRONTEND_DEPLOYMENT_GROUP, env.CODEDEPLOY_DISCOVERY_PUBLISHING_DEPLOYMENT_GROUP]
-    }
-    if (branch == 'dd-master') {
-        return [env.CODEDEPLOY_DISCOVERY_ALPHA_FRONTEND_DEPLOYMENT_GROUP, env.CODEDEPLOY_DISCOVERY_ALPHA_PUBLISHING_DEPLOYMENT_GROUP]
-    }
-    return []
 }
 
 
