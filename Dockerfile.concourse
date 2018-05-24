@@ -3,6 +3,7 @@ FROM python:3.6
 COPY . /dp-conceptual-search
 WORKDIR /dp-conceptual-search
 
-RUN make build
+RUN pip install -r requirements.txt
+RUN cd lib/fastText/ && python setup.py install
 
 CMD python manager.py
