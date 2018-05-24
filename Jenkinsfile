@@ -35,12 +35,14 @@ node {
 
         stage('Deploy') {
             def appName = 'conceptual-search'
-            sh sprintf('aws deploy create-deployment %s %s %s,bundleType=tgz,key=%s', [
-                "--application-name ${appName}",
-                "--deployment-group-name develop",
-                "--s3-location bucket=${env.S3_REVISIONS_BUCKET}",
-                "${appName}-${revision}.tar.gz",
-            ])
+            for (group in [env.CODEDEPLOY_FRONTEND_DEPLOYMENT_GROUP, env.CODEDEPLOY_PUBLISHING_DEPLOYMENT_GROUP]) {
+                sh sprintf('aws deploy create-deployment %s %s %s,bundleType=tgz,key=%s', [
+                    "--application-name ${appName}",
+                    "--deployment-group-name ${group}",
+                    "--s3-location bucket=${env.S3_REVISIONS_BUCKET}",
+                    "${appName}-${revision}.tar.gz",
+                ])
+            }
         }
     }
 }
