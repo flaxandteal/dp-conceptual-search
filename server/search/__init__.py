@@ -91,7 +91,8 @@ async def hits_to_json(
 
     result = {}
     for search, response in responses:
-        assert isinstance(search, BaseSearchEngine), "Expected instance of BaseSearchEngine, got %s" % type(search)
+        assert isinstance(
+            search, BaseSearchEngine), "Expected instance of BaseSearchEngine, got %s" % type(search)
         if hasattr(
                 response,
                 "aggregations") and hasattr(

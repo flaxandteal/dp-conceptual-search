@@ -13,6 +13,10 @@ class SupervisedModels(enum.Enum):
         return self.value
 
 
+def norm(vec):
+    return np.linalg.norm(vec, axis=0)
+
+
 class SupervisedModel(object):
     def __init__(self, supervised_model, prefix="__label__"):
         assert isinstance(supervised_model, fastText.FastText._FastText)
@@ -20,7 +24,8 @@ class SupervisedModel(object):
         self.prefix = prefix
 
         # Normalised vectors
-        # self.input_matrix_normalised = self._normalise_matrix(self.f.get_input_matrix())
+        # self.input_matrix_normalised = self._normalise_matrix(
+        #     self.f.get_input_matrix())
         self.output_matrix_normalised = self._normalise_matrix(
             self.f.get_output_matrix())
 
@@ -30,12 +35,12 @@ class SupervisedModel(object):
 
     @staticmethod
     def _normalise_matrix(matrix):
-        norm = np.linalg.norm(matrix, axis=1)
-        norm_matrix = np.zeros(matrix.shape)
+        norm_vector = np.linalg.norm(matrix, axis=1)
+        normed_matrix = np.zeros(matrix.shape)
 
         for i in range(len(matrix)):
-            norm_matrix[i] = matrix[i] / norm[i]
-        return norm_matrix
+            normed_matrix[i] = matrix[i] / norm_vector[i]
+        return normed_matrix
 
     def get_sentence_vector(self, sentence):
         """
@@ -44,7 +49,7 @@ class SupervisedModel(object):
         :return:
         """
         vec = self.f.get_sentence_vector(sentence.lower())
-        return vec / np.linalg.norm(vec)
+        return vec / norm(vec)
 
     def get_word_vector(self, word):
         """
@@ -53,7 +58,7 @@ class SupervisedModel(object):
         :return:
         """
         vec = self.f.get_word_vector(word)
-        return vec / np.linalg.norm(vec)
+        return vec / norm(vec)
 
     def get_label_vector(self, label):
         """
@@ -67,7 +72,7 @@ class SupervisedModel(object):
         if label in self.labels:
             ix = np.where(self.labels == label)
             vec = self.f.get_output_matrix()[ix][0]
-            return vec / np.linalg.norm(vec)
+            return vec / norm(vec)
         return np.zeros(self.f.get_dimension())
 
     @staticmethod
@@ -83,14 +88,11 @@ class SupervisedModel(object):
         top_n_similarity = cosine_similarity[ind][:top_n]
         return top_n_words, top_n_similarity
 
-    """
-    Method is disabled due to large memory footprint of input_matrix
-    """
-
     # def get_words_for_vector(self, vector, top_n=1):
     #     """
     #     Returns the word(s) nearest to the given vector
     #     :param vector:
+    #     :param top_n:
     #     :return:
     #     """
     #     cosine_similarity = cosine_sim_matrix(self.input_matrix_normalised, vector)

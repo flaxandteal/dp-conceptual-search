@@ -14,6 +14,7 @@ dp-conceptual-search
 | SEARCH_INDEX                 | ons*                    | The Elasticsearch index to be queried.
 | BIND_HOST                    | 0.0.0.0                 | The host to bind to.
 | BIND_PORT                    | 5000                    | The port to bind to.
+| CONCEPTUAL_SEARCH_ENABLED    | false                   | Enable/disable conceptual search (requires fastText models).
 
 # Running
 

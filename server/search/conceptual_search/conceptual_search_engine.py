@@ -5,8 +5,8 @@ class ConceptualSearchEngine(SearchEngine):
     from server.word_embedding.supervised_models import SupervisedModels, load_model
     word_embedding_model = load_model(SupervisedModels.ONS)
 
-    def __init__(self, *args, **kwargs):
-        super(ConceptualSearchEngine, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(ConceptualSearchEngine, self).__init__(**kwargs)
 
     def build_query(self, query: dict, **kwargs):
         from server.search.fields import embedding_vector
@@ -19,6 +19,7 @@ class ConceptualSearchEngine(SearchEngine):
             query_weight = kwargs.pop("query_weight", 1.0)
             rescore_query_weight = kwargs.pop("rescore_query_weight", 10.0)
 
+            # TODO - Use user interest vector here instead of search term
             wv = ConceptualSearchEngine.word_embedding_model.get_sentence_vector(
                 search_term)
 
@@ -26,20 +27,20 @@ class ConceptualSearchEngine(SearchEngine):
 
             rescore_query_dict = {
                 "query": query,
-                "rescore": {
-                    "window_size": window_size,
-                    "query": {
-                        "score_mode": score_mode,
-                        "rescore_query": {
-                            "function_score": {
-                                "boost_mode": "replace",
-                                "script_score": script_score
-                            }
-                        },
-                        "query_weight": query_weight,
-                        "rescore_query_weight": rescore_query_weight
-                    }
-                }
+                # "rescore": {
+                #     "window_size": window_size,
+                #     "query": {
+                #         "score_mode": score_mode,
+                #         "rescore_query": {
+                #             "function_score": {
+                #                 "boost_mode": "replace",
+                #                 "script_score": script_score
+                #             }
+                #         },
+                #         "query_weight": query_weight,
+                #         "rescore_query_weight": rescore_query_weight
+                #     }
+                # }
             }
 
             return super(
@@ -75,7 +76,7 @@ class ConceptualSearchEngine(SearchEngine):
 
             # TODO - test with/without script scoring
             query = content_query(
-                search_term, ConceptualSearchEngine.word_embedding_model)
+                search_term, ConceptualSearchEngine.word_embedding_model, **kwargs)
             # Prepare and execute
             query_dict = query.to_dict()
 
@@ -84,6 +85,7 @@ class ConceptualSearchEngine(SearchEngine):
                 search_term=search_term,
                 current_page=current_page,
                 size=size,
+                sort_by=sort_by,
                 **kwargs)
 
             # Exclude embedding vector for source
