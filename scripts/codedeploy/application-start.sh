@@ -19,6 +19,8 @@ fi
 
 (aws s3 cp s3://$CONFIG_BUCKET/conceptual-search/$CONFIG_DIRECTORY/$CONFIG.asc . && gpg --decrypt $CONFIG.asc > $CONFIG) || exit $?
 
+source $CONFIG
+
 if [[ $DEPLOYMENT_GROUP_NAME =~ [a-z]+-web ]]; then
   if [[ $INSTANCE_NUMBER == 1 ]]; then
     ELASTICSEARCH_HOST=$ELASTICSEARCH_1
@@ -29,7 +31,7 @@ if [[ $DEPLOYMENT_GROUP_NAME =~ [a-z]+-web ]]; then
   fi
 fi
 
-source $CONFIG && docker run -d                                         \
+docker run -d                                                           \
   --env=SEARCH_CONFIG=$SEARCH_CONFIG                                    \
   --env=ELASTIC_SEARCH_SERVER=$ELASTICSEARCH_HOST                       \
   --env=ELASTIC_SEARCH_ASYNC_ENABLED=$ELASTIC_SEARCH_ASYNC_ENABLED      \
