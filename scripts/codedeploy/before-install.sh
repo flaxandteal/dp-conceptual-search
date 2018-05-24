@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CONTAINER_ID=$(docker ps -a | grep conceptual-search | awk '{print $1}')
-IMAGE_ID=$(docker images -a | grep conceptual-search | awk '{print $3}')
+CONTAINER_ID=$(docker ps -a | grep dp-conceptual-search | awk '{print $1}')
+IMAGE_ID=$(docker images -a | grep dp-conceptual-search | awk '{print $3}')
 
 if [[ -n $CONTAINER_ID ]]; then
   docker rm $CONTAINER_ID

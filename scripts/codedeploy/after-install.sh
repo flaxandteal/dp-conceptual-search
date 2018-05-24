@@ -4,4 +4,4 @@ AWS_REGION=
 ECR_REPOSITORY_URI=
 GIT_COMMIT=
 
-$(aws ecr get-login --region $AWS_REGION) && docker pull $ECR_REPOSITORY_URI/conceptual-search:$GIT_COMMIT
+$(aws ecr get-login --region $AWS_REGION) && docker pull $ECR_REPOSITORY_URI/dp-conceptual-search:$GIT_COMMIT

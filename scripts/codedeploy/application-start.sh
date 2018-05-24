@@ -37,7 +37,7 @@ source $CONFIG && docker run -d                                         \
   --env=BIND_PORT=$BIND_PORT                                            \
   --env=GA_SALT=$GA_SALT                                                \
   --env=GA_SUBSTR_INDEX=$GA_SUBSTR_INDEX                                \
-  --name=conceptual-search                                              \
+  --name=dp-conceptual-search                                           \
   --net=$DOCKER_NETWORK                                                 \
   --restart=always                                                      \
-  $ECR_REPOSITORY_URI/conceptual-search:$GIT_COMMIT
+  $ECR_REPOSITORY_URI/dp-conceptual-search:$GIT_COMMIT
