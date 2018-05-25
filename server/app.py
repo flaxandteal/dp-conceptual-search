@@ -19,11 +19,6 @@ def init_default_app():
     app = Sanic(log_config=default_log_config)
     app.config.from_pyfile('config_%s.py' % config_name)
 
-    if app.config.get("CONCEPTUAL_SEARCH_ENABLED", False):
-        # Trigger loading of models - TODO improve this
-        from .word_embedding import supervised_models
-        supervised_models.init()
-
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
         from sanic_prometheus import monitor
         # adds /metrics endpoint to your Sanic server
