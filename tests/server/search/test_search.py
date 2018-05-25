@@ -5,6 +5,10 @@ from tests.server.test_app import TestApp
 class SearchTestSuite(TestApp):
 
     def test_valid_search_returns_200(self):
+        """
+        Test that a valid search query returns a 200 OK
+        :return:
+        """
         request, response = self.client.post('/search/ons?q=rpi')
 
         self.assertIsNotNone(request)
@@ -23,6 +27,10 @@ class SearchTestSuite(TestApp):
             self.assertGreater(len(response.json[key]), 0)
 
     def test_invalid_search_returns_400(self):
+        """
+        Test that an invalid search query returns a 400 BAD_REQUEST
+        :return:
+        """
         request, response = self.client.post('/search/ons')
 
         self.assertIsNotNone(request)

@@ -5,5 +5,5 @@
 **/**/*.pyc
 
 cover/
-tests/server/search/.cache/
+tests/server/**/.cache/
 supervised_models/

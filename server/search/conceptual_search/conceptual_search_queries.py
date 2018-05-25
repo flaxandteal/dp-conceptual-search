@@ -50,6 +50,7 @@ def word_vector_keywords_query(
         search_term: str,
         model: SupervisedModel,
         search_vector: ndarray=None) -> Q.Query:
+    from server.word_embedding.utils import cosine_sim
 
     if search_vector is None:
         search_vector = model.get_sentence_vector(search_term)
@@ -61,9 +62,25 @@ def word_vector_keywords_query(
     # Insert the original search term
     additional_keywords.insert(0, search_term)
 
-    terms = Q.Terms(**{fields.keywords.name: additional_keywords})
+    match_queries = []
+    for keyword in additional_keywords:
+        keyword_vector = model.get_label_vector(keyword)
+        sim = cosine_sim(search_vector, keyword_vector)
+        print("==========================================================")
+        print(search_term, keyword, sim)
+        print("==========================================================")
+        match_queries.append(
+            Q.Match(**{fields.keywords.name: keyword, "boost": 1. / sim}))
 
-    return terms
+    # terms = Q.Terms(**{fields.keywords.name: additional_keywords})
+
+    query = Q.Bool(should=match_queries)
+
+    import json
+    print("******************************************")
+    print(json.dumps(query.to_dict()))
+    print("******************************************")
+    return query
 
 
 def function_score_word_vector_query(
@@ -95,16 +112,19 @@ def content_query(search_term, model: SupervisedModel, **kwargs) -> Q.Query:
     search_vector = model.get_sentence_vector(search_term)
 
     # Build additional keywords query
-    terms_query = word_vector_keywords_query(search_term, model, search_vector=search_vector)
+    terms_query = word_vector_keywords_query(
+        search_term, model, search_vector=search_vector)
 
     # Combine above into dis_max
     query = Q.DisMax(queries=[query, terms_query])
 
     # Build function score query
-    function_score_query = function_score_word_vector_query(search_term, model, search_vector=search_vector)
+    function_score_query = function_score_word_vector_query(
+        search_term, model, search_vector=search_vector)
 
     # Return bool query
     bool_query = Q.Bool(must=[query], should=[function_score_query])
+    # bool_query = Q.DisMax(queries=[query, function_score_query])
 
     # Apply function scores
     function_scores = kwargs.pop(

@@ -13,25 +13,18 @@ class SupervisedModels(enum.Enum):
         return self.value
 
 
-def norm(vec):
-    return np.linalg.norm(vec, axis=0)
+class SupervisedModel(fastText.FastText._FastText):
+    def __init__(self, model: str, prefix: str="__label__", **kwargs):
+        super(SupervisedModel, self).__init__(model=model, **kwargs)
 
-
-class SupervisedModel(object):
-    def __init__(self, supervised_model, prefix="__label__"):
-        assert isinstance(supervised_model, fastText.FastText._FastText)
-        self.f = supervised_model
         self.prefix = prefix
 
-        # Normalised vectors
-        # self.input_matrix_normalised = self._normalise_matrix(
-        #     self.f.get_input_matrix())
-        self.output_matrix_normalised = self._normalise_matrix(
-            self.f.get_output_matrix())
+        self.input_matrix_normalised = self.get_input_matrix()
+        self.output_matrix = self.get_output_matrix()
 
         # Labels
         self.labels = np.array([l.replace(self.prefix, "")
-                                for l in self.f.get_labels()])
+                                for l in self.get_labels()])
 
     @staticmethod
     def _normalise_matrix(matrix):
@@ -41,24 +34,6 @@ class SupervisedModel(object):
         for i in range(len(matrix)):
             normed_matrix[i] = matrix[i] / norm_vector[i]
         return normed_matrix
-
-    def get_sentence_vector(self, sentence):
-        """
-        Wraps fastText.get_sentence_vector and calls lower on the input sentence
-        :param sentence:
-        :return:
-        """
-        vec = self.f.get_sentence_vector(sentence.lower())
-        return vec / norm(vec)
-
-    def get_word_vector(self, word):
-        """
-        Returns the word vector for this word.
-        :param word:
-        :return:
-        """
-        vec = self.f.get_word_vector(word)
-        return vec / norm(vec)
 
     def get_label_vector(self, label):
         """
@@ -71,8 +46,9 @@ class SupervisedModel(object):
 
         if label in self.labels:
             ix = np.where(self.labels == label)
-            vec = self.f.get_output_matrix()[ix][0]
-            return vec / norm(vec)
+            vec = self.output_matrix[ix][0]
+            return vec
+
         return np.zeros(self.f.get_dimension())
 
     @staticmethod
@@ -88,18 +64,18 @@ class SupervisedModel(object):
         top_n_similarity = cosine_similarity[ind][:top_n]
         return top_n_words, top_n_similarity
 
-    # def get_words_for_vector(self, vector, top_n=1):
-    #     """
-    #     Returns the word(s) nearest to the given vector
-    #     :param vector:
-    #     :param top_n:
-    #     :return:
-    #     """
-    #     cosine_similarity = cosine_sim_matrix(self.input_matrix_normalised, vector)
-    #     ind = np.argsort(-cosine_similarity)
-    #
-    #     words = self.f.get_words()
-    #     return self._get_top_n(words, cosine_similarity, ind, top_n)
+    def get_words_for_vector(self, vector, top_n=1):
+        """
+        Returns the word(s) nearest to the given vector
+        :param vector:
+        :param top_n:
+        :return:
+        """
+        cosine_similarity = cosine_sim_matrix(self.input_matrix, vector)
+        ind = np.argsort(-cosine_similarity)
+
+        words = self.f.get_words()
+        return self._get_top_n(words, cosine_similarity, ind, top_n)
 
     def get_labels_for_vector(self, vector, top_n=1):
         """
@@ -109,7 +85,7 @@ class SupervisedModel(object):
         :return:
         """
         cosine_similarity = cosine_sim_matrix(
-            self.output_matrix_normalised, vector)
+            self.output_matrix, vector)
         ind = np.argsort(-cosine_similarity)
 
         return self._get_top_n(self.labels, cosine_similarity, ind, top_n)
@@ -158,8 +134,9 @@ def init():
     for model_name in SupervisedModels:
         fname = "%s/%s" % (supervised_model_dir, model_name)
         if os.path.isfile(fname):
-            model = fastText.load_model(fname)
-            _models[model_name] = SupervisedModel(model)
+            _models[model_name] = SupervisedModel(fname)
+        else:
+            raise RuntimeError("Unable to locate supervised model file: %s" % fname)
 
 
 def load_model(model_name: SupervisedModels) -> SupervisedModel:
