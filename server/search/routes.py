@@ -9,16 +9,15 @@ from server.search import hits_to_json
 from server.search.sort_by import SortFields
 from server.search.search_engine import get_index, BaseSearchEngine, SearchEngine
 
-from typing import ClassVar
-
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-async def execute_search(request: Request, search_engine_cls: ClassVar, search_term: str) -> dict:
+async def execute_search(request: Request, search_engine_cls: type, search_term: str):
     """
     Simple search API to query Elasticsearch
     """
     from server.search.multi_search import AsyncMultiSearch
+    from server.search.type_filter import all_filter_funcs
 
     if not issubclass(search_engine_cls, BaseSearchEngine):
         raise InvalidUsage(
@@ -32,7 +31,7 @@ async def execute_search(request: Request, search_engine_cls: ClassVar, search_t
     client = current_app.es_client
 
     # Get any content type filters
-    type_filters = get_form_param(request, "filter", False, None)
+    type_filters = get_form_param(request, "filter", False, all_filter_funcs())
 
     # Get sort_by. Default to relevance
     sort_by_str = get_form_param(request, "sort_by", False, "relevance")

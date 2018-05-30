@@ -14,12 +14,12 @@ class SupervisedModels(enum.Enum):
 
 
 class SupervisedModel(fastText.FastText._FastText):
-    def __init__(self, model: str, prefix: str="__label__", **kwargs):
+    def __init__(self, model: str, prefix: str="__label__", **kwargs) -> None:
         super(SupervisedModel, self).__init__(model=model, **kwargs)
 
         self.prefix = prefix
 
-        self.input_matrix_normalised = self.get_input_matrix()
+        self.input_matrix = self.get_input_matrix()
         self.output_matrix = self.get_output_matrix()
 
         # Labels
@@ -35,22 +35,6 @@ class SupervisedModel(fastText.FastText._FastText):
             normed_matrix[i] = matrix[i] / norm_vector[i]
         return normed_matrix
 
-    def get_label_vector(self, label):
-        """
-        Returns the word vector for this label.
-        :param label:
-        :return:
-        """
-        if label.startswith(self.prefix) is False:
-            label = "%s%s" % (self.prefix, label)
-
-        if label in self.labels:
-            ix = np.where(self.labels == label)
-            vec = self.output_matrix[ix][0]
-            return vec
-
-        return np.zeros(self.f.get_dimension())
-
     @staticmethod
     def _get_index_for_vector(matrix, vector):
         cosine_similarity = cosine_sim_matrix(matrix, vector)
@@ -63,6 +47,41 @@ class SupervisedModel(fastText.FastText._FastText):
         top_n_words = words[ind][:top_n]
         top_n_similarity = cosine_similarity[ind][:top_n]
         return top_n_words, top_n_similarity
+
+    def get_label_vector(self, label):
+        """
+        Returns the word vector for this label.
+        :param label:
+        :return:
+        """
+        if label.startswith(self.prefix) is False:
+            label = "%s%s" % (self.prefix, label)
+
+        labels = self.get_labels()
+        if label in labels:
+            ix = labels.index(label)
+            vec = self.output_matrix[ix]
+            return vec
+
+        return np.zeros(self.get_dimension())
+
+    def predict(self, text, k=1, threshold=0.0):
+        """
+        Overwrites super method but removes prefix from labels
+        :param text:
+        :param k:
+        :param threshold:
+        :return:
+        """
+        labels, probabilities = super(
+            SupervisedModel, self).predict(
+            text, k=k, threshold=threshold)
+
+        parsed_labels = []
+        for label in labels:
+            parsed_labels.append(label.replace(self.prefix, ""))
+
+        return parsed_labels, probabilities
 
     def get_words_for_vector(self, vector, top_n=1):
         """
@@ -136,7 +155,9 @@ def init():
         if os.path.isfile(fname):
             _models[model_name] = SupervisedModel(fname)
         else:
-            raise RuntimeError("Unable to locate supervised model file: %s" % fname)
+            raise RuntimeError(
+                "Unable to locate supervised model file: %s" %
+                fname)
 
 
 def load_model(model_name: SupervisedModels) -> SupervisedModel:

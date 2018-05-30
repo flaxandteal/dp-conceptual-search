@@ -207,7 +207,7 @@ class SearchEngine(BaseSearchEngine):
         return self.content_query(
             search_term,
             function_scores=None,
-            aggs=type_counts_query(),
+            aggs=type_counts_query,
             type_filters=all_filter_funcs(),
             **kwargs)
 

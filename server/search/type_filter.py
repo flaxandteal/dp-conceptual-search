@@ -1,11 +1,11 @@
 from .content_types import *
 
+from typing import List
+
 
 class TypeFilter(object):
-    def __init__(self, content_types):
-        assert hasattr(
-            content_types, "__iter__"), "content_types must be instance of iterable"
-        self.content_types = content_types
+    def __init__(self, content_types_list: List[ContentType]):
+        self.content_types = content_types_list
 
 
 # Type filters
@@ -46,7 +46,7 @@ filters = {
 }
 
 
-def all_filter_funcs():
+def all_filter_funcs() -> List[str]:
     content_types_list = []
     for type_filter in filters["_all"]:
         for content_type in type_filter.content_types:

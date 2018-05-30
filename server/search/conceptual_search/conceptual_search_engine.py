@@ -23,26 +23,33 @@ class ConceptualSearchEngine(SearchEngine):
         :return:
         """
         from server.search.fields import embedding_vector
+        from server.search.sort_by import SortFields
+        from server.search.conceptual_search.conceptual_search_queries import content_query
 
-        from .conceptual_search_queries import content_query
+        kwargs_copy = kwargs.copy()
+        sort_by = kwargs_copy.pop("sort_by", SortFields.relevance)
 
-        # Build the content query with vector function score
-        query = content_query(
-            search_term, ConceptualSearchEngine.word_embedding_model, **kwargs)
+        if sort_by == SortFields.relevance:
+            # Build the content query with vector function score
+            query = content_query(
+                search_term, ConceptualSearchEngine.word_embedding_model, **kwargs_copy)
 
-        # Prepare the final query and omit the embedding_vector field from
-        # _source
-        query_dict = query.to_dict()
-        s = self.build_query(
-            query_dict,
-            search_term=search_term,
-            current_page=current_page,
-            size=size,
-            **kwargs)
+            # Prepare the final query and omit the embedding_vector field from
+            # _source
+            query_dict = query.to_dict()
+            s = self.build_query(
+                query_dict,
+                search_term=search_term,
+                current_page=current_page,
+                size=size,
+                **kwargs_copy)
 
-        # Exclude embedding vector for source
-        s = s.source(exclude=[embedding_vector.name])
-        return s
+            # Exclude embedding vector for source
+            s = s.source(exclude=[embedding_vector.name])
+
+            return s
+        else:
+            return super(ConceptualSearchEngine, self).content_query(search_term, current_page=current_page, size=size, **kwargs)
 
     def featured_result_query(self, search_term):
         """
@@ -50,5 +57,14 @@ class ConceptualSearchEngine(SearchEngine):
         :param search_term:
         :return:
         """
-        return super(ConceptualSearchEngine,
-                     self).featured_result_query(search_term)
+        from server.search.content_types import home_page_census, product_page
+
+        type_filters = [product_page.name, home_page_census.name]
+
+        s = super(ConceptualSearchEngine,
+                  self).content_query(
+            search_term,
+            function_scores=None,
+            type_filters=type_filters,
+            size=1)
+        return s

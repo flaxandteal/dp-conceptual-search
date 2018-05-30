@@ -1,6 +1,8 @@
 from . import fields
 from enum import Enum
 
+from typing import List
+
 
 class SortFields(Enum):
     first_letter = 1,
@@ -40,10 +42,8 @@ sort_by = {
 }
 
 
-def query_sort(sort_field):
+def query_sort(sort_field: SortFields) -> List[dict]:
     from collections import OrderedDict
-    assert isinstance(
-        sort_field, SortFields), "sort_field must be instance of SortFields enum"
     s = []
 
     for field, order in sort_by[sort_field]:

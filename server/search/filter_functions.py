@@ -1,4 +1,3 @@
-from .content_types import *
 from .type_filter import *
 
 

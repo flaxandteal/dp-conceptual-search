@@ -2,7 +2,7 @@ from sanic import Sanic
 from sanic.request import Request
 
 
-def init_default_app():
+def init_default_app() -> Sanic:
     import os
     import asyncio
     import uvloop
@@ -39,7 +39,7 @@ def init_default_app():
     return app
 
 
-def register_blueprints(app: Sanic):
+def register_blueprints(app: Sanic) -> None:
     # Register blueprint(s)
     from server.search.routes import search_blueprint
     from server.healthcheck.routes import health_check_blueprint
@@ -47,7 +47,7 @@ def register_blueprints(app: Sanic):
     app.blueprint(health_check_blueprint)
 
 
-def create_app():
+def create_app() -> Sanic:
     app = init_default_app()
 
     # Setup middleware
