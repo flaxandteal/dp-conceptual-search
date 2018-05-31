@@ -108,7 +108,8 @@ def content_query(
         search_term: str,
         model: SupervisedModel,
         boost_mode: BoostMode=BoostMode.AVG,
-        min_score: float=0.25) -> Q.Query:
+        min_score: float=0.1,
+        **kwargs) -> Q.Query:
     """
     Conceptual search (main) content query.
     Requires embedding_vectors to be indexed in Elasticsearch.
@@ -135,7 +136,12 @@ def content_query(
         search_term, model)
 
     function_scores = [script_score.to_dict(), date_function.to_dict()]
-    function_scores.extend(content_filter_functions())
+
+    additional_function_scores = kwargs.get("function_scores", content_filter_functions())
+    if additional_function_scores is not None:
+        if hasattr(additional_function_scores, "__iter__") is False:
+            additional_function_scores = [additional_function_scores]
+        function_scores.extend(additional_function_scores)
 
     function_score = FunctionScore(
         query=Q.Bool(should=[dis_max_query, terms_query]),

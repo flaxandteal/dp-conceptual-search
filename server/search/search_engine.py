@@ -180,11 +180,11 @@ class SearchEngine(BaseSearchEngine):
         from server.search.queries import content_query, function_score_content_query
         from .filter_functions import content_filter_functions
 
-        function_scores = kwargs.pop(
-            "function_scores", content_filter_functions())
-
         # Build the standard content query
         query = content_query(search_term)
+
+        function_scores = kwargs.get(
+            "function_scores", content_filter_functions())
 
         if function_scores is not None:
             query = function_score_content_query(
