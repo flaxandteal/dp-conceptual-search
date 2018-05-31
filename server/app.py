@@ -46,6 +46,12 @@ def register_blueprints(app: Sanic) -> None:
     app.blueprint(search_blueprint)
     app.blueprint(health_check_blueprint)
 
+    conceptual_search_enabled = app.config.get(
+        "CONCEPTUAL_SEARCH_ENABLED", False)
+    if conceptual_search_enabled:
+        from server.search.conceptual_search.routes import conceptual_search_blueprint
+        app.blueprint(conceptual_search_blueprint)
+
 
 def create_app() -> Sanic:
     app = init_default_app()

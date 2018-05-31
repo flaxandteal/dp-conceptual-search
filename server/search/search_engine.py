@@ -200,8 +200,8 @@ class SearchEngine(BaseSearchEngine):
             **kwargs)
 
     def type_counts_query(self, search_term, **kwargs):
-        from .type_filter import all_filter_funcs
         from server.search.queries import type_counts_query
+        from server.search.type_filter import all_filter_funcs
 
         # Prepare and execute
         return self.content_query(

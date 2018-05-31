@@ -1,10 +1,8 @@
 from .type_filter import *
+from typing import List
 
 
-def type_filter_function(type_filter):
-    assert isinstance(
-        type_filter, TypeFilter), "type_filter must be instance of TypeFiler"
-
+def type_filter_function(type_filter: TypeFilter) -> List[dict]:
     filter_funcs = []
     for content_type in type_filter.content_types:
         filter_funcs.append(content_type_filter_function(content_type))
@@ -12,7 +10,7 @@ def type_filter_function(type_filter):
     return filter_funcs
 
 
-def content_type_filter_function(content_type):
+def content_type_filter_function(content_type) -> dict:
     return {
         "filter": {
             "term": {
@@ -23,7 +21,7 @@ def content_type_filter_function(content_type):
     }
 
 
-def content_filter_functions() -> list:
+def content_filter_functions() -> List[dict]:
     """
     Returns filter functions used in a content_query
     :return:

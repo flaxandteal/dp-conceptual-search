@@ -19,7 +19,7 @@ class SupervisedModel(fastText.FastText._FastText):
 
         self.prefix = prefix
 
-        self.input_matrix = self.get_input_matrix()
+        # self.input_matrix = self.get_input_matrix()
         self.output_matrix = self.get_output_matrix()
 
         # Labels
@@ -82,19 +82,6 @@ class SupervisedModel(fastText.FastText._FastText):
             parsed_labels.append(label.replace(self.prefix, ""))
 
         return parsed_labels, probabilities
-
-    def get_words_for_vector(self, vector, top_n=1):
-        """
-        Returns the word(s) nearest to the given vector
-        :param vector:
-        :param top_n:
-        :return:
-        """
-        cosine_similarity = cosine_sim_matrix(self.input_matrix, vector)
-        ind = np.argsort(-cosine_similarity)
-
-        words = self.f.get_words()
-        return self._get_top_n(words, cosine_similarity, ind, top_n)
 
     def get_labels_for_vector(self, vector, top_n=1):
         """
