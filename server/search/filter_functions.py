@@ -23,7 +23,7 @@ def content_type_filter_function(content_type):
     }
 
 
-def content_filter_functions():
+def content_filter_functions() -> list:
     """
     Returns filter functions used in a content_query
     :return:

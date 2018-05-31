@@ -15,6 +15,7 @@ search_blueprint = Blueprint('search', url_prefix='/search')
 async def execute_search(request: Request, search_engine_cls: type, search_term: str):
     """
     Simple search API to query Elasticsearch
+    TODO - Modify to prevent building query multiple times
     """
     from server.search.multi_search import AsyncMultiSearch
     from server.search.type_filter import all_filter_funcs

@@ -7,11 +7,50 @@ from server.search import fields
 from server.word_embedding.supervised_models import SupervisedModel
 
 
+class ScriptScore(Q.Query):
+    name = "script_score"
+
+
 class FunctionScore(Q.Query):
     name = "function_score"
 
 
-def vector_script_score(field: fields.Field, vector: ndarray) -> dict:
+class Scripts(Enum):
+    BINARY_VECTOR_SCORE = "binary_vector_score"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
+
+
+class ScriptLanguage(Enum):
+    KNN = "knn"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
+
+
+class BoostMode(Enum):
+    REPLACE = "replace"
+    MULTIPLY = "multiply"
+    SUM = "sum"
+    AVG = "avg"
+    MAX = "max"
+    MIN = "min"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
+
+
+def vector_script_score(field: fields.Field, vector: ndarray) -> Q.Query:
     params = {
         "cosine": True,
         "field": field.name,
@@ -23,27 +62,18 @@ def vector_script_score(field: fields.Field, vector: ndarray) -> dict:
         "script": Scripts.BINARY_VECTOR_SCORE.value
     }
 
-    return script_score
+    # return script_score
+    return ScriptScore(**script_score)
 
 
-class Scripts(Enum):
-    BINARY_VECTOR_SCORE = "binary_vector_score"
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return self.name
-
-
-class ScriptLanguage(Enum):
-    KNN = "knn"
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return self.name
+def date_decay_function() -> Q.Query:
+    q = Q.SF('gauss', **{fields.releaseDate.name: {
+        "origin": "now",
+        "scale": "365d",
+        "offset": "30d",
+        "decay": 0.5
+    }})
+    return q
 
 
 def word_vector_keywords_query(
@@ -65,63 +95,52 @@ def word_vector_keywords_query(
     match_queries = []
     for label, probability in zip(labels, probabilities):
         match_queries.append(
-            Q.Match(**{fields.keywords.name: {"query": label.replace("_", " "), "boost": probability}}))
+            Q.Match(**{fields.keywords.name: {"query": label.replace("_", " "), "boost": probability}})
+            # Q.Match(**{fields.keywords.name: {"query": label.replace("_", " ")}})
+        )
 
+    # query = Q.DisMax(queries=match_queries)
     query = Q.Bool(should=match_queries)
     return query
 
 
-def function_score_word_vector_query(
+def content_query(
         search_term: str,
         model: SupervisedModel,
-        boost_mode: str="replace",
-        search_vector: ndarray=None) -> Q.Query:
+        boost_mode: BoostMode=BoostMode.AVG,
+        min_score: float=0.25) -> Q.Query:
+    """
+    Conceptual search (main) content query.
+    Requires embedding_vectors to be indexed in Elasticsearch.
+    :param search_term:
+    :param model:
+    :param boost_mode:
+    :param min_score:
+    :return:
+    """
     from server.search.fields import embedding_vector
-
-    if search_vector is None:
-        search_vector = model.get_sentence_vector(search_term)
-
-    script_score = vector_script_score(embedding_vector, search_vector)
-
-    function_score = FunctionScore(
-        boost_mode=boost_mode,
-        script_score=script_score)
-    return function_score
-
-
-def content_query(search_term, model: SupervisedModel, **kwargs) -> Q.Query:
     from server.search.filter_functions import content_filter_functions
     from server.search.queries import content_query as ons_content_query
-    from server.search.queries import function_score_content_query as ons_function_score_content_query
 
-    # Build the original ONS content query
-    query = ons_content_query(search_term)
-
-    # Get the search term vector
     search_vector = model.get_sentence_vector(search_term)
 
-    # Build additional keywords query
+    script_score = vector_script_score(embedding_vector, search_vector)
+    date_function = date_decay_function()
+
+    # Build the original ONS content query
+    dis_max_query = ons_content_query(search_term)
+    #
+    # # Build additional keywords query
     terms_query = word_vector_keywords_query(
         search_term, model)
 
-    # Combine above into dis_max
-    query = Q.DisMax(queries=[query, terms_query])
+    function_scores = [script_score.to_dict(), date_function.to_dict()]
+    function_scores.extend(content_filter_functions())
 
-    # Build function score query
-    function_score_query = function_score_word_vector_query(
-        search_term, model, search_vector=search_vector)
+    function_score = FunctionScore(
+        query=Q.Bool(should=[dis_max_query, terms_query]),
+        min_score=min_score,
+        boost_mode=boost_mode.value,
+        functions=function_scores)
 
-    # Return bool query
-    bool_query = Q.Bool(must=[query], should=[function_score_query])
-    # bool_query = Q.DisMax(queries=[query, function_score_query])
-
-    # Apply function scores
-    function_scores = kwargs.pop(
-        "function_scores", content_filter_functions())
-
-    if function_scores is not None:
-        bool_query = ons_function_score_content_query(
-            bool_query,
-            function_scores)
-
-    return bool_query
+    return function_score
