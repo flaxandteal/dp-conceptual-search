@@ -20,7 +20,7 @@ class SupervisedModel(fastText.FastText._FastText):
         self.prefix = prefix
 
         # self.input_matrix = self.get_input_matrix()
-        self.output_matrix = self.get_output_matrix()
+        # self.output_matrix = self.get_output_matrix()
 
         # Labels
         self.labels = np.array([l.replace(self.prefix, "")
@@ -48,22 +48,22 @@ class SupervisedModel(fastText.FastText._FastText):
         top_n_similarity = cosine_similarity[ind][:top_n]
         return top_n_words, top_n_similarity
 
-    def get_label_vector(self, label):
-        """
-        Returns the word vector for this label.
-        :param label:
-        :return:
-        """
-        if label.startswith(self.prefix) is False:
-            label = "%s%s" % (self.prefix, label)
-
-        labels = self.get_labels()
-        if label in labels:
-            ix = labels.index(label)
-            vec = self.output_matrix[ix]
-            return vec
-
-        return np.zeros(self.get_dimension())
+    # def get_label_vector(self, label):
+    #     """
+    #     Returns the word vector for this label.
+    #     :param label:
+    #     :return:
+    #     """
+    #     if label.startswith(self.prefix) is False:
+    #         label = "%s%s" % (self.prefix, label)
+    #
+    #     labels = self.get_labels()
+    #     if label in labels:
+    #         ix = labels.index(label)
+    #         vec = self.output_matrix[ix]
+    #         return vec
+    #
+    #     return np.zeros(self.get_dimension())
 
     def predict(self, text, k=1, threshold=0.0):
         """
@@ -83,18 +83,18 @@ class SupervisedModel(fastText.FastText._FastText):
 
         return parsed_labels, probabilities
 
-    def get_labels_for_vector(self, vector, top_n=1):
-        """
-        Returns the label(s) nearest to the given vector
-        :param vector:
-        :param top_n:
-        :return:
-        """
-        cosine_similarity = cosine_sim_matrix(
-            self.output_matrix, vector)
-        ind = np.argsort(-cosine_similarity)
-
-        return self._get_top_n(self.labels, cosine_similarity, ind, top_n)
+    # def get_labels_for_vector(self, vector, top_n=1):
+    #     """
+    #     Returns the label(s) nearest to the given vector
+    #     :param vector:
+    #     :param top_n:
+    #     :return:
+    #     """
+    #     cosine_similarity = cosine_sim_matrix(
+    #         self.output_matrix, vector)
+    #     ind = np.argsort(-cosine_similarity)
+    #
+    #     return self._get_top_n(self.labels, cosine_similarity, ind, top_n)
 
     def keywords(self, text, top_n=10):
         labels, proba = self.f.predict(text, top_n)
