@@ -2,7 +2,7 @@
 
 all: build test
 
-build: requirements fastText
+build: requirements model
 
 requirements:
 	pip install -r requirements.txt
@@ -10,7 +10,11 @@ requirements:
 fastText:
 	git submodule sync --recursive
 	git submodule update --init --recursive
-	cd lib/fastText && python setup.py install
+	cd lib/fastText && python setup.py clean --all install
+
+model: fastText
+	pip install -r requirements_model.txt
+	python build_model.py supervised_models/ons_labelled.txt supervised_models/ons_supervised.bin
 
 test: build
 	pip install -r requirements_test.txt

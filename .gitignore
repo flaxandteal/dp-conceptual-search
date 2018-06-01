@@ -4,6 +4,7 @@
 *.log
 **/*.pyc
 **/**/*.pyc
+supervised_models/*.bin
 
 cover/
 tests/server/**/.cache/
