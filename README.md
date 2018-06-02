@@ -1,6 +1,10 @@
 dp-conceptual-search
 ==================
 
+# TODO
+
+Test random-ness of word vectors upon training of new model
+
 # Configuration
 
 ### Environment variales
