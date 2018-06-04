@@ -10,6 +10,7 @@ requirements:
 fastText:
 	git submodule sync --recursive
 	git submodule update --init --recursive
+	mkdir -p supervised_models
 	cd lib/fastText && python setup.py clean --all install
 
 test: build
