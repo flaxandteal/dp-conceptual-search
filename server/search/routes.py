@@ -121,3 +121,34 @@ async def search_publications(request: Request):
         response = await execute_search(request, SearchEngine, search_term, type_filters)
         return response
     raise InvalidUsage("no query provided")
+
+
+@search_blueprint.route('/ons/departments', methods=["GET", "POST"])
+async def search_publications(request: Request):
+    """
+    Performs the ONS departments query
+    :param request:
+    :return:
+    """
+    search_term = request.args.get("q")
+    if search_term is not None:
+        import inspect
+
+        current_app = request.app
+
+        client = current_app.es_client
+
+        s = SearchEngine(using=client, index="departments")
+        response = s.departments_query(search_term).execute()
+
+        if inspect.isawaitable(response):
+            response = await response
+
+        result = {
+            "numberOfResults": response.hits.total,
+            "took": response.took,
+            "results": [hit for hit in response.hits]
+        }
+
+        return json(result)
+    raise InvalidUsage("no query provided")

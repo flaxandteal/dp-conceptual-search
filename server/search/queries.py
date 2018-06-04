@@ -8,7 +8,7 @@ def _get_field_name(field):
     return field
 
 
-def match(field, search_term, **kwargs) -> Q.Query:
+def match(field, search_term: str, **kwargs) -> Q.Query:
     field_name = _get_field_name(field)
 
     query_dict = {
@@ -24,7 +24,7 @@ def match(field, search_term, **kwargs) -> Q.Query:
     return q
 
 
-def multi_match(field_list, search_term, **kwargs) -> Q.Query:
+def multi_match(field_list, search_term: str, **kwargs) -> Q.Query:
     if hasattr(field_list, "__iter__") is False:
         field_list = [field_list]
 
@@ -45,13 +45,20 @@ def multi_match(field_list, search_term, **kwargs) -> Q.Query:
     return q
 
 
-def content_query(search_term) -> Q.DisMax:
+def departments_query(search_term: str) -> Q.Query:
+    """
+    Returns the ONS departments query
+    :param search_term:
+    :return:
+    """
+    return Q.Match(**{"terms": {"query": search_term, "type": "boolean"}})
+
+
+def content_query(search_term: str) -> Q.DisMax:
     """
     Returns the default ONS content query
 
     :param search_term:
-    :param function_scores:
-    :param compute_additional_keywords:
     :return:
     """
     q = Q.DisMax(
