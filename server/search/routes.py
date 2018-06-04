@@ -14,7 +14,7 @@ from typing import ClassVar
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-async def execute_search(request: Request, search_engine_cls: ClassVar, search_term: str) -> dict:
+async def execute_search(request: Request, search_engine_cls: ClassVar, search_term: str, type_filters) -> dict:
     """
     Simple search API to query Elasticsearch
     """
@@ -30,9 +30,6 @@ async def execute_search(request: Request, search_engine_cls: ClassVar, search_t
 
     # Get the Elasticsearch client
     client = current_app.es_client
-
-    # Get any content type filters
-    type_filters = get_form_param(request, "filter", False, None)
 
     # Get sort_by. Default to relevance
     sort_by_str = get_form_param(request, "sort_by", False, "relevance")
@@ -80,6 +77,47 @@ async def search(request: Request):
     """
     search_term = request.args.get("q")
     if search_term is not None:
-        response = await execute_search(request, SearchEngine, search_term)
+        # Get any content type filters
+        type_filters = get_form_param(request, "filter", False, None)
+
+        response = await execute_search(request, SearchEngine, search_term, type_filters)
+        return response
+    raise InvalidUsage("no query provided")
+
+
+@search_blueprint.route('/ons/data', methods=["GET", "POST"])
+async def search_data(request: Request):
+    """
+    Performs a search request using the standard ONS SearchEngine. Limits type filters for SearchData endpoint.
+    :param request:
+    :return:
+    """
+    from server.search.type_filter import filters
+
+    search_term = request.args.get("q")
+    if search_term is not None:
+        # Get any content type filters
+        type_filters = get_form_param(request, "filter", False, filters["data"])
+
+        response = await execute_search(request, SearchEngine, search_term, type_filters)
+        return response
+    raise InvalidUsage("no query provided")
+
+
+@search_blueprint.route('/ons/publications', methods=["GET", "POST"])
+async def search_publications(request: Request):
+    """
+    Performs a search request using the standard ONS SearchEngine. Limits type filters for SearchPublications endpoint.
+    :param request:
+    :return:
+    """
+    from server.search.type_filter import filters
+
+    search_term = request.args.get("q")
+    if search_term is not None:
+        # Get any content type filters
+        type_filters = get_form_param(request, "filter", False, filters["publications"])
+
+        response = await execute_search(request, SearchEngine, search_term, type_filters)
         return response
     raise InvalidUsage("no query provided")
