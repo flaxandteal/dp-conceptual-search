@@ -3,7 +3,8 @@ dp-conceptual-search
 
 # TODO
 
-Test random-ness of word vectors upon training of new model
+* Test random-ness of word vectors upon training of new model
+* Install NLP plugin and add entities search to base content query
 
 # Configuration
 
