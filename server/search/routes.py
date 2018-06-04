@@ -147,7 +147,7 @@ async def search_publications(request: Request):
         result = {
             "numberOfResults": response.hits.total,
             "took": response.took,
-            "results": [hit for hit in response.hits]
+            "results": [hit for hit in response.hits.hits]
         }
 
         return json(result)
