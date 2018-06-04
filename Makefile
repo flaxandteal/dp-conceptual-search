@@ -4,8 +4,6 @@ all: build test
 
 build: requirements submodule fastText
 
-concourse: requirements fastText test
-
 requirements:
 	pip install -r requirements.txt
 
