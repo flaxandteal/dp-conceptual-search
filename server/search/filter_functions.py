@@ -1,5 +1,4 @@
-from .content_types import *
-from .type_filter import *
+from server.search.type_filter import *
 
 
 def type_filter_function(type_filter):

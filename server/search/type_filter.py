@@ -1,4 +1,4 @@
-from .content_types import *
+from server.search.content_types import *
 
 
 class TypeFilter(object):

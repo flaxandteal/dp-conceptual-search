@@ -1,7 +1,7 @@
-from .hit import Hit
-from .sort_by import SortOrder, SortFields
-from .search_engine import BaseSearchEngine
-from .paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
+from server.search.hit import Hit
+from server.search.sort_by import SortOrder, SortFields
+from server.search.search_engine import BaseSearchEngine
+from server.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
 
 
 def buckets_to_json(buckets) -> (dict, int):
