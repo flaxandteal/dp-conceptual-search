@@ -1,4 +1,4 @@
-from .content_types import *
+from server.search.content_types import *
 
 from typing import List
 
@@ -34,16 +34,23 @@ filters = {
         qmi_type_filter,
         methodology_type_filter,
         methodology_article_type_filter,
-        corporate_information_type_filter
-    ],
+        corporate_information_type_filter],
     bulletin.name: [bulletin_type_filer],
     article.name: [article_type_filter],
     timeseries.name: [time_series_type_filter],
     dataset.name: [datasets_type_filter],
     "user_requested_data": [user_requested_data_type_filter],
     "methodology": [methodology_type_filter],
-    "methodology_article": [methodology_article_type_filter]
-}
+    "methodology_article": [methodology_article_type_filter],
+    "data": [
+        datasets_type_filter,
+        time_series_type_filter,
+        user_requested_data_type_filter],
+    "publications": [
+        bulletin_type_filer,
+        compendium_landing_page,
+        article,
+        article_download]}
 
 
 def all_filter_funcs() -> List[str]:

@@ -1,5 +1,5 @@
-from .type_filter import *
 from typing import List
+from server.search.type_filter import *
 
 
 def type_filter_function(type_filter: TypeFilter) -> List[dict]:

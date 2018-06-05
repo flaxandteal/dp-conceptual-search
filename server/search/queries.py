@@ -1,4 +1,4 @@
-from . import fields
+from server.search import fields
 from elasticsearch_dsl import query as Q
 
 from typing import List
@@ -11,7 +11,6 @@ type_counts_query = {
         }
     }
 }
-
 
 def match(field: str, search_term: str, **kwargs) -> Q.Query:
     query_dict = {
@@ -45,6 +44,15 @@ def multi_match(field_list: List[str], search_term: str, **kwargs) -> Q.Query:
 
     q = Q.MultiMatch(**query_dict)
     return q
+
+
+def departments_query(search_term: str) -> Q.Query:
+    """
+    Returns the ONS departments query
+    :param search_term:
+    :return:
+    """
+    return Q.Match(**{"terms": {"query": search_term, "type": "boolean"}})
 
 
 def content_query(search_term: str) -> Q.DisMax:

@@ -1,17 +1,9 @@
 import abc
-import os
 
 from elasticsearch_dsl import Search
 
 from server.search.search_type import SearchType
 from server.search.sort_by import SortFields
-
-
-_INDEX = os.environ.get('SEARCH_INDEX', 'ons*')
-
-
-def get_index():
-    return _INDEX
 
 
 class BaseSearchEngine(abc.ABC, Search):
@@ -162,6 +154,19 @@ class SearchEngine(BaseSearchEngine):
 
     def __init__(self, **kwargs):
         super(SearchEngine, self).__init__(**kwargs)
+
+    def departments_query(self, search_term: str):
+        """
+        Executes the ONS departments query
+        :param search_term:
+        :return:
+        """
+        from server.search.queries import departments_query
+
+        query = departments_query(search_term)
+        query_dict = query.to_dict()
+
+        return self.build_query(query_dict, current_page=1, size=1)
 
     def content_query(
             self,

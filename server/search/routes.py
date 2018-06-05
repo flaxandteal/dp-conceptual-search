@@ -7,19 +7,18 @@ from server.requests import get_form_param
 
 from server.search import hits_to_json
 from server.search.sort_by import SortFields
-from server.search.search_engine import get_index, BaseSearchEngine, SearchEngine
+from server.search.indices import Index
+from server.search.multi_search import AsyncMultiSearch
+from server.search.search_engine import BaseSearchEngine, SearchEngine
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-async def execute_search(request: Request, search_engine_cls: type, search_term: str):
+async def execute_search(request: Request, search_engine_cls: ClassVar, search_term: str, type_filters) -> dict:
     """
     Simple search API to query Elasticsearch
     TODO - Modify to prevent building query multiple times
     """
-    from server.search.multi_search import AsyncMultiSearch
-    from server.search.type_filter import all_filter_funcs
-
     if not issubclass(search_engine_cls, BaseSearchEngine):
         raise InvalidUsage(
             "expected instance of 'BaseSearchEngine', got %s" %
@@ -30,9 +29,6 @@ async def execute_search(request: Request, search_engine_cls: type, search_term:
 
     # Get the Elasticsearch client
     client = current_app.es_client
-
-    # Get any content type filters
-    type_filters = get_form_param(request, "filter", False, all_filter_funcs())
 
     # Get sort_by. Default to relevance
     sort_by_str = get_form_param(request, "sort_by", False, "relevance")
@@ -54,7 +50,7 @@ async def execute_search(request: Request, search_engine_cls: type, search_term:
     featured_result_query = search_engine_cls().featured_result_query(search_term)
 
     # Create multi-search request
-    ms = AsyncMultiSearch(using=client, index=get_index())
+    ms = AsyncMultiSearch(using=client, index=Index.ONS.value)
     ms = ms.add(type_counts_query)
     ms = ms.add(content_query)
     ms = ms.add(featured_result_query)
@@ -78,8 +74,84 @@ async def search(request: Request):
     :param request:
     :return:
     """
+    from server.search.type_filter import all_filter_funcs
+
     search_term = request.args.get("q")
     if search_term is not None:
-        response = await execute_search(request, SearchEngine, search_term)
+        # Get any content type filters
+        type_filters = get_form_param(request, "filter", False, all_filter_funcs())
+
+        response = await execute_search(request, SearchEngine, search_term, type_filters)
         return response
+    raise InvalidUsage("no query provided")
+
+
+@search_blueprint.route('/ons/data', methods=["GET", "POST"])
+async def search_data(request: Request):
+    """
+    Performs a search request using the standard ONS SearchEngine. Limits type filters for SearchData endpoint.
+    :param request:
+    :return:
+    """
+    from server.search.type_filter import filters
+
+    search_term = request.args.get("q")
+    if search_term is not None:
+        # Get any content type filters
+        type_filters = get_form_param(
+            request, "filter", False, filters["data"])
+
+        response = await execute_search(request, SearchEngine, search_term, type_filters)
+        return response
+    raise InvalidUsage("no query provided")
+
+
+@search_blueprint.route('/ons/publications', methods=["GET", "POST"])
+async def search_publications(request: Request):
+    """
+    Performs a search request using the standard ONS SearchEngine. Limits type filters for SearchPublications endpoint.
+    :param request:
+    :return:
+    """
+    from server.search.type_filter import filters
+
+    search_term = request.args.get("q")
+    if search_term is not None:
+        # Get any content type filters
+        type_filters = get_form_param(
+            request, "filter", False, filters["publications"])
+
+        response = await execute_search(request, SearchEngine, search_term, type_filters)
+        return response
+    raise InvalidUsage("no query provided")
+
+
+@search_blueprint.route('/ons/departments', methods=["GET", "POST"])
+async def search_departments(request: Request):
+    """
+    Performs the ONS departments query
+    :param request:
+    :return:
+    """
+    search_term = request.args.get("q")
+    if search_term is not None:
+        import inspect
+
+        current_app = request.app
+
+        client = current_app.es_client
+
+        s = SearchEngine(using=client, index=Index.DEPARTMENTS.value)
+        response = s.departments_query(search_term).execute()
+
+        if inspect.isawaitable(response):
+            response = await response
+
+        result = {
+            "numberOfResults": response.hits.total,
+            "took": response.took,
+            "results": [hit for hit in response.hits.hits]
+        }
+
+        return json(result)
     raise InvalidUsage("no query provided")

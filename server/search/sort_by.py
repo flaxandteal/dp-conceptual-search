@@ -1,4 +1,4 @@
-from . import fields
+from server.search import fields
 from enum import Enum
 
 from typing import List
