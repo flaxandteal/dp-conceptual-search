@@ -11,6 +11,8 @@ from server.search.indices import Index
 from server.search.multi_search import AsyncMultiSearch
 from server.search.search_engine import BaseSearchEngine, SearchEngine
 
+from typing import ClassVar
+
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
