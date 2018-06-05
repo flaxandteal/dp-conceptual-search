@@ -1,17 +1,9 @@
 import abc
-import os
 
 from elasticsearch_dsl import Search
 
 from server.search.search_type import SearchType
 from server.search.sort_by import SortFields
-
-
-_INDEX = os.environ.get('SEARCH_INDEX', 'ons*')
-
-
-def get_index():
-    return _INDEX
 
 
 class BaseSearchEngine(abc.ABC, Search):

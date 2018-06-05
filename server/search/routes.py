@@ -7,7 +7,9 @@ from server.requests import get_form_param
 
 from server.search import hits_to_json
 from server.search.sort_by import SortFields
-from server.search.search_engine import get_index, BaseSearchEngine, SearchEngine
+from server.search.indices import Index
+from server.search.multi_search import AsyncMultiSearch
+from server.search.search_engine import BaseSearchEngine, SearchEngine
 
 from typing import ClassVar
 
@@ -18,8 +20,6 @@ async def execute_search(request: Request, search_engine_cls: ClassVar, search_t
     """
     Simple search API to query Elasticsearch
     """
-    from server.search.multi_search import AsyncMultiSearch
-
     if not issubclass(search_engine_cls, BaseSearchEngine):
         raise InvalidUsage(
             "expected instance of 'BaseSearchEngine', got %s" %
@@ -51,7 +51,7 @@ async def execute_search(request: Request, search_engine_cls: ClassVar, search_t
     featured_result_query = search_engine_cls().featured_result_query(search_term)
 
     # Create multi-search request
-    ms = AsyncMultiSearch(using=client, index=get_index())
+    ms = AsyncMultiSearch(using=client, index=Index.ONS.value)
     ms = ms.add(type_counts_query)
     ms = ms.add(content_query)
     ms = ms.add(featured_result_query)
@@ -97,7 +97,8 @@ async def search_data(request: Request):
     search_term = request.args.get("q")
     if search_term is not None:
         # Get any content type filters
-        type_filters = get_form_param(request, "filter", False, filters["data"])
+        type_filters = get_form_param(
+            request, "filter", False, filters["data"])
 
         response = await execute_search(request, SearchEngine, search_term, type_filters)
         return response
@@ -116,7 +117,8 @@ async def search_publications(request: Request):
     search_term = request.args.get("q")
     if search_term is not None:
         # Get any content type filters
-        type_filters = get_form_param(request, "filter", False, filters["publications"])
+        type_filters = get_form_param(
+            request, "filter", False, filters["publications"])
 
         response = await execute_search(request, SearchEngine, search_term, type_filters)
         return response
@@ -124,7 +126,7 @@ async def search_publications(request: Request):
 
 
 @search_blueprint.route('/ons/departments', methods=["GET", "POST"])
-async def search_publications(request: Request):
+async def search_departments(request: Request):
     """
     Performs the ONS departments query
     :param request:
@@ -138,7 +140,7 @@ async def search_publications(request: Request):
 
         client = current_app.es_client
 
-        s = SearchEngine(using=client, index="departments")
+        s = SearchEngine(using=client, index=Index.DEPARTMENTS.value)
         response = s.departments_query(search_term).execute()
 
         if inspect.isawaitable(response):
