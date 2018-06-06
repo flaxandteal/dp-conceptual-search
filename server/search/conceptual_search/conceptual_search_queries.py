@@ -96,7 +96,6 @@ def word_vector_keywords_query(
     for label, probability in zip(labels, probabilities):
         match_queries.append(
             Q.Match(**{fields.keywords.name: {"query": label.replace("_", " "), "boost": probability}})
-            # Q.Match(**{fields.keywords.name: {"query": label.replace("_", " ")}})
         )
 
     # query = Q.DisMax(queries=match_queries)
