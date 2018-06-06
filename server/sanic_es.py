@@ -1,5 +1,7 @@
 import os
+
 from sanic import Sanic
+from server.sanic_extension import SanicExtension
 
 
 def get_search_url() -> str:
@@ -62,16 +64,10 @@ def get_elastic_search_client(
         return Elasticsearch(search_url, timeout=search_timeout)
 
 
-class SanicElasticsearch(object):
+class SanicElasticsearch(SanicExtension):
     """
     Class to handle the init/tear down of ES clients for Sanic
     """
-
-    def __init__(self, app: Sanic=None) -> None:
-        self.app = app
-
-        if app:
-            self.init_app(app=app)
 
     def init_app(self, app: Sanic) -> None:
         """

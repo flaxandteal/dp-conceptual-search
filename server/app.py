@@ -7,9 +7,9 @@ def init_default_app() -> Sanic:
     import asyncio
     import uvloop
 
-    from .log_config import default_log_config
-    from .error_handlers import CustomHandler
-    from .sanic_es import SanicElasticsearch
+    from server.log_config import default_log_config
+    from server.error_handlers import CustomHandler
+    from server.sanic_es import SanicElasticsearch
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -43,6 +43,7 @@ def register_blueprints(app: Sanic) -> None:
     # Register blueprint(s)
     from server.search.routes import search_blueprint
     from server.healthcheck.routes import health_check_blueprint
+
     app.blueprint(search_blueprint)
     app.blueprint(health_check_blueprint)
 
