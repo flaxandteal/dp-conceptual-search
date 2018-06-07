@@ -88,22 +88,26 @@ def create_app() -> Sanic:
                 value = request.cookies.pop(key)
                 request.cookies[key] = hash_value(value)
 
-        # If user/session doesn't exist, create them
-        if '_ga' in request.cookies:
-            user_id = request.cookies.get('_ga')
-            user = await User.find_by_user_id(user_id)
+        conceptual_search_enabled = app.config.get(
+            "CONCEPTUAL_SEARCH_ENABLED", False)
 
-            if user is None:
-                user = User(user_id)
-                await user.write()
+        if conceptual_search_enabled:
+            # If user/session doesn't exist, create them
+            if '_ga' in request.cookies:
+                user_id = request.cookies.get('_ga')
                 user = await User.find_by_user_id(user_id)
 
-            if '_gid' in request.cookies and user is not None:
-                session_id = request.cookies.get('_gid')
-                session = await Session.find_by_session_id(session_id)
+                if user is None:
+                    user = User(user_id)
+                    await user.write()
+                    user = await User.find_by_user_id(user_id)
 
-                if session is None:
-                    session = Session(user.id, session_id)
-                    await session.write()
+                if '_gid' in request.cookies and user is not None:
+                    session_id = request.cookies.get('_gid')
+                    session = await Session.find_by_session_id(session_id)
+
+                    if session is None:
+                        session = Session(user.id, session_id)
+                        await session.write()
 
     return app
