@@ -69,7 +69,7 @@ class SanicElasticsearch(SanicExtension):
     Class to handle the init/tear down of ES clients for Sanic
     """
 
-    def init_app(self, app: Sanic) -> None:
+    def init_app(self, app: Sanic, **kwargs) -> None:
         """
         Registers init/shutdown hooks for Elasticsearch
         :param app:

@@ -6,7 +6,9 @@ from server.requests import get_form_param
 
 from server.search.routes import execute_search
 
-conceptual_search_blueprint = Blueprint('conceptual_search', url_prefix='/search/conceptual')
+conceptual_search_blueprint = Blueprint(
+    'conceptual_search',
+    url_prefix='/search/conceptual')
 
 
 @conceptual_search_blueprint.route('/ons', methods=["GET", "POST"])
@@ -22,7 +24,8 @@ async def conceptual_search(request: Request):
     search_term = request.args.get("q")
     if search_term is not None:
         # Get any content type filters
-        type_filters = get_form_param(request, "filter", False, all_filter_funcs())
+        type_filters = get_form_param(
+            request, "filter", False, all_filter_funcs())
         response = await execute_search(request, ConceptualSearchEngine, search_term, type_filters)
         return response
     raise InvalidUsage("no query provided")

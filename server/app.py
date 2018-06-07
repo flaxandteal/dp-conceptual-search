@@ -1,6 +1,8 @@
 from sanic import Sanic
 from sanic.request import Request
 
+from sanic_motor import BaseModel
+
 
 def init_default_app() -> Sanic:
     import os
@@ -35,16 +37,23 @@ def init_default_app() -> Sanic:
     # Initialise Elasticsearch client
     SanicElasticsearch(app)
 
+    # Initialse MongoEngine
+    BaseModel.init_app(app)
+
+    # Register blueprints
     register_blueprints(app)
+
     return app
 
 
 def register_blueprints(app: Sanic) -> None:
     # Register blueprint(s)
     from server.search.routes import search_blueprint
+    from server.users.routes import user_blueprint
     from server.healthcheck.routes import health_check_blueprint
 
     app.blueprint(search_blueprint)
+    app.blueprint(user_blueprint)
     app.blueprint(health_check_blueprint)
 
     conceptual_search_enabled = app.config.get(

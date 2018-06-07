@@ -22,7 +22,8 @@ async def search(request: Request):
     search_term = request.args.get("q")
     if search_term is not None:
         # Get any content type filters
-        type_filters = get_form_param(request, "filter", False, all_filter_funcs())
+        type_filters = get_form_param(
+            request, "filter", False, all_filter_funcs())
 
         response = await execute_search(request, SearchEngine, search_term, type_filters)
         return response
@@ -77,7 +78,7 @@ async def search_departments(request: Request):
     :return:
     """
     from server.search.indices import Index
-    
+
     search_term = request.args.get("q")
     if search_term is not None:
         import inspect

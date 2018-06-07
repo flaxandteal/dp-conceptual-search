@@ -90,13 +90,13 @@ def word_vector_keywords_query(
     :param threshold:
     :return:
     """
-    labels, probabilities = model.predict(search_term, k=k, threshold=threshold)
+    labels, probabilities = model.predict(
+        search_term, k=k, threshold=threshold)
 
     match_queries = []
     for label, probability in zip(labels, probabilities):
-        match_queries.append(
-            Q.Match(**{fields.keywords.name: {"query": label.replace("_", " "), "boost": probability}})
-        )
+        match_queries.append(Q.Match(
+            **{fields.keywords.name: {"query": label.replace("_", " "), "boost": probability}}))
 
     # query = Q.DisMax(queries=match_queries)
     query = Q.Bool(should=match_queries)
@@ -136,7 +136,8 @@ def content_query(
 
     function_scores = [script_score.to_dict(), date_function.to_dict()]
 
-    additional_function_scores = kwargs.get("function_scores", content_filter_functions())
+    additional_function_scores = kwargs.get(
+        "function_scores", content_filter_functions())
     if additional_function_scores is not None:
         if hasattr(additional_function_scores, "__iter__") is False:
             additional_function_scores = [additional_function_scores]

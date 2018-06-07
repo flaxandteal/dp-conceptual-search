@@ -10,5 +10,5 @@ class SanicExtension(abc.ABC):
             self.init_app(app=app)
 
     @abc.abstractmethod
-    def init_app(self, app: Sanic) -> None:
+    def init_app(self, app: Sanic, **kwargs) -> None:
         pass

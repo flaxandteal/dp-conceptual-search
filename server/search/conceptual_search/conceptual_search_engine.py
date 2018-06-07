@@ -32,7 +32,9 @@ class ConceptualSearchEngine(SearchEngine):
         if sort_by == SortFields.relevance:
             # Build the content query with vector function score
             query = content_query(
-                search_term, ConceptualSearchEngine.word_embedding_model, **kwargs_copy)
+                search_term,
+                ConceptualSearchEngine.word_embedding_model,
+                **kwargs_copy)
 
             # Prepare the final query and omit the embedding_vector field from
             # _source
@@ -49,7 +51,13 @@ class ConceptualSearchEngine(SearchEngine):
 
             return s
         else:
-            return super(ConceptualSearchEngine, self).content_query(search_term, current_page=current_page, size=size, **kwargs)
+            return super(
+                ConceptualSearchEngine,
+                self).content_query(
+                search_term,
+                current_page=current_page,
+                size=size,
+                **kwargs)
 
     def featured_result_query(self, search_term):
         """
