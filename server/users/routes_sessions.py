@@ -25,7 +25,7 @@ async def create(request: Request, user_id: str):
 
         return json(session.to_json(), 200)
 
-    return json("Unable to find user with id '%s'" % user_id, 404)
+    return json("User '%s' not found" % user_id, 404)
 
 
 @sessions_blueprint.route('/update/<user_id>/<session_id>/<term>', methods=['POST'])
@@ -38,7 +38,11 @@ async def update(request: Request, user_id: str, session_id: str, term: str):
         session = await Session.find_one(filter=dict(user_id=user.id, session_id=session_id))
 
         if session is not None:
-            await session.update_session_vector(term)
+            try:
+                await session.update_session_vector(term)
+            except Exception as e:
+                return json('Unable to update user/session: %s / %s' % (user_id, session_id), 500)
 
             return json(session.to_json(), 200)
-    return json("Unable to update session", 500)
+        return json("Session '%s' not found for user %s" % (session_id, user_id), 404)
+    return json("User '%s' not found" % user_id, 404)

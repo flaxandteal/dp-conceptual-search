@@ -26,6 +26,9 @@ def init_default_app() -> Sanic:
         from .word_embedding import supervised_models
         supervised_models.init()
 
+        # Initialse MongoEngine
+        BaseModel.init_app(app)
+
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
         from sanic_prometheus import monitor
         # adds /metrics endpoint to your Sanic server
@@ -37,9 +40,6 @@ def init_default_app() -> Sanic:
     # Initialise Elasticsearch client
     SanicElasticsearch(app)
 
-    # Initialse MongoEngine
-    BaseModel.init_app(app)
-
     # Register blueprints
     register_blueprints(app)
 
@@ -49,19 +49,21 @@ def init_default_app() -> Sanic:
 def register_blueprints(app: Sanic) -> None:
     # Register blueprint(s)
     from server.search.routes import search_blueprint
-    from server.users.routes import user_blueprint
-    from server.users.routes_sessions import sessions_blueprint
     from server.healthcheck.routes import health_check_blueprint
 
     app.blueprint(search_blueprint)
-    app.blueprint(user_blueprint)
-    app.blueprint(sessions_blueprint)
     app.blueprint(health_check_blueprint)
 
     conceptual_search_enabled = app.config.get(
         "CONCEPTUAL_SEARCH_ENABLED", False)
+
     if conceptual_search_enabled:
+        from server.users.routes import user_blueprint
+        from server.users.routes_sessions import sessions_blueprint
         from server.search.conceptual_search.routes import conceptual_search_blueprint
+
+        app.blueprint(user_blueprint)
+        app.blueprint(sessions_blueprint)
         app.blueprint(conceptual_search_blueprint)
 
 

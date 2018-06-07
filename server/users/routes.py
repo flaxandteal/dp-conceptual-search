@@ -23,9 +23,11 @@ async def find(request: Request, user_id: str):
 
     user = await User.find_one(filter=dict(user_id=user_id))
 
-    doc = user.to_json()
-    doc['user_vector'] = await user.get_user_vector()
-    return json(doc, 200)
+    if user is not None:
+        doc = user.to_json()
+        doc['user_vector'] = await user.get_user_vector()
+        return json(doc, 200)
+    return json("User '%s' not found" % user_id, 404)
 
 
 @user_blueprint.route('/delete/<user_id>', methods=['DELETE'])
@@ -33,5 +35,8 @@ async def delete(request: Request, user_id: str):
     from server.users.user import User
 
     user = await User.find_one(filter=dict(user_id=user_id))
-    await user.destroy()
-    return json("User '%s' deleted" % user_id, 200)
+
+    if user is not None:
+        await user.destroy()
+        return json("User '%s' deleted" % user_id, 200)
+    return json("User '%s' not found" % user_id, 404)
