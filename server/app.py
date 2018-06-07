@@ -80,8 +80,6 @@ def create_app() -> Sanic:
         :return:
         """
         from server.anonymize import hash_value
-        from server.users.user import User
-        from server.users.session import Session
 
         for key in ["_ga", "_gid"]:
             if key in request.cookies:
@@ -92,6 +90,9 @@ def create_app() -> Sanic:
             "CONCEPTUAL_SEARCH_ENABLED", False)
 
         if conceptual_search_enabled:
+            from server.users.user import User
+            from server.users.session import Session
+            
             # If user/session doesn't exist, create them
             if '_ga' in request.cookies:
                 user_id = request.cookies.get('_ga')
