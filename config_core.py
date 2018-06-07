@@ -5,12 +5,10 @@ CONCEPTUAL_SEARCH_ENABLED = os.environ.get(
     'CONCEPTUAL_SEARCH_ENABLED',
     'False').lower() == 'true'
 
-MONGO_DB = os.environ.get('DEFAULT_MONGO_DB', 'local')
-MONGO_HOST = os.environ.get('MONGO_HOST', 'localhost')
-MONGO_PORT = os.environ.get('MONGO_PORT', '27017')
+MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
+MONGO_BIND_ADDR = os.environ.get('MONGO_BIND_ADDR', 'mongodb://localhost:27017')
 
-MOTOR_URI = "mongodb://{host}:{port}/{db}".format(
-    host=MONGO_HOST,
-    port=MONGO_PORT,
-    db=MONGO_DB
+MOTOR_URI = "{bind_addr}/{db}".format(
+    bind_addr=MONGO_BIND_ADDR,
+    db=MONGO_SEARCH_DATABASE
 )

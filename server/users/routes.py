@@ -22,7 +22,10 @@ async def find(request: Request, user_id: str):
     from server.users.user import User
 
     user = await User.find_one(filter=dict(user_id=user_id))
-    return json(user.to_json(), 200)
+
+    doc = user.to_json()
+    doc['user_vector'] = await user.get_user_vector()
+    return json(doc, 200)
 
 
 @user_blueprint.route('/delete/<user_id>', methods=['DELETE'])
