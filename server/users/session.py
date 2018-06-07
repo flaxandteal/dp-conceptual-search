@@ -12,7 +12,9 @@ model = load_model(SupervisedModels.ONS)
 dim = model.get_dimension()
 
 
-def default_distance_measure(original_vector: np.ndarray, term_vector: np.ndarray):
+def default_distance_measure(
+        original_vector: np.ndarray,
+        term_vector: np.ndarray):
     """
     Default method to measure distance between two vectors. Uses Euclidean distance.
     :param original_vector:
@@ -23,7 +25,9 @@ def default_distance_measure(original_vector: np.ndarray, term_vector: np.ndarra
     return dist
 
 
-def default_move_session_vector(original_vector: np.ndarray, term_vector: np.ndarray):
+def default_move_session_vector(
+        original_vector: np.ndarray,
+        term_vector: np.ndarray):
     """
     Default method to modify a session vector to reflect interest in a term vector.
     :param original_vector: Word vector representing the present session.
@@ -40,7 +44,12 @@ class Session(BaseModel, Document):
     __coll__ = 'user_sessions'
     __unique_fields__ = ['user_id', 'session_id']
 
-    def __init__(self, user_id: ObjectId, session_id: str, session_vector: list=None, **kwargs):
+    def __init__(
+            self,
+            user_id: ObjectId,
+            session_id: str,
+            session_vector: list=None,
+            **kwargs):
         super(Session, self).__init__(**kwargs)
         self.user_id = user_id
         self.session_id = session_id

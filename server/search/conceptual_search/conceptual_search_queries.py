@@ -50,7 +50,10 @@ class BoostMode(Enum):
         return self.value
 
 
-def vector_script_score(field: fields.Field, vector: ndarray, weight: int=1) -> Q.Query:
+def vector_script_score(
+        field: fields.Field,
+        vector: ndarray,
+        weight: int=1) -> Q.Query:
     params = {
         "cosine": True,
         "field": field.name,
@@ -145,10 +148,12 @@ def content_query(
         user_vector = kwargs.get('user_vector')
 
         if user_vector is not None:
-            assert isinstance(user_vector, ndarray), "Must supply user_vector as ndarray"
+            assert isinstance(
+                user_vector, ndarray), "Must supply user_vector as ndarray"
 
             # TODO - Test as rescore query
-            user_script_score = vector_script_score(embedding_vector, user_vector)
+            user_script_score = vector_script_score(
+                embedding_vector, user_vector)
             function_scores.append(user_script_score.to_dict())
 
     additional_function_scores = kwargs.get(

@@ -42,7 +42,8 @@ class User(BaseModel, Document):
         Get recent sessions and compute the User vector
         :return:
         """
-        # Load sessions for current user, in descending order based on generation time (ObjectId)
+        # Load sessions for current user, in descending order based on
+        # generation time (ObjectId)
         cursor = await Session.find(filter=dict(user_id=self.id), sort='_id desc')
         sessions = cursor.objects
 

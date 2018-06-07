@@ -92,7 +92,7 @@ def create_app() -> Sanic:
         if conceptual_search_enabled:
             from server.users.user import User
             from server.users.session import Session
-            
+
             # If user/session doesn't exist, create them
             if '_ga' in request.cookies:
                 user_id = request.cookies.get('_ga')
