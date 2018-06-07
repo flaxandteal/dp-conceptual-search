@@ -14,7 +14,7 @@ async def create(request: Request):
     user = User(uid)
 
     await user.write()
-    return json(user.to_dict(), 200)
+    return json(user.to_json(), 200)
 
 
 @user_blueprint.route('/find/<user_id>', methods=['GET'])
@@ -22,4 +22,13 @@ async def find(request: Request, user_id: str):
     from server.users.user import User
 
     user = await User.find_one(filter=dict(user_id=user_id))
-    return json(user.to_dict(), 200)
+    return json(user.to_json(), 200)
+
+
+@user_blueprint.route('/delete/<user_id>', methods=['DELETE'])
+async def delete(request: Request, user_id: str):
+    from server.users.user import User
+
+    user = await User.find_one(filter=dict(user_id=user_id))
+    await user.destroy()
+    return json("User '%s' deleted" % user_id, 200)

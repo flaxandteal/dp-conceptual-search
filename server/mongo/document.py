@@ -8,5 +8,9 @@ class Document(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def to_json(self) -> dict:
+        pass
+
+    @abc.abstractmethod
     async def write(self):
         pass

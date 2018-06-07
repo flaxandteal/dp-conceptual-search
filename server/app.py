@@ -50,10 +50,12 @@ def register_blueprints(app: Sanic) -> None:
     # Register blueprint(s)
     from server.search.routes import search_blueprint
     from server.users.routes import user_blueprint
+    from server.users.routes_sessions import sessions_blueprint
     from server.healthcheck.routes import health_check_blueprint
 
     app.blueprint(search_blueprint)
     app.blueprint(user_blueprint)
+    app.blueprint(sessions_blueprint)
     app.blueprint(health_check_blueprint)
 
     conceptual_search_enabled = app.config.get(
