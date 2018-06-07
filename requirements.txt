@@ -9,7 +9,6 @@ sanic_prometheus==0.1.5
 elasticsearch_dsl==6.1.0
 numpy==1.14.3
 typing==3.6.2
-fasttext==0.8.22
 python_json_logger==0.1.8
 torch==0.4.0
 unicode==2.6
