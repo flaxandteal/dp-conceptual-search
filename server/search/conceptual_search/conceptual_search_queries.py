@@ -50,7 +50,7 @@ class BoostMode(Enum):
         return self.value
 
 
-def vector_script_score(field: fields.Field, vector: ndarray) -> Q.Query:
+def vector_script_score(field: fields.Field, vector: ndarray, weight: int=1) -> Q.Query:
     params = {
         "cosine": True,
         "field": field.name,
@@ -59,7 +59,8 @@ def vector_script_score(field: fields.Field, vector: ndarray) -> Q.Query:
     script_score = {
         "lang": ScriptLanguage.KNN.value,
         "params": params,
-        "script": Scripts.BINARY_VECTOR_SCORE.value
+        "script": Scripts.BINARY_VECTOR_SCORE.value,
+        "weight": weight
     }
 
     # return script_score
@@ -130,6 +131,15 @@ def content_query(
 
     function_scores = [script_score.to_dict(), date_function.to_dict()]
 
+    # Build the original ONS content query
+    dis_max_query = ons_content_query(search_term)
+
+    # # Build additional keywords query
+    terms_query = word_vector_keywords_query(
+        search_term, model)
+
+    should = [dis_max_query, terms_query]
+
     # If user is specified, add a user vector function score
     if 'user_vector' in kwargs:
         user_vector = kwargs.get('user_vector')
@@ -137,25 +147,20 @@ def content_query(
         if user_vector is not None:
             assert isinstance(user_vector, ndarray), "Must supply user_vector as ndarray"
 
+            # TODO - Test as rescore query
             user_script_score = vector_script_score(embedding_vector, user_vector)
             function_scores.append(user_script_score.to_dict())
 
-    # Build the original ONS content query
-    dis_max_query = ons_content_query(search_term)
-    #
-    # # Build additional keywords query
-    terms_query = word_vector_keywords_query(
-        search_term, model)
-
     additional_function_scores = kwargs.get(
         "function_scores", content_filter_functions())
+
     if additional_function_scores is not None:
         if hasattr(additional_function_scores, "__iter__") is False:
             additional_function_scores = [additional_function_scores]
         function_scores.extend(additional_function_scores)
 
     function_score = FunctionScore(
-        query=Q.Bool(should=[dis_max_query, terms_query]),
+        query=Q.Bool(should=should),
         min_score=min_score,
         boost_mode=boost_mode.value,
         functions=function_scores)

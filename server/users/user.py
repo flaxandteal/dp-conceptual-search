@@ -32,7 +32,10 @@ class User(BaseModel, Document):
 
     async def get_latest_session(self) -> Session:
         cursor = await Session.find(filter=dict(user_id=self.id), sort='_id desc', limit=1)
-        return cursor.objects[0]
+
+        if len(cursor.objects) > 0:
+            return cursor.objects[0]
+        return None
 
     async def get_user_vector(self) -> np.ndarray:
         """

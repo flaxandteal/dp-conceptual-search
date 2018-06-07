@@ -40,3 +40,36 @@ async def delete(request: Request, user_id: str):
         await user.destroy()
         return json("User '%s' deleted" % user_id, 200)
     return json("User '%s' not found" % user_id, 404)
+
+
+@user_blueprint.route('/similarity/<user_id>/<term>', methods=['GET'])
+async def similarity(request: Request, user_id: str, term: str):
+    """
+    Measure how likely this user is to be interested in the specified term
+    :param request:
+    :param term:
+    :return:
+    """
+    from server.users.user import User
+
+    user = await User.find_one(filter=dict(user_id=user_id))
+
+    if user is not None:
+        from server.word_embedding.supervised_models import load_model, SupervisedModels
+        from server.word_embedding.utils import cosine_sim
+
+        model = load_model(SupervisedModels.ONS)
+
+        term_vector = model.get_sentence_vector(term)
+        user_vector = await user.get_user_vector()
+
+        sim = cosine_sim(user_vector, term_vector)
+
+        response = {
+            'user_id': user_id,
+            'term': term,
+            'similarity': sim
+        }
+
+        return json(response, 200)
+    return json("User '%s' not found" % user_id, 404)
