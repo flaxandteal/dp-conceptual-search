@@ -112,6 +112,7 @@ def content_query(
     """
     Conceptual search (main) content query.
     Requires embedding_vectors to be indexed in Elasticsearch.
+    TODO - Grab current user ID and add as additional vector script score
     :param search_term:
     :param model:
     :param boost_mode:
@@ -127,14 +128,24 @@ def content_query(
     script_score = vector_script_score(embedding_vector, search_vector)
     date_function = date_decay_function()
 
+    function_scores = [script_score.to_dict(), date_function.to_dict()]
+
+    # If user is specified, add a user vector function score
+    if 'user_vector' in kwargs:
+        user_vector = kwargs.get('user_vector')
+
+        if user_vector is not None:
+            assert isinstance(user_vector, ndarray), "Must supply user_vector as ndarray"
+
+            user_script_score = vector_script_score(embedding_vector, user_vector)
+            function_scores.append(user_script_score.to_dict())
+
     # Build the original ONS content query
     dis_max_query = ons_content_query(search_term)
     #
     # # Build additional keywords query
     terms_query = word_vector_keywords_query(
         search_term, model)
-
-    function_scores = [script_score.to_dict(), date_function.to_dict()]
 
     additional_function_scores = kwargs.get(
         "function_scores", content_filter_functions())

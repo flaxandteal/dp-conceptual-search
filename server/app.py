@@ -79,11 +79,31 @@ def create_app() -> Sanic:
         :param request:
         :return:
         """
-        from .anonymize import hash_value
+        from server.anonymize import hash_value
+        from server.users.user import User
+        from server.users.session import Session
 
         for key in ["_ga", "_gid"]:
             if key in request.cookies:
                 value = request.cookies.pop(key)
                 request.cookies[key] = hash_value(value)
+
+        # If user/session doesn't exist, create them
+        if '_ga' in request.cookies:
+            user_id = request.cookies.get('_ga')
+            user = await User.find_by_user_id(user_id)
+
+            if user is None:
+                user = User(user_id)
+                await user.write()
+                user = await User.find_by_user_id(user_id)
+
+            if '_gid' in request.cookies and user is not None:
+                session_id = request.cookies.get('_gid')
+                session = await Session.find_by_session_id(session_id)
+
+                if session is None:
+                    session = Session(user.id, session_id)
+                    await session.write()
 
     return app

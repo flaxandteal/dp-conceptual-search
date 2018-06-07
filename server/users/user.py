@@ -3,10 +3,7 @@ import numpy as np
 from server.app import BaseModel
 from server.mongo.document import Document
 
-from server.word_embedding.supervised_models import load_model, SupervisedModels
-
-
-model = load_model(SupervisedModels.ONS)
+from server.users.session import Session
 
 
 class User(BaseModel, Document):
@@ -29,13 +26,19 @@ class User(BaseModel, Document):
     async def write(self):
         await User.insert_one(self.to_dict())
 
-    async def get_user_vector(self):
+    @classmethod
+    async def find_by_user_id(cls, user_id):
+        return await User.find_one(filter=dict(user_id=user_id))
+
+    async def get_latest_session(self) -> Session:
+        cursor = await Session.find(filter=dict(user_id=self.id), sort='_id desc', limit=1)
+        return cursor.objects[0]
+
+    async def get_user_vector(self) -> np.ndarray:
         """
         Get recent sessions and compute the User vector
         :return:
         """
-        from server.users.session import Session
-
         # Load sessions for current user, in descending order based on generation time (ObjectId)
         cursor = await Session.find(filter=dict(user_id=self.id), sort='_id desc')
         sessions = cursor.objects
@@ -57,7 +60,5 @@ class User(BaseModel, Document):
             # Average
             user_vec = np.mean(vectors, axis=0)
 
-            if np.all(user_vec == 0.):
-                return np.zeros(model.get_dimension()).tolist()
             return user_vec
-        return np.zeros(model.get_dimension()).tolist()
+        return None

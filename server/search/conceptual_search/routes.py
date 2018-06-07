@@ -18,6 +18,8 @@ async def conceptual_search(request: Request):
     :param request:
     :return:
     """
+    from server.users.user import User
+
     from server.search.type_filter import all_filter_funcs
     from server.search.conceptual_search.conceptual_search_engine import ConceptualSearchEngine
 
@@ -26,6 +28,21 @@ async def conceptual_search(request: Request):
         # Get any content type filters
         type_filters = get_form_param(
             request, "filter", False, all_filter_funcs())
-        response = await execute_search(request, ConceptualSearchEngine, search_term, type_filters)
+
+        user_vector = None
+        if '_ga' in request.cookies:
+            user_id = request.cookies.get('_ga')
+            user = await User.find_by_user_id(user_id)
+            if user is not None:
+                # Update session
+                latest_session = await user.get_latest_session()
+                if latest_session is not None:
+                    await latest_session.update_session_vector(search_term)
+
+                    # Compute the user vector
+                    user_vector = await user.get_user_vector()
+
+        response = await execute_search(request, ConceptualSearchEngine, search_term,
+                                        type_filters, user_vector=user_vector)
         return response
     raise InvalidUsage("no query provided")
