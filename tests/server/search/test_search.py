@@ -11,10 +11,7 @@ class SearchTestSuite(TestApp):
         """
         request, response = self.client.post('/search/ons?q=rpi')
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 200)
+        self.assert_response_code(request, response, 200)
 
         self.assertIsNotNone(response.json)
         self.assertIsInstance(response.json, dict)
@@ -45,10 +42,7 @@ class SearchTestSuite(TestApp):
         """
         request, response = self.client.post('/search/ons/data?q=rpi')
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 200)
+        self.assert_response_code(request, response, 200)
 
         self.assertIsNotNone(response.json)
         self.assertIsInstance(response.json, dict)
@@ -67,10 +61,7 @@ class SearchTestSuite(TestApp):
         """
         request, response = self.client.post('/search/ons/data')
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 400)
+        self.assert_response_code(request, response, 400)
 
     def test_valid_search_publications_returns_200(self):
         """
@@ -79,10 +70,7 @@ class SearchTestSuite(TestApp):
         """
         request, response = self.client.post('/search/ons/publications?q=rpi')
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 200)
+        self.assert_response_code(request, response, 200)
 
         self.assertIsNotNone(response.json)
         self.assertIsInstance(response.json, dict)
@@ -101,10 +89,7 @@ class SearchTestSuite(TestApp):
         """
         request, response = self.client.post('/search/ons/publications')
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 400)
+        self.assert_response_code(request, response, 400)
 
     def test_valid_search_departments_returns_200(self):
         """
@@ -113,10 +98,7 @@ class SearchTestSuite(TestApp):
         """
         request, response = self.client.post('/search/ons/departments?q=rpi')
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 200)
+        self.assert_response_code(request, response, 200)
 
         self.assertIsNotNone(response.json)
         self.assertIsInstance(response.json, dict)
@@ -133,10 +115,7 @@ class SearchTestSuite(TestApp):
         """
         request, response = self.client.post('/search/ons/departments')
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 400)
+        self.assert_response_code(request, response, 400)
 
 
 if __name__ == "__main__":

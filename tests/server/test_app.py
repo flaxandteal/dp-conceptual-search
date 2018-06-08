@@ -10,3 +10,9 @@ class TestApp(unittest.TestCase):
         os.environ['SEARCH_CONFIG'] = 'testing'
         self.app = create_app()
         self.client = self.app.test_client
+
+    def assert_response_code(self, request, response, code: int):
+        self.assertIsNotNone(request)
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.body)
+        self.assertEqual(response.status, code)

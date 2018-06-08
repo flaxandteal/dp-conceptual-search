@@ -6,6 +6,21 @@ from sanic.exceptions import InvalidUsage
 user_blueprint = Blueprint('users', url_prefix='/users')
 
 
+async def get_user(user_id: str):
+    """
+    Loads a user by first trying the supplied user_id, then hashing if not found and trying again.
+    :param user_id:
+    :return:
+    """
+    from server.anonymize import hash_value
+    from server.users.user import User
+
+    user = await User.find_one(filter=dict(user_id=user_id))
+    if user is None:
+        user = await User.find_one(filter=dict(user_id=hash_value(user_id)))
+    return user
+
+
 @user_blueprint.route('/create', methods=['PUT'])
 async def create(request: Request):
     from server.users.user import User
@@ -23,9 +38,7 @@ async def create(request: Request):
 
 @user_blueprint.route('/find/<user_id>', methods=['GET'])
 async def find(request: Request, user_id: str):
-    from server.users.user import User
-
-    user = await User.find_one(filter=dict(user_id=user_id))
+    user = await get_user(user_id)
 
     if user is not None:
         doc = user.to_json()
@@ -36,9 +49,7 @@ async def find(request: Request, user_id: str):
 
 @user_blueprint.route('/delete/<user_id>', methods=['DELETE'])
 async def delete(request: Request, user_id: str):
-    from server.users.user import User
-
-    user = await User.find_one(filter=dict(user_id=user_id))
+    user = await get_user(user_id)
 
     if user is not None:
         await user.destroy()
@@ -55,9 +66,7 @@ async def similarity(request: Request, user_id: str, term: str):
     :param term:
     :return:
     """
-    from server.users.user import User
-
-    user = await User.find_one(filter=dict(user_id=user_id))
+    user = await get_user(user_id)
 
     if user is not None:
         from server.word_embedding.supervised_models import load_model, SupervisedModels
