@@ -1,20 +1,24 @@
 from sanic import Blueprint
 from sanic.request import Request
 from sanic.response import json
+from sanic.exceptions import InvalidUsage
 
 user_blueprint = Blueprint('users', url_prefix='/users')
 
 
 @user_blueprint.route('/create', methods=['PUT'])
 async def create(request: Request):
-    from uuid import uuid1
     from server.users.user import User
 
-    uid = str(uuid1())
-    user = User(uid)
+    uid = request.cookies.get(User.user_id_key)
+    if uid is not None:
+        user = User(uid)
 
-    await user.write()
-    return json(user.to_json(), 200)
+        await user.write()
+        return json(user.to_json(), 200)
+    raise InvalidUsage(
+        "Must supply '%s' cookie to create user" %
+        User.user_id_key)
 
 
 @user_blueprint.route('/find/<user_id>', methods=['GET'])
@@ -47,6 +51,7 @@ async def similarity(request: Request, user_id: str, term: str):
     """
     Measure how likely this user is to be interested in the specified term
     :param request:
+    :param user_id:
     :param term:
     :return:
     """

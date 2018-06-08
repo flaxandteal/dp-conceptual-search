@@ -1,48 +1,23 @@
+import numpy as np
+from bson import ObjectId
+from typing import Callable
+
 from server.app import BaseModel
 from server.mongo.document import Document
+from server.users.distance_utils import default_move_session_vector
 
 from server.word_embedding.supervised_models import load_model, SupervisedModels
-
-from bson import ObjectId
-
-import numpy as np
 
 
 model = load_model(SupervisedModels.ONS)
 dim = model.get_dimension()
 
 
-def default_distance_measure(
-        original_vector: np.ndarray,
-        term_vector: np.ndarray):
-    """
-    Default method to measure distance between two vectors. Uses Euclidean distance.
-    :param original_vector:
-    :param term_vector:
-    :return:
-    """
-    dist = term_vector - original_vector
-    return dist
-
-
-def default_move_session_vector(
-        original_vector: np.ndarray,
-        term_vector: np.ndarray):
-    """
-    Default method to modify a session vector to reflect interest in a term vector.
-    :param original_vector: Word vector representing the present session.
-    :param term_vector: Word vector representing the term of interest.
-    :return: An updated word vector which has moved towards the term vector in the full N-dimensional
-    vector space.
-    """
-    dist = default_distance_measure(original_vector, term_vector)
-
-    return original_vector + dist / 4
-
-
 class Session(BaseModel, Document):
     __coll__ = 'user_sessions'
     __unique_fields__ = ['user_id', 'session_id']
+
+    session_id_key = '_gid'
 
     def __init__(
             self,
@@ -71,27 +46,27 @@ class Session(BaseModel, Document):
                     )
 
     async def write(self):
-        await Session.insert_one(self.to_dict())
+        return await Session.insert_one(self.to_dict())
 
     async def update(self):
         doc = dict(session_vector=self.session_vector)
-        await Session.update_one({'_id': self.id}, {'$set': doc})
+        return await Session.update_one({'_id': self.id}, {'$set': doc})
 
     @classmethod
     async def find_by_session_id(cls, session_id):
         return await Session.find_one(filter=dict(session_id=session_id))
 
     @property
-    def session_array(self):
+    def session_array(self) -> np.ndarray:
         return np.array(self.session_vector)
 
     async def update_session_vector(
             self,
             search_term: str,
-            update_func=default_move_session_vector,
+            update_func: Callable=default_move_session_vector,
             **kwargs):
         """
-
+        Update this sessions term vector
         :param search_term:
         :param update_func: Callable - function which takes the original session vector, term vector
         and (optional) kwargs and updates the session vector to reflect user interest.

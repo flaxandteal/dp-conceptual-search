@@ -34,7 +34,7 @@ async def conceptual_search(request: Request):
             user_id = request.cookies.get('_ga')
             user = await User.find_by_user_id(user_id)
             if user is not None:
-                # Update session - TODO - move to dedication API
+                # Update session - TODO - move to dedicated API
                 latest_session = await user.get_latest_session()
                 if latest_session is not None:
                     await latest_session.update_session_vector(search_term)

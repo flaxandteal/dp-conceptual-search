@@ -11,18 +11,21 @@ dp-conceptual-search
 
 # Configuration
 
-### Environment variales
+### Environment variables
 
-| Environment variable         | Default                 | Description
-| ---------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------
-| SEARCH_CONFIG                | development             | Specifies which config_*.py file to use.
-| ELASTIC_SEARCH_ASYNC_ENABLED | true                    | Specify whether to use synchronous or asynchronous Elasticsearch client.
-| ELASTIC_SEARCH_SERVER        | http://localhost:9200   | URL of Elasticsearch cluster.
-| ELASTIC_SEARCH_TIMEOUT       | 1000                    | Timeout of Elasticsearch requests in seconds.
-| SEARCH_INDEX                 | ons*                    | The Elasticsearch index to be queried.
-| BIND_HOST                    | 0.0.0.0                 | The host to bind to.
-| BIND_PORT                    | 5000                    | The port to bind to.
-| CONCEPTUAL_SEARCH_ENABLED    | false                   | Enable/disable conceptual search (requires fastText models).
+| Environment variable         | Default                   | Description
+| ---------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------
+| SEARCH_CONFIG                | development               | Specifies which config_*.py file to use.
+| ELASTIC_SEARCH_ASYNC_ENABLED | true                      | Specify whether to use synchronous or asynchronous Elasticsearch client.
+| ELASTIC_SEARCH_SERVER        | http://localhost:9200     | URL of Elasticsearch cluster.
+| ELASTIC_SEARCH_TIMEOUT       | 1000                      | Timeout of Elasticsearch requests in seconds.
+| SEARCH_INDEX                 | ons*                      | The Elasticsearch index to be queried.
+| BIND_HOST                    | 0.0.0.0                   | The host to bind to.
+| BIND_PORT                    | 5000                      | The port to bind to.
+| CONCEPTUAL_SEARCH_ENABLED    | false                     | Enable/disable conceptual search (requires fastText models).
+| SEARCH_LEARNING_RATE         | 0.25                      | Rate at which search tries to learn about user interests (float, capped at 1.0).
+| MONGO_SEARCH_DATABASE        | local                     | Default database for mongoDB.
+| MONGO_BIND_ADDR              | mongodb://localhost:27017 | Default mongoDB bind address (must start with mongodb:// and end with port)
 
 # Running
 
