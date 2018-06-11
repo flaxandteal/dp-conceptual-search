@@ -13,7 +13,9 @@ fastText:
 
 test:
 	pip install -r requirements_test.txt
+	docker-compose up -d
 	python manager.py test
+	docker-compose down
 
 clean:
 	cd lib/fastText && python setup.py clean --all

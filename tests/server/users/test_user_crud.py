@@ -1,78 +1,62 @@
 import unittest
+from tests.server.test_app import TestApp
+
 from uuid import uuid1
 
-from mockupdb import go, Command, MockupDB
 
-
-class TestUsers(unittest.TestCase):
-    # Generate a test user id
-    user_id = str(uuid1())
-
+class TestUsers(TestApp):
     def __init__(self, *args, **kwargs):
         super(TestUsers, self).__init__(*args, **kwargs)
-        self.response = None
+
+        # Generate a test user id
+        self.user_id = str(uuid1())
 
     def setUp(self):
-        # create mongo connection to mock server
-        self.server = MockupDB(auto_ismaster=True, verbose=True)
-        self.server.run()
+        """
+        Tests that we can create a user
+        :return:
+        """
+        super(TestUsers, self).setUp()
 
-    def tearDown(self):
-        self.server.stop()
+        from server.users.user import User
 
-    def _run_app(self, queue):
-        from server.app import create_app
-        import config_core
-        from sanic.log import logger
+        cookies = {User.user_id_key: self.user_id}
+        request, response = self.client.put('/users/create', cookies=cookies)
 
-        config_core.MOTOR_URI = "{bind_addr}/{db}".format(
-            bind_addr=self.server.uri,
-            db="test"
-        )
-
-        app = create_app()
-        client = app.test_client
-
-        request, response = client.get('/users/find/%s' % self.user_id)
-
-        queue.put(response.json)
-
-    def _start_process(self):
-        from multiprocessing import Process, Queue
-
-        q = Queue()
-
-        p = Process(target=self._run_app, args=(q,))
-        p.start()
-        p.join()
-
-        return q
+        self.assert_response_code(request, response, 200)
 
     def test_find_user(self):
         """
-        Tests that we can find a user
+        Tests that we can find a user using both the hashed and unhashed id
         :return:
         """
-        # arrange
-        user_id = self.user_id
+        from server.anonymize import hash_value
 
-        future = go(self._start_process)
+        request, response = self.client.get('/users/find/%s' % self.user_id)
+        self.assert_response_code(request, response, 200)
 
-        request = self.server.receives(Command({'find': 'users', 'filter': {
-            'user_id': user_id}}))
+        # Hash value
+        request, response = self.client.get('/users/find/%s' % hash_value(self.user_id))
+        self.assert_response_code(request, response, 200)
 
-        request.ok(cursor={'id': 0, 'firstBatch': [
-            {'user_id': user_id}
-        ]})
+    def tearDown(self):
+        """
+        Deletes the user we created
+        :return:
+        """
+        from server.anonymize import hash_value
 
-        q = future()
+        request, response = self.client.delete('/users/delete/%s' % self.user_id)
 
-        self.assertIsNotNone(q)
+        self.assert_response_code(request, response, 200)
 
-        response_body = q.get()
-        self.assertIsNotNone(response_body)
-        self.assertIn('user_id', response_body)
-        self.assertEqual(user_id, response_body['user_id'])
+        # Make sure we can no longer find the user
+
+        request, response = self.client.get('/users/find/%s' % self.user_id)
+        self.assert_response_code(request, response, 404)
+
+        request, response = self.client.get('/users/find/%s' % hash_value(self.user_id))
+        self.assert_response_code(request, response, 404)
 
 
 if __name__ == "__main__":
