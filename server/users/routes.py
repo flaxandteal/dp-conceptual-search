@@ -42,7 +42,7 @@ async def find(request: Request, user_id: str):
 
     if user is not None:
         doc = user.to_json()
-        doc['user_vector'] = await user.get_user_vector()
+        # doc['user_vector'] = await user.get_user_vector()
         return json(doc, 200)
     return json("User '%s' not found" % user_id, 404)
 

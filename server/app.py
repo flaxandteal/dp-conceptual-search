@@ -1,5 +1,6 @@
 from sanic import Sanic
 from sanic.request import Request
+from sanic.log import logger
 
 from sanic_motor import BaseModel
 
@@ -19,6 +20,8 @@ def init_default_app() -> Sanic:
 
     # Initialise app
     app = Sanic(log_config=default_log_config)
+
+    logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)
 
     if app.config.get("CONCEPTUAL_SEARCH_ENABLED", False):
@@ -27,6 +30,9 @@ def init_default_app() -> Sanic:
         supervised_models.init()
 
         # Initialse MongoEngine
+        logger.info(
+            "Initialising motor engine on uri '%s'" %
+            app.config.get('MOTOR_URI'))
         BaseModel.init_app(app)
 
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
@@ -39,9 +45,6 @@ def init_default_app() -> Sanic:
 
     # Initialise Elasticsearch client
     SanicElasticsearch(app)
-
-    # Register blueprints
-    register_blueprints(app)
 
     return app
 
@@ -70,8 +73,10 @@ def register_blueprints(app: Sanic) -> None:
 def create_app() -> Sanic:
     app = init_default_app()
 
-    # Setup middleware
+    # Register blueprints
+    register_blueprints(app)
 
+    # Setup middleware
     @app.middleware('request')
     async def hash_ga_ids(request: Request):
         """
