@@ -3,11 +3,7 @@ dp-conceptual-search
 
 # TODO
 
-* Test randomness of word vectors upon training of new model
 * Install NLP plugin and add entities search to base content query
-
-# Known Issues
-* Pagination results in repeated update of User session vectors
 
 # Configuration
 
