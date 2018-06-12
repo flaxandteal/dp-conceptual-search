@@ -2,6 +2,8 @@ import numpy as np
 from bson import ObjectId
 from typing import Callable
 
+from sanic.request import Request
+
 from server.app import BaseModel
 from server.mongo.document import Document
 from server.users.distance_utils import default_move_session_vector
@@ -32,6 +34,11 @@ class Session(BaseModel, Document):
             session_vector = np.zeros(dim).tolist()
         self.session_vector = session_vector
 
+    @classmethod
+    def create_session(cls, request: Request, user_id: ObjectId):
+        session_id: str = request.cookies.get(Session.session_id_key)
+        return Session(user_id, session_id)
+
     def to_dict(self):
         return dict(user_id=self.user_id,
                     session_id=self.session_id,
@@ -44,9 +51,6 @@ class Session(BaseModel, Document):
                     session_id=self.session_id,
                     session_vector=self.session_vector
                     )
-
-    async def write(self):
-        return await Session.insert_one(self.to_dict())
 
     async def update(self):
         doc = dict(session_vector=self.session_vector)

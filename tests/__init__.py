@@ -57,7 +57,7 @@ def asyncio_test(func=None, timeout=None):
             task = ensure_future(coro, loop=self.loop)
             try:
                 self.loop.run_until_complete(task)
-            except:
+            except BaseException:
                 if coro_exc:
                     # Raise the error thrown in on_timeout, with only the
                     # traceback from the coroutine itself, not from

@@ -57,6 +57,51 @@ async def delete(request: Request, user_id: str):
     return json("User '%s' not found" % user_id, 404)
 
 
+@user_blueprint.route('/update/<term>', methods=['POST'])
+async def update(request: Request, term: str):
+    """
+    Update a user via their latest session using the provided term
+    :param request:
+    :param user_id:
+    :param term:
+    :return:
+    """
+    from server.users.user import User
+
+    uid = request.cookies.get(User.user_id_key)
+    if uid is not None:
+        user = await get_user(uid)
+
+        if user is not None:
+            from server.users.session import Session
+            session: Session = await user.get_latest_session()
+
+            if session is None:
+                if Session.session_id_key in request.cookies:
+                    # Create the session
+                    session: Session = Session.create_session(request, user.id)
+
+                    # Save the session
+                    await session.write()
+                else:
+                    return json(
+                        "Unable to create session for user '%s'" %
+                        uid, 404)
+            # Session should always exist here
+            await session.update_session_vector(term)
+
+            doc = user.to_json()
+            user_vector = await user.get_user_vector()
+            doc['user_vector'] = user_vector.tolist()
+
+            return json(doc, 200)
+        else:
+            return json("User '%s' not found" % uid, 404)
+    raise InvalidUsage(
+        "Must supply '%s' cookie to create user" %
+        User.user_id_key)
+
+
 @user_blueprint.route('/similarity/<user_id>/<term>', methods=['GET'])
 async def similarity(request: Request, user_id: str, term: str):
     """

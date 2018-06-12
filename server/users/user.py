@@ -27,9 +27,6 @@ class User(BaseModel, Document):
                     user_id=str(self.user_id)
                     )
 
-    async def write(self):
-        return await User.insert_one(self.to_dict())
-
     async def destroy(self, **kwargs):
         """
         Deletes this user AND all attached sessions
