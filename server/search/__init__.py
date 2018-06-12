@@ -14,9 +14,10 @@ from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
 from typing import ClassVar
+from numpy import ndarray
 
 
-async def execute_search(request: Request, search_engine_cls: ClassVar, search_term: str, type_filters) -> dict:
+async def execute_search(request: Request, search_engine_cls: ClassVar, search_term: str, type_filters, user_vector: ndarray=None) -> dict:
     """
     Simple search API to query Elasticsearch
     TODO - Modify to prevent building query multiple times
@@ -47,7 +48,8 @@ async def execute_search(request: Request, search_engine_cls: ClassVar, search_t
         sort_by=sort_by,
         current_page=page_number,
         size=page_size,
-        type_filters=type_filters)
+        type_filters=type_filters,
+        user_vector=user_vector)
 
     featured_result_query = search_engine_cls().featured_result_query(search_term)
 

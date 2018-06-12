@@ -1,5 +1,8 @@
 from sanic import Sanic
 from sanic.request import Request
+from sanic.log import logger
+
+from sanic_motor import BaseModel
 
 
 def init_default_app() -> Sanic:
@@ -17,12 +20,20 @@ def init_default_app() -> Sanic:
 
     # Initialise app
     app = Sanic(log_config=default_log_config)
+
+    logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)
 
     if app.config.get("CONCEPTUAL_SEARCH_ENABLED", False):
         # Trigger loading of models - TODO improve this
         from .word_embedding import supervised_models
         supervised_models.init()
+
+        # Initialse MongoEngine
+        logger.info(
+            "Initialising motor engine on uri '%s'" %
+            app.config.get('MOTOR_URI'))
+        BaseModel.init_app(app)
 
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
         from sanic_prometheus import monitor
@@ -35,7 +46,6 @@ def init_default_app() -> Sanic:
     # Initialise Elasticsearch client
     SanicElasticsearch(app)
 
-    register_blueprints(app)
     return app
 
 
@@ -49,16 +59,24 @@ def register_blueprints(app: Sanic) -> None:
 
     conceptual_search_enabled = app.config.get(
         "CONCEPTUAL_SEARCH_ENABLED", False)
+
     if conceptual_search_enabled:
+        from server.users.routes import user_blueprint
+        from server.users.routes_sessions import sessions_blueprint
         from server.search.conceptual_search.routes import conceptual_search_blueprint
+
+        app.blueprint(user_blueprint)
+        app.blueprint(sessions_blueprint)
         app.blueprint(conceptual_search_blueprint)
 
 
 def create_app() -> Sanic:
     app = init_default_app()
 
-    # Setup middleware
+    # Register blueprints
+    register_blueprints(app)
 
+    # Setup middleware
     @app.middleware('request')
     async def hash_ga_ids(request: Request):
         """
@@ -66,7 +84,7 @@ def create_app() -> Sanic:
         :param request:
         :return:
         """
-        from .anonymize import hash_value
+        from server.anonymize import hash_value
 
         for key in ["_ga", "_gid"]:
             if key in request.cookies:

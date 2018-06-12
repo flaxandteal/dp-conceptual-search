@@ -12,6 +12,7 @@ type_counts_query = {
     }
 }
 
+
 def match(field: str, search_term: str, **kwargs) -> Q.Query:
     query_dict = {
         field: {

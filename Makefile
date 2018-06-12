@@ -13,7 +13,12 @@ fastText:
 
 test:
 	pip install -r requirements_test.txt
-	python manager.py test
+	docker-compose up -d
+	nosetests -v -s .
+	docker-compose down
+
+pep8:
+	autopep8 --in-place --aggressive --aggressive -r ./
 
 clean:
 	cd lib/fastText && python setup.py clean --all
