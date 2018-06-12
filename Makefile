@@ -14,7 +14,7 @@ fastText:
 test:
 	pip install -r requirements_test.txt
 	docker-compose up -d
-	nosetests -v -s .
+	python manager.py test
 	docker-compose down
 
 pep8:
