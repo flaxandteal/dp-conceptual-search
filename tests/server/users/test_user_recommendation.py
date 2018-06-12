@@ -58,11 +58,6 @@ class TestUserRecommendation(TestUsers):
         self.assertIsInstance(user_vector, list)
         self.assertIsNotNone(user_vector)
 
-        # import time
-        # while True:
-        #     print("This prints once a minute.")
-        #     time.sleep(60)  # Delay for 1 minute (60 seconds).
-
         # Assert NOT all zeros
         user_array = np.array(user_vector)
         self.assertFalse(np.all(user_array == 0))
