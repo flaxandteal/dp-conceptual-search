@@ -3,8 +3,6 @@ import unittest
 from server.app import create_app
 
 os.environ['SEARCH_CONFIG'] = 'testing'
-os.environ['MONGO_BIND_ADDR'] = 'mongodb://0.0.0.0:27017'
-os.environ['MONGO_SEARCH_DATABASE'] = 'test'
 
 
 class TestApp(unittest.TestCase):

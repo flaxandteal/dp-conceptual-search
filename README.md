@@ -35,7 +35,7 @@ gunicorn server (supports multi-processing for multiple workers and threads per 
 
 # Testing
 
-To run the tests use: ```python manager.py test```
+To run the tests use: ```make test```
 
 ### Licence
 

@@ -19,9 +19,9 @@ def test():
     )
 
 
-def run(host, port):
+def run(app_host: str='0.0.0.0', app_port: int=5000, app_workers: int=1):
     try:
-        app.run(host=host, port=port, workers=1)
+        app.run(host=app_host, port=app_port, workers=app_workers)
     except KeyboardInterrupt:
         print("Here!")
 
@@ -34,4 +34,4 @@ if __name__ == "__main__":
     else:
         host = os.getenv("BIND_HOST", '0.0.0.0')
         post = int(os.getenv("BIND_PORT", 5000))
-        run(host, post)
+        run(app_host=host, app_port=post)
