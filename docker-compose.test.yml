@@ -1,10 +1,10 @@
 version: '2'
 services:
-    integration-test:
+    test:
         image: dp-conceptual-search-base:latest
         links:
           - mongo
-        command: make integration-test
+        command: make test integration-test
         environment:
             - MONGO_SEARCH_DATABASE=test
             - MONGO_BIND_ADDR=mongodb://mongo:27017

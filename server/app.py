@@ -29,7 +29,7 @@ def init_default_app() -> Sanic:
         from .word_embedding import supervised_models
         supervised_models.init()
 
-        # Initialse MongoEngine
+        # Init MongoEngine
         logger.info(
             "Initialising motor engine on uri '%s'" %
             app.config.get('MOTOR_URI'))
