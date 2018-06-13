@@ -14,6 +14,8 @@ def init_default_app() -> Sanic:
     from server.error_handlers import CustomHandler
     from server.sanic_es import SanicElasticsearch
 
+    from server.word_embedding import supervised_models
+
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     config_name = os.environ.get('SEARCH_CONFIG', 'development')
@@ -24,11 +26,10 @@ def init_default_app() -> Sanic:
     logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)
 
-    if app.config.get("CONCEPTUAL_SEARCH_ENABLED", False):
-        # Trigger loading of models - TODO improve this
-        from .word_embedding import supervised_models
-        supervised_models.init()
+    # Trigger loading of models - TODO improve this
+    supervised_models.init()
 
+    if app.config.get("MONGO_ENABLED", False):
         # Init MongoEngine
         logger.info(
             "Initialising motor engine on uri '%s'" %
@@ -53,21 +54,18 @@ def register_blueprints(app: Sanic) -> None:
     # Register blueprint(s)
     from server.search.routes import search_blueprint
     from server.healthcheck.routes import health_check_blueprint
+    from server.search.conceptual_search.routes import conceptual_search_blueprint
 
     app.blueprint(search_blueprint)
     app.blueprint(health_check_blueprint)
+    app.blueprint(conceptual_search_blueprint)
 
-    conceptual_search_enabled = app.config.get(
-        "CONCEPTUAL_SEARCH_ENABLED", False)
-
-    if conceptual_search_enabled:
+    if app.config.get('MONGO_ENABLED', False):
         from server.users.routes import user_blueprint
         from server.users.routes_sessions import sessions_blueprint
-        from server.search.conceptual_search.routes import conceptual_search_blueprint
 
         app.blueprint(user_blueprint)
         app.blueprint(sessions_blueprint)
-        app.blueprint(conceptual_search_blueprint)
 
 
 def create_app() -> Sanic:
