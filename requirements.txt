@@ -4,7 +4,7 @@ sanic_motor==0.2.8
 sanic==0.7.0
 uvloop==0.9.1
 scipy==1.0.0
-setuptools==38.4.0
+# setuptools==38.4.0
 sanic_prometheus==0.1.5
 elasticsearch_dsl==6.1.0
 numpy==1.14.3

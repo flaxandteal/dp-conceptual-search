@@ -9,7 +9,8 @@ def test():
     print(
         check_output(['nosetests',
                       '-v',
-                      '-s', ])
+                      '-s',
+                      '--exclude-dir=./tests/integration'])
         # '--with-coverage',
         # '--cover-package=server',
         # '--cover-branches',
