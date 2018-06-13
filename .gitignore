@@ -7,3 +7,5 @@
 
 cover/
 tests/server/**/.cache/
+
+supervised_models/*.bin
