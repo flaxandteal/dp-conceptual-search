@@ -30,17 +30,13 @@ async def conceptual_search(request: Request):
             request, "filter", False, all_filter_funcs())
 
         user_vector = None
-        if '_ga' in request.cookies:
-            user_id = request.cookies.get('_ga')
-            user = await User.find_by_user_id(user_id)
-            if user is not None:
-                # Update session - TODO - move to dedicated API
-                latest_session = await user.get_latest_session()
-                if latest_session is not None:
-                    await latest_session.update_session_vector(search_term)
+        if User.user_id_key in request.cookies:
+            user_id = request.cookies.get(User.user_id_key)
+            user: User = await User.find_by_user_id(user_id)
 
-                    # Compute the user vector
-                    user_vector = await user.get_user_vector()
+            if user is not None:
+                # Compute the user vector
+                user_vector = await user.get_user_vector()
 
         response = await execute_search(request, ConceptualSearchEngine, search_term,
                                         type_filters, user_vector=user_vector)

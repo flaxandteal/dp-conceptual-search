@@ -36,7 +36,7 @@ class TestUserRecommendation(TestUsers):
         self.assertIsInstance(doc, dict)
         self.assertTrue('user_vector' in doc)
 
-        # Make sure vector is None
+        # Make sure vector is None (we haven't updated it yet)
         user_vector = doc['user_vector']
         self.assertIsNone(user_vector)
 

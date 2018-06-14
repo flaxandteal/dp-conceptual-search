@@ -63,9 +63,11 @@ def register_blueprints(app: Sanic) -> None:
     if app.config.get('MONGO_ENABLED', False):
         from server.users.routes import user_blueprint
         from server.users.routes_sessions import sessions_blueprint
+        from server.recommend.routes import recommend_blueprint
 
         app.blueprint(user_blueprint)
         app.blueprint(sessions_blueprint)
+        app.blueprint(recommend_blueprint)
 
 
 def create_app() -> Sanic:

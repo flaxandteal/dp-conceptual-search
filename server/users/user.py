@@ -40,10 +40,6 @@ class User(BaseModel, Document):
 
         return await self.__class__.delete_one({'_id': self.id}, **kwargs)
 
-    @classmethod
-    async def find_by_user_id(cls, user_id):
-        return await User.find_one(filter=dict(user_id=user_id))
-
     async def get_latest_session(self) -> Session:
         """
         Returns the most recent user session
@@ -93,3 +89,7 @@ class User(BaseModel, Document):
 
             return user_vec
         return None
+
+    @classmethod
+    async def find_by_user_id(cls, user_id):
+        return await User.find_one(filter=dict(user_id=user_id))

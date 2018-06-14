@@ -11,10 +11,6 @@ from server.users.distance_utils import default_move_session_vector
 from server.word_embedding.supervised_models import load_model, SupervisedModels
 
 
-model = load_model(SupervisedModels.ONS)
-dim = model.get_dimension()
-
-
 class Session(BaseModel, Document):
     __coll__ = 'user_sessions'
     __unique_fields__ = ['user_id', 'session_id']
@@ -28,10 +24,16 @@ class Session(BaseModel, Document):
             session_vector: list=None,
             **kwargs):
         super(Session, self).__init__(**kwargs)
+
         self.user_id = user_id
         self.session_id = session_id
+
+        # Get a handle on the model - NB it has already been loaded into memory by this point.
+        self.model = load_model(SupervisedModels.ONS)
+        self.dim = self.model.get_dimension()
+
         if session_vector is None:
-            session_vector = np.zeros(dim).tolist()
+            session_vector = np.zeros(self.dim).tolist()
         self.session_vector = session_vector
 
     @classmethod
@@ -67,8 +69,7 @@ class Session(BaseModel, Document):
     async def update_session_vector(
             self,
             search_term: str,
-            update_func: Callable=default_move_session_vector,
-            **kwargs):
+            update_func: Callable=default_move_session_vector):
         """
         Update this sessions term vector
         :param search_term:
@@ -77,14 +78,14 @@ class Session(BaseModel, Document):
         :return:
         """
         session_vec = self.session_array
-        term_vector = model.get_sentence_vector(search_term.lower())
+        term_vector = self.model.get_sentence_vector(search_term.lower())
 
         # Update the user vector
         if np.all(session_vec == 0.):
             self.session_vector = term_vector.tolist()
         else:
             # Move the user vector towards the term vector
-            new_session_vec = update_func(session_vec, term_vector, **kwargs)
+            new_session_vec = update_func(session_vec, term_vector)
             self.session_vector = new_session_vec.tolist()
 
         # Write the changes
