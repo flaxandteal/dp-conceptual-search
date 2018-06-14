@@ -11,6 +11,11 @@ class TestUsers(TestApp):
         # Generate a test user id
         self.user_id = str(uuid1())
 
+    @property
+    def hashed_user_id(self):
+        from server.anonymize import hash_value
+        return hash_value(self.user_id)
+
     def setUp(self):
         """
         Tests that we can create a user
@@ -33,13 +38,13 @@ class TestUsers(TestApp):
         from server.anonymize import hash_value
 
         request, response = self.client.delete(
-            '/users/delete/%s' % self.user_id)
+            '/users/delete/%s' % self.hashed_user_id)
 
         self.assert_response_code(request, response, 200)
 
         # Make sure we can no longer find the user
 
-        request, response = self.client.get('/users/find/%s' % self.user_id)
+        request, response = self.client.get('/users/find/%s' % self.hashed_user_id)
         self.assert_response_code(request, response, 404)
 
         request, response = self.client.get(

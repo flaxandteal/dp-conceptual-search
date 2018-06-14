@@ -12,7 +12,7 @@ class TestApp(unittest.TestCase):
         self.client = self.app.test_client
 
     def assert_response_code(self, request, response, code: int):
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, code)
+        self.assertIsNotNone(request, msg="request should not be none")
+        self.assertIsNotNone(response, msg="response should not be none")
+        self.assertIsNotNone(response.body, msg="response body should not be none")
+        self.assertEqual(response.status, code, msg="exit code should be '%d'" % code)
