@@ -18,7 +18,13 @@ test: test_requirements
 	python manager.py test
 
 integration-test: test_requirements
-	nosetests -s -v tests.integration
+	MONGO_ENABLED=true nosetests -s -v tests.integration
+
+mongo-start:
+	mongod --fork --logpath /var/log/mongod.log --dbpath /data/db
+
+mongo-stop:
+	mongod --fork --logpath /var/log/mongod.log --dbpath /data/db --shutdown
 
 pep8:
 	autopep8 --in-place --aggressive --aggressive -r ./
