@@ -1,7 +1,7 @@
 import enum
 import fastText
 import numpy as np
-from .utils import cosine_sim, cosine_sim_matrix
+from server.word_embedding.utils import cosine_sim, cosine_sim_matrix
 
 _models = {}
 

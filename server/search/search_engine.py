@@ -183,7 +183,7 @@ class SearchEngine(BaseSearchEngine):
         :return:
         """
         from server.search.queries import content_query, function_score_content_query
-        from .filter_functions import content_filter_functions
+        from server.search.filter_functions import content_filter_functions
 
         # Build the standard content query
         query = content_query(search_term)
@@ -222,7 +222,7 @@ class SearchEngine(BaseSearchEngine):
         :param search_term:
         :return:
         """
-        from .content_types import home_page_census, product_page
+        from server.search.content_types import home_page_census, product_page
 
         type_filters = [product_page.name, home_page_census.name]
 
