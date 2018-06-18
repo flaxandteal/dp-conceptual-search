@@ -1,5 +1,5 @@
 #!/bin/bash -eux
 
 pushd dp-conceptual-search
-  make test
+  make build test clean
 popd
