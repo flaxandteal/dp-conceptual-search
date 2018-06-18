@@ -26,32 +26,20 @@ class TestUsers(TestApp):
         from server.users.user import User
 
         cookies = {User.user_id_key: self.user_id}
-        request, response = self.client.put('/users/create', cookies=cookies)
-
-        self.assert_response_code(request, response, 200)
+        self.put('/users/create', 200, cookies=cookies)
 
     def tearDown(self):
         """
         Deletes the user we created
         :return:
         """
-        from server.anonymize import hash_value
-
-        request, response = self.client.delete(
-            '/users/delete/%s' % self.hashed_user_id)
-
-        self.assert_response_code(request, response, 200)
+        # Delete and assert 200 OK
+        self.delete('/users/delete/%s' % self.hashed_user_id, 200)
 
         # Make sure we can no longer find the user
 
-        request, response = self.client.get('/users/find/%s' % self.hashed_user_id)
-        self.assert_response_code(request, response, 404)
-
-        request, response = self.client.get(
-            '/users/find/%s' %
-            hash_value(
-                self.user_id))
-        self.assert_response_code(request, response, 404)
+        self.get('/users/find/%s' % self.user_id, 404)
+        self.get('/users/find/%s' % self.hashed_user_id, 404)
 
 
 if __name__ == "__main__":

@@ -172,7 +172,8 @@ async def hits_to_json(
                 aggregations, total_hits = buckets_to_json(buckets)
 
                 result["counts"] = {
-                    "numberOfResults": response.hits.total,
+                    # "numberOfResults": response.hits.total,
+                    "numberOfResults": total_hits,
                     "docCounts": aggregations
                 }
         elif search.query_size == 1:

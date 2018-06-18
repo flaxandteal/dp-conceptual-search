@@ -70,7 +70,7 @@ async def search_publications(request: Request):
     raise InvalidUsage("no query provided")
 
 
-@search_blueprint.route('/ons/departments', methods=["GET", "POST"])
+@search_blueprint.route('/ons/departments', methods=["GET"])
 async def search_departments(request: Request):
     """
     Performs the ONS departments query

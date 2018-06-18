@@ -28,7 +28,8 @@ class Session(BaseModel, Document):
         self.user_id = user_id
         self.session_id = session_id
 
-        # Get a handle on the model - NB it has already been loaded into memory by this point.
+        # Get a handle on the model - NB it has already been loaded into memory
+        # by this point.
         self.model = load_model(SupervisedModels.ONS)
         self.dim = self.model.get_dimension()
 

@@ -26,8 +26,7 @@ class TestUserRecommendation(TestUsers):
         :return:
         """
         # Find the user
-        request, response = self.client.get('/users/find/%s' % self.hashed_user_id)
-        self.assert_response_code(request, response, 200)
+        request, response = self.get('/users/find/%s' % self.hashed_user_id, 200)
 
         # Assert user vector is in json response
         self.assertTrue(hasattr(response, "json"))
@@ -35,17 +34,14 @@ class TestUserRecommendation(TestUsers):
 
         doc = response.json
         self.assertIsInstance(doc, dict)
-        self.assertTrue('user_vector' in doc)
+        self.assertIn('user_vector', doc)
 
         # Make sure vector is None (we haven't updated it yet)
         user_vector = doc['user_vector']
         self.assertIsNone(user_vector)
 
         # Update the user (positive)
-        request, response = self.client.post(
-            '/recommend/update/positive/%s' %
-            self.search_term, cookies=self.cookies)
-        self.assert_response_code(request, response, 200)
+        request, response = self.post('/recommend/update/positive/%s' % self.search_term, 200, cookies=self.cookies)
 
         # Assert user vector is in json response
         self.assertTrue(hasattr(response, "json"))
@@ -53,7 +49,7 @@ class TestUserRecommendation(TestUsers):
 
         doc = response.json
         self.assertIsInstance(doc, dict)
-        self.assertTrue('user_vector' in doc)
+        self.assertIn('user_vector', doc)
 
         user_vector = doc['user_vector']
         self.assertIsInstance(user_vector, list)
@@ -64,10 +60,7 @@ class TestUserRecommendation(TestUsers):
         self.assertFalse(np.all(user_array == 0))
 
         # Update the user (negative)
-        request, response = self.client.post(
-            '/recommend/update/negative/%s' %
-            self.search_term_negative, cookies=self.cookies)
-        self.assert_response_code(request, response, 200)
+        request, response = self.post('/recommend/update/negative/%s' % self.search_term_negative, 200, cookies=self.cookies)
 
         # Assert user vector is in json response
         self.assertTrue(hasattr(response, "json"))
@@ -75,7 +68,7 @@ class TestUserRecommendation(TestUsers):
 
         doc = response.json
         self.assertIsInstance(doc, dict)
-        self.assertTrue('user_vector' in doc)
+        self.assertIn('user_vector', doc)
 
         new_user_vector = doc['user_vector']
         self.assertIsInstance(new_user_vector, list)
