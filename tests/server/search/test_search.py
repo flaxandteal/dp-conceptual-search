@@ -5,6 +5,7 @@ from tests.server.test_app import TestApp
 class SearchTestSuite(TestApp):
 
     search_term = "rpi"
+    departments_search_term = "education"
 
     def check_search_result(self, result, expected_document: dict):
         # Assert result contains correct keys
@@ -132,7 +133,28 @@ class SearchTestSuite(TestApp):
         """
         from tests.server.search.dummy_documents import test_departments_document
 
-        target = "/search/ons/departments?q=%s" % self.search_term
+        highlighted_terms = [
+            "DFE",
+            "<strong>education</strong>",
+            "A level",
+            "degree",
+            "NVQ",
+            "school",
+            "college",
+            "university",
+            "curriculum",
+            "qualification",
+            "teacher training",
+            "pupil absence",
+            "exclusions",
+            "school workforce",
+            "key stage",
+            "higher <strong>education</strong>"]
+
+        test_departments_document['_source']['terms'] = highlighted_terms
+        test_departments_document['_source']['_type'] = 'test'
+
+        target = "/search/ons/departments?q=%s" % self.departments_search_term
         expected_keys = ['numberOfResults', 'took', 'results']
 
         request, response = self.get(target, 200)
@@ -149,8 +171,11 @@ class SearchTestSuite(TestApp):
         self.assertIsInstance(result, list, "departments result should be instance of list")
 
         hit = result[0]
-
-        self.assertEqual(test_departments_document, hit, "returned hit should match expected dummy document")
+        
+        self.assertEqual(
+            test_departments_document["_source"],
+            hit,
+            "returned hit should match expected dummy document")
 
 
 if __name__ == "__main__":
