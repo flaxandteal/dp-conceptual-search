@@ -4,6 +4,7 @@ dp-conceptual-search
 # TODO
 
 * Install NLP plugin and add entities search to base content query
+* Prototype knowledge engine using conceptual search API and [DrQA](https://github.com/facebookresearch/DrQA#installing-drqa)
 
 # Configuration
 
