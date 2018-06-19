@@ -70,7 +70,7 @@ async def search_publications(request: Request):
     raise InvalidUsage("no query provided")
 
 
-@search_blueprint.route('/ons/departments', methods=["GET"])
+@search_blueprint.route('/ons/departments', methods=["GET", "POST"])
 async def search_departments(request: Request):
     """
     Performs the ONS departments query
@@ -78,6 +78,7 @@ async def search_departments(request: Request):
     :return:
     """
     from server.search.indices import Index
+    from server.search import marshall_hits
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -96,7 +97,7 @@ async def search_departments(request: Request):
         result = {
             "numberOfResults": response.hits.total,
             "took": response.took,
-            "results": [hit for hit in response.hits.hits]
+            "results": marshall_hits(response.hits)
         }
 
         return json(result)

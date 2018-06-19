@@ -92,14 +92,16 @@ def get_var(input_dict: dict, accessor_string: str):
     return current_data
 
 
-def _highlight(highlighted_text: str, val: str) -> str:
-    val = val.replace(
-        highlighted_text,
-        "<strong>%s</strong>" % highlighted_text)
-
-    val = val.replace(
-        highlighted_text.lower(),
-        "<strong>%s</strong>" % highlighted_text.lower())
+def _highlight(highlighted_text: str, val: str, tag: str='strong') -> str:
+    if highlighted_text in val:
+        idx = val.index(highlighted_text)
+        tag_start = '<%s>' % tag
+        tag_end = '</%s>' % tag
+        tag_start_length = len(tag_start)
+        if val[idx-tag_start_length:idx] != tag_start:
+            val = val.replace(
+                highlighted_text,
+                "%s%s%s" % (tag_start, highlighted_text, tag_end))
     return val
 
 
@@ -136,8 +138,8 @@ def marshall_hits(hits) -> list:
                                     _highlight(highlighted_text, v))
                             hit_dict.set_value(highlight_key, highlighted_vals)
 
-        # rename 'type' field to '_type'
-        hit_dict["_type"] = hit_dict.pop("type")
+        # set _type field
+        hit_dict["_type"] = hit.meta.doc_type
         hits_list.append(hit_dict)
     return hits_list
 

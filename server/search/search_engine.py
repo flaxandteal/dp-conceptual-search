@@ -164,9 +164,23 @@ class SearchEngine(BaseSearchEngine):
         from server.search.queries import departments_query
 
         query = departments_query(search_term)
-        query_dict = query.to_dict()
+        query_dict = {
+            "query": query.to_dict()
+        }
 
-        return self.build_query(query_dict, current_page=1, size=1)
+        self.update_from_dict(query_dict)
+
+        s = self._clone()
+
+        # Set search_type and highlight options
+        s = s.search_type(SearchType.DFS_QUERY_THEN_FETCH)
+        s = s.highlight(
+            "terms",
+            fragment_size=0,
+            pre_tags=["<strong>"],
+            post_tags=["</strong>"])
+
+        return s
 
     def content_query(
             self,
