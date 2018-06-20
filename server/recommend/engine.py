@@ -47,7 +47,9 @@ class RecommendationEngine(object):
             # Create the session
             if Session.session_id_key not in self.request.cookies:
                 from sanic.exceptions import NotFound
-                raise NotFound("Unabale to find/create session for user '%s'" % self.user_id)
+                raise NotFound(
+                    "Unabale to find/create session for user '%s'" %
+                    self.user_id)
 
             sid = self.request.cookies.get(Session.session_id_key)
             session = Session(user.id, sid)

@@ -11,12 +11,10 @@ from typing import Callable
 recommend_blueprint = Blueprint('recommend', url_prefix='recommend')
 
 
-async def update_by_term(request: Request, term: str, update_func: Callable) -> HTTPResponse:
+def get_recommendation_engine(request: Request) -> RecommendationEngine:
     """
-    Performs a generic reinforcement of the users vector, using the given term
+
     :param request:
-    :param term:
-    :param update_func:
     :return:
     """
     from server.users.user import User
@@ -25,10 +23,23 @@ async def update_by_term(request: Request, term: str, update_func: Callable) -> 
 
     if user_id is not None:
         engine = RecommendationEngine(request, user_id)
-        session = await engine.update_session_vector_by_term(term, update_func)
 
-        return json(session.to_json(), 200)
+        return engine
     raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
+
+
+async def update_by_term(request: Request, term: str, update_func: Callable) -> HTTPResponse:
+    """
+    Performs a generic reinforcement of the users vector, using the given term
+    :param request:
+    :param term:
+    :param update_func:
+    :return:
+    """
+    engine = get_recommendation_engine(request)
+    session = await engine.update_session_vector_by_term(term, update_func)
+
+    return json(session.to_json(), 200)
 
 
 @recommend_blueprint.route('/update/page/', methods=['GET', 'POST'])
@@ -40,17 +51,12 @@ async def positive_update_by_document(request: Request, path: str):
     :param path:
     :return:
     """
-    from server.users.user import User
     from server.users.distance_utils import default_move_session_vector
 
-    user_id = get_user_id(request)
+    engine = get_recommendation_engine(request)
+    session = await engine.update_session_vector_by_doc_uri(path, default_move_session_vector)
 
-    if user_id is not None:
-        engine = RecommendationEngine(request, user_id)
-        session = await engine.update_session_vector_by_doc_uri(path, default_move_session_vector)
-
-        return json(session.to_json(), 200)
-    raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
+    return json(session.to_json(), 200)
 
 
 @recommend_blueprint.route('/update/positive/<term>', methods=['POST'])
