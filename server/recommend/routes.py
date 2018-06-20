@@ -1,6 +1,6 @@
 from sanic import Blueprint
 from sanic.request import Request
-from sanic.response import HTTPResponse
+from sanic.response import json, HTTPResponse
 from sanic.exceptions import InvalidUsage
 
 from server.users import get_user_id
@@ -11,7 +11,7 @@ from typing import Callable
 recommend_blueprint = Blueprint('recommend', url_prefix='recommend')
 
 
-async def update(request: Request, term: str, update_func: Callable) -> HTTPResponse:
+async def update_by_term(request: Request, term: str, update_func: Callable) -> HTTPResponse:
     """
     Performs a generic reinforcement of the users vector, using the given term
     :param request:
@@ -24,8 +24,32 @@ async def update(request: Request, term: str, update_func: Callable) -> HTTPResp
     user_id = get_user_id(request)
 
     if user_id is not None:
-        engine = RecommendationEngine(user_id)
-        return await engine.update_user(request, term, update_func)
+        engine = RecommendationEngine(request, user_id)
+        session = await engine.update_session_vector_by_term(term, update_func)
+
+        return json(session.to_json(), 200)
+    raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
+
+
+@recommend_blueprint.route('/update/page/', methods=['GET', 'POST'])
+@recommend_blueprint.route('/update/page/<path:path>', methods=['GET', 'POST'])
+async def positive_update_by_document(request: Request, path: str):
+    """
+    Performs a generic reinforcement of the users vector, using the given term
+    :param request:
+    :param path:
+    :return:
+    """
+    from server.users.user import User
+    from server.users.distance_utils import default_move_session_vector
+
+    user_id = get_user_id(request)
+
+    if user_id is not None:
+        engine = RecommendationEngine(request, user_id)
+        session = await engine.update_session_vector_by_doc_uri(path, default_move_session_vector)
+
+        return json(session.to_json(), 200)
     raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
 
 
@@ -38,8 +62,7 @@ async def positive_update(request: Request, term: str):
     :return:
     """
     from server.users.distance_utils import default_move_session_vector
-
-    return await update(request, term, default_move_session_vector)
+    return await update_by_term(request, term, default_move_session_vector)
 
 
 @recommend_blueprint.route('/update/negative/<term>', methods=['POST'])
@@ -51,8 +74,7 @@ async def negative_update(request: Request, term: str):
     :return:
     """
     from server.users.distance_utils import negative_move_session_vector
-
-    return await update(request, term, negative_move_session_vector)
+    return await update_by_term(request, term, negative_move_session_vector)
 
 
 @recommend_blueprint.route('/similarity/<term>', methods=['GET'])

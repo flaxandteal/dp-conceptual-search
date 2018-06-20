@@ -1,37 +1,32 @@
 import numpy as np
 from bson import ObjectId
-from typing import Callable
 
 from sanic.request import Request
 
 from server.app import BaseModel
 from server.mongo.document import Document
-from server.users.distance_utils import default_move_session_vector
 
 from server.word_embedding.supervised_models import load_model, SupervisedModels
 
 
 class Session(BaseModel, Document):
     __coll__ = 'user_sessions'
-    __unique_fields__ = ['user_id', 'session_id']
+    __unique_fields__ = ['user_oid', 'session_id']
 
     session_id_key = '_gid'
 
     def __init__(
             self,
-            user_id: ObjectId,
+            user_oid: ObjectId,
             session_id: str,
             session_vector: list=None,
             **kwargs):
         super(Session, self).__init__(**kwargs)
 
-        self.user_id = user_id
+        self.user_oid = user_oid
         self.session_id = session_id
 
-        # Get a handle on the model - NB it has already been loaded into memory
-        # by this point.
-        self.model = load_model(SupervisedModels.ONS)
-        self.dim = self.model.get_dimension()
+        self.dim = load_model(SupervisedModels.ONS).get_dimension()
 
         if session_vector is None:
             session_vector = np.zeros(self.dim).tolist()
@@ -43,21 +38,22 @@ class Session(BaseModel, Document):
         return Session(user_id, session_id)
 
     def to_dict(self):
-        return dict(user_id=self.user_id,
+        return dict(user_oid=self.user_oid,
                     session_id=self.session_id,
                     session_vector=self.session_vector
                     )
 
     def to_json(self):
         return dict(_id=str(self.id),
-                    user_id=str(self.user_id),
+                    user_oid=str(self.user_oid),
                     session_id=self.session_id,
                     session_vector=self.session_vector
                     )
 
     async def update(self):
         doc = dict(session_vector=self.session_vector)
-        return await Session.update_one({'_id': self.id}, {'$set': doc})
+        await Session.update_one({'_id': self.id}, {'$set': doc})
+        return self
 
     @classmethod
     async def find_by_session_id(cls, session_id):
@@ -67,27 +63,10 @@ class Session(BaseModel, Document):
     def session_array(self) -> np.ndarray:
         return np.array(self.session_vector)
 
-    async def update_session_vector(
-            self,
-            search_term: str,
-            update_func: Callable=default_move_session_vector):
+    def set_session_vector(self, session_vector: np.ndarray):
         """
-        Update this sessions term vector
-        :param search_term:
-        :param update_func: Callable - function which takes the original session vector, term vector
-        and (optional) kwargs and updates the session vector to reflect user interest.
+        Manually sets the session vector
+        :param session_vector:
         :return:
         """
-        session_vec = self.session_array
-        term_vector = self.model.get_sentence_vector(search_term.lower())
-
-        # Update the user vector
-        if np.all(session_vec == 0.):
-            self.session_vector = term_vector.tolist()
-        else:
-            # Move the user vector towards the term vector
-            new_session_vec = update_func(session_vec, term_vector)
-            self.session_vector = new_session_vec.tolist()
-
-        # Write the changes
-        await self.update()
+        self.session_vector = session_vector.tolist()

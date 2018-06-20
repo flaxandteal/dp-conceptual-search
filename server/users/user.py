@@ -45,7 +45,7 @@ class User(BaseModel, Document):
         Returns the most recent user session
         :return:
         """
-        cursor = await Session.find(filter=dict(user_id=self.id), sort='_id desc', limit=1)
+        cursor = await Session.find(filter=dict(user_oid=self.id), sort='_id desc', limit=1)
 
         if len(cursor.objects) > 0:
             return cursor.objects[0]
@@ -56,7 +56,7 @@ class User(BaseModel, Document):
         Returns all sessions attached to this user.
         :return:
         """
-        cursor = await Session.find(filter=dict(user_id=self.id))
+        cursor = await Session.find(filter=dict(user_oid=self.id))
         sessions: List[Session] = cursor.objects
 
         return sessions

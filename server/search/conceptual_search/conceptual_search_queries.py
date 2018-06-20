@@ -111,7 +111,7 @@ def content_query(
         search_term: str,
         model: SupervisedModel,
         boost_mode: BoostMode=BoostMode.AVG,
-        min_score: float=0.1,
+        min_score: float=0.01,
         **kwargs) -> Q.Query:
     """
     Conceptual search (main) content query.

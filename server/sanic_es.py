@@ -26,14 +26,15 @@ def async_enabled() -> bool:
 def get_elastic_search_client(
         search_url: str,
         search_timeout: int,
-        async_client: bool=False,
-        **kwargs):
+        loop=None,
+        async_client: bool=False):
     """
     Initialises an Elasticsearch client. Supports asynchronous calls (must supply Sanic event loop)
+    :param loop:
     :param search_url:
     :param search_timeout:
+    :param loop:
     :param async_client:
-    :param kwargs:
     :return:
     """
     from sanic.log import logger
@@ -45,7 +46,6 @@ def get_elastic_search_client(
             "Initialising async Elasticsearch client URL:%s timeout:%d" %
             (search_url, search_timeout))
 
-        loop = kwargs.get("loop", None)
         if loop is None:
             import sys
             logger.error(

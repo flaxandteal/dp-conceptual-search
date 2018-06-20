@@ -1,6 +1,6 @@
 from sanic import Blueprint
 from sanic.request import Request
-from sanic.response import json
+from sanic.response import json, HTTPResponse
 from sanic.exceptions import InvalidUsage
 
 from server.search import execute_search
@@ -11,7 +11,7 @@ search_blueprint = Blueprint('search', url_prefix='/search')
 
 
 @search_blueprint.route('/ons', methods=["GET", "POST"])
-async def search(request: Request):
+async def search(request: Request) -> HTTPResponse:
     """
     Performs a search request using the standard ONS SearchEngine
     :param request:
@@ -25,13 +25,12 @@ async def search(request: Request):
         type_filters = get_form_param(
             request, "filter", False, all_filter_funcs())
 
-        response = await execute_search(request, SearchEngine, search_term, type_filters)
-        return response
+        return await execute_search(request, SearchEngine, search_term, type_filters)
     raise InvalidUsage("no query provided")
 
 
 @search_blueprint.route('/ons/data', methods=["GET", "POST"])
-async def search_data(request: Request):
+async def search_data(request: Request) -> HTTPResponse:
     """
     Performs a search request using the standard ONS SearchEngine. Limits type filters for SearchData endpoint.
     :param request:
@@ -45,13 +44,12 @@ async def search_data(request: Request):
         type_filters = get_form_param(
             request, "filter", False, filters["data"])
 
-        response = await execute_search(request, SearchEngine, search_term, type_filters)
-        return response
+        return await execute_search(request, SearchEngine, search_term, type_filters)
     raise InvalidUsage("no query provided")
 
 
 @search_blueprint.route('/ons/publications', methods=["GET", "POST"])
-async def search_publications(request: Request):
+async def search_publications(request: Request) -> HTTPResponse:
     """
     Performs a search request using the standard ONS SearchEngine. Limits type filters for SearchPublications endpoint.
     :param request:
@@ -65,20 +63,19 @@ async def search_publications(request: Request):
         type_filters = get_form_param(
             request, "filter", False, filters["publications"])
 
-        response = await execute_search(request, SearchEngine, search_term, type_filters)
-        return response
+        return await execute_search(request, SearchEngine, search_term, type_filters)
     raise InvalidUsage("no query provided")
 
 
 @search_blueprint.route('/ons/departments', methods=["GET", "POST"])
-async def search_departments(request: Request):
+async def search_departments(request: Request) -> HTTPResponse:
     """
     Performs the ONS departments query
     :param request:
     :return:
     """
     from server.search.indices import Index
-    from server.search import marshall_hits
+    from server.search.utils import marshall_hits
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -102,3 +99,46 @@ async def search_departments(request: Request):
 
         return json(result)
     raise InvalidUsage("no query provided")
+
+
+@search_blueprint.route('/')
+@search_blueprint.route('/<path:path>')
+async def find_document(request: Request, path: str='') -> HTTPResponse:
+    response = await find_document_by_uri(request, path)
+    return json(response)
+
+
+async def find_document_by_uri(request: Request, path: str='') -> HTTPResponse:
+    """
+    Locates a document by its uri.
+    :param request:
+    :param path:
+    :return:
+    """
+    from server.search.indices import Index
+    from server.search.utils import marshall_hits
+    from server.search.queries import match_by_uri
+    from server.search.search_engine import SearchEngine
+
+    from sanic.exceptions import NotFound
+
+    from inspect import isawaitable
+
+    client = request.app.es_client
+
+    s = SearchEngine(using=client, index=Index.ONS.value)
+    s = s.query(match_by_uri(path))
+
+    response = s.execute()
+    if isawaitable(response):
+        response = await response
+
+    if response.hits.total > 0:
+        result = {
+            "numberOfResults": response.hits.total,
+            "took": response.took,
+            "results": marshall_hits(response.hits)
+        }
+
+        return result
+    raise NotFound("No document found with uri '%s'" % path)

@@ -26,7 +26,9 @@ class TestUserRecommendation(TestUsers):
         :return:
         """
         # Find the user
-        request, response = self.get('/users/find/%s' % self.hashed_user_id, 200)
+        request, response = self.get(
+            '/users/find/%s' %
+            self.hashed_user_id, 200)
 
         # Assert user vector is in json response
         self.assertTrue(hasattr(response, "json"))
@@ -41,7 +43,9 @@ class TestUserRecommendation(TestUsers):
         self.assertIsNone(user_vector)
 
         # Update the user (positive)
-        request, response = self.post('/recommend/update/positive/%s' % self.search_term, 200, cookies=self.cookies)
+        request, response = self.post(
+            '/recommend/update/positive/%s' %
+            self.search_term, 200, cookies=self.cookies)
 
         # Assert user vector is in json response
         self.assertTrue(hasattr(response, "json"))
@@ -49,18 +53,20 @@ class TestUserRecommendation(TestUsers):
 
         doc = response.json
         self.assertIsInstance(doc, dict)
-        self.assertIn('user_vector', doc)
+        self.assertIn('session_vector', doc)
 
-        user_vector = doc['user_vector']
-        self.assertIsInstance(user_vector, list)
-        self.assertIsNotNone(user_vector)
+        session_vector = doc['session_vector']
+        self.assertIsInstance(session_vector, list)
+        self.assertIsNotNone(session_vector)
 
         # Assert NOT all zeros
-        user_array = np.array(user_vector)
+        user_array = np.array(session_vector)
         self.assertFalse(np.all(user_array == 0))
 
         # Update the user (negative)
-        request, response = self.post('/recommend/update/negative/%s' % self.search_term_negative, 200, cookies=self.cookies)
+        request, response = self.post(
+            '/recommend/update/negative/%s' %
+            self.search_term_negative, 200, cookies=self.cookies)
 
         # Assert user vector is in json response
         self.assertTrue(hasattr(response, "json"))
@@ -68,18 +74,18 @@ class TestUserRecommendation(TestUsers):
 
         doc = response.json
         self.assertIsInstance(doc, dict)
-        self.assertIn('user_vector', doc)
+        self.assertIn('session_vector', doc)
 
-        new_user_vector = doc['user_vector']
-        self.assertIsInstance(new_user_vector, list)
-        self.assertIsNotNone(new_user_vector)
+        new_session_vector = doc['session_vector']
+        self.assertIsInstance(new_session_vector, list)
+        self.assertIsNotNone(new_session_vector)
 
         # Assert NOT all zeros
-        new_user_vector = np.array(new_user_vector)
-        self.assertFalse(np.all(new_user_vector == 0))
+        new_session_vector = np.array(new_session_vector)
+        self.assertFalse(np.all(new_session_vector == 0))
 
         # Assert not the same as previous vector
-        self.assertFalse((new_user_vector == user_vector).all())
+        self.assertFalse((new_session_vector == session_vector).all())
 
 
 if __name__ == "__main__":

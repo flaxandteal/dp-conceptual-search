@@ -13,6 +13,17 @@ type_counts_query = {
 }
 
 
+def match_by_uri(uri: str) -> Q.Query:
+    """
+    Match a document by its uri
+    :param uri:
+    :return:
+    """
+    if not uri.startswith("/"):
+        uri = "/" + uri
+    return Q.Match(_id=uri)
+
+
 def match(field: str, search_term: str, **kwargs) -> Q.Query:
     query_dict = {
         field: {
