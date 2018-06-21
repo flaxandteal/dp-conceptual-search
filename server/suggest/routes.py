@@ -25,8 +25,6 @@ def spell_checker(request: Request) -> HTTPResponse:
     # Generate the tokens
     tokens = query.split()
 
-    print("tokens=", tokens)
-
     # Get the result
     result = model.correct_terms(tokens)
 

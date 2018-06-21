@@ -4,7 +4,7 @@ from enum import Enum
 from numpy import ndarray
 
 from server.search import fields
-from server.word_embedding.supervised_models import SupervisedModel
+from server.word_embedding.models.supervised import SupervisedModel
 
 
 class ScriptScore(Q.Query):

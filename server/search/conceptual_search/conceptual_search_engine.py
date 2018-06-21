@@ -2,8 +2,10 @@ from server.search.search_engine import SearchEngine
 
 
 class ConceptualSearchEngine(SearchEngine):
-    from server.word_embedding.supervised_models import SupervisedModels, load_model
-    word_embedding_model = load_model(SupervisedModels.ONS)
+    from server.word_embedding.sanic_supervised_models import load_model
+    from server.word_embedding.models.supervised import SupervisedModels, SupervisedModel
+
+    word_embedding_model: SupervisedModel = load_model(SupervisedModels.ONS)
 
     def __init__(self, **kwargs):
         super(ConceptualSearchEngine, self).__init__(**kwargs)

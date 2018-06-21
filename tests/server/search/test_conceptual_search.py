@@ -2,11 +2,9 @@ import unittest
 from tests.server.test_app import TestApp
 
 
-class SearchTestSuite(TestApp):
+class ConceptualSearchTestSuite(TestApp):
 
     search_term = "rpi"
-    uri_prefix = "/search/ons"
-    departments_search_term = "education"
 
     def check_search_result(self, result, expected_document: dict):
         # Assert result contains correct keys
@@ -101,7 +99,7 @@ class SearchTestSuite(TestApp):
         """
         from tests.server.search.dummy_documents import test_document, test_aggs
 
-        target = "%s?q=%s" % (self.uri_prefix,  self.search_term)
+        target = "/search/conceptual/ons?q=%s" % self.search_term
         doc = test_document['_source']
         expected_keys = ['counts', 'featuredResult', 'result']
 
@@ -114,103 +112,6 @@ class SearchTestSuite(TestApp):
 
         # Test that aggregations were marshalled correctly
         self.check_search_aggregations(json_data['counts'], test_aggs)
-
-    def test_search_data(self):
-        """
-        Tests the ONS search_data endpoint
-        :return:
-        """
-        from tests.server.search.dummy_documents import test_document, test_aggs
-
-        target = "%s/data?q=%s" % (self.uri_prefix, self.search_term)
-        doc = test_document['_source']
-        expected_keys = ['counts', 'featuredResult', 'result']
-
-        request, response = self.post(target, 200)
-        self.check_search_response(response, expected_keys)
-
-        # Check the search results
-        json_data = response.json
-        self.check_search_result(json_data['result'], doc)
-
-        # Test that aggregations were marshalled correctly
-        self.check_search_aggregations(json_data['counts'], test_aggs)
-
-    def test_search_publications(self):
-        """
-        Tests the ONS search_data endpoint
-        :return:
-        """
-        from tests.server.search.dummy_documents import test_document, test_aggs
-
-        target = "%s/publications?q=%s" % (self.uri_prefix, self.search_term)
-        doc = test_document['_source']
-        expected_keys = ['counts', 'featuredResult', 'result']
-
-        request, response = self.post(target, 200)
-        self.check_search_response(response, expected_keys)
-
-        # Check the search results
-        json_data = response.json
-        self.check_search_result(json_data['result'], doc)
-
-        # Test that aggregations were marshalled correctly
-        self.check_search_aggregations(json_data['counts'], test_aggs)
-
-    def test_search_departments(self):
-        """
-        Tests the ONS departments endpoint
-        :return:
-        """
-        from tests.server.search.dummy_documents import test_departments_document
-
-        highlighted_terms = [
-            "DFE",
-            "<strong>education</strong>",
-            "A level",
-            "degree",
-            "NVQ",
-            "school",
-            "college",
-            "university",
-            "curriculum",
-            "qualification",
-            "teacher training",
-            "pupil absence",
-            "exclusions",
-            "school workforce",
-            "key stage",
-            "higher <strong>education</strong>"]
-
-        test_departments_document['_source']['terms'] = highlighted_terms
-        test_departments_document['_source']['_type'] = 'test'
-
-        target = "/search/ons/departments?q=%s" % self.departments_search_term
-        expected_keys = ['numberOfResults', 'took', 'results']
-
-        request, response = self.get(target, 200)
-        self.check_search_response(response, expected_keys)
-
-        # Check the search results
-        json_data = response.json
-
-        self.assertEqual(
-            json_data['numberOfResults'],
-            1,
-            "departments result should contain one hit")
-
-        result = json_data['results']
-
-        self.assertIsNotNone(result, "departments result should not be none")
-        self.assertIsInstance(
-            result, list, "departments result should be instance of list")
-
-        hit = result[0]
-
-        self.assertEqual(
-            test_departments_document["_source"],
-            hit,
-            "returned hit should match expected dummy document")
 
 
 if __name__ == "__main__":
