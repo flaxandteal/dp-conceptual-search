@@ -22,7 +22,9 @@ class SanicFastText(SanicExtension):
     def init_app(self, app: Sanic, **kwargs) -> None:
         import os
 
-        model_dir = app.config.get("SUPERVISED_MODEL_DIR", "./supervised_models")
+        model_dir = app.config.get(
+            "SUPERVISED_MODEL_DIR",
+            "./supervised_models")
 
         for model_name in SupervisedModels:
             model_fname = os.path.normpath("%s/%s" % (model_dir, model_name))

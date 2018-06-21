@@ -26,6 +26,7 @@ class SanicWord2Vec(SanicExtension):
 
         for model_name in Models:
             model_fname = os.path.normpath("%s/%s" % (model_dir, model_name))
-            model = gensim.models.KeyedVectors.load_word2vec_format(model_fname)
+            model = gensim.models.KeyedVectors.load_word2vec_format(
+                model_fname)
 
             _models[model_name] = UnsupervisedModel(model)

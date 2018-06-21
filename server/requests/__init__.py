@@ -1,5 +1,6 @@
 from sanic.exceptions import InvalidUsage
 
+
 def _get_param(request, key, required, args, generator, default):
     if key in args:
         values = generator(key)

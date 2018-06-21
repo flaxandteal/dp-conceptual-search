@@ -6,6 +6,7 @@ class SpellChecker(object):
     """
     Uses word embedding models to check the spelling of words and suggest corrections.
     """
+
     def __init__(self, model_name: Models):
         self.model_name = model_name
         self.model: UnsupervisedModel = load_model(self.model_name)
