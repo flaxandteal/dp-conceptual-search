@@ -20,6 +20,8 @@ test: test_requirements
 integration-test: test_requirements
 	MONGO_ENABLED=true nosetests -s -v tests.integration
 
+all-tests: test integration-test
+
 mongo-start:
 	mongod --fork --logpath /var/log/mongod.log --dbpath /data/db
 
