@@ -42,19 +42,27 @@ async def update_by_term(request: Request, term: str, update_func: Callable) -> 
     return json(session.to_json(), 200)
 
 
-@recommend_blueprint.route('/update/page/', methods=['GET', 'POST'])
-@recommend_blueprint.route('/update/page/<path:path>', methods=['GET', 'POST'])
-async def positive_update_by_document(request: Request, path: str):
+@recommend_blueprint.route('/update/page/', methods=['POST'])
+@recommend_blueprint.route('/update/page/<path:path>', methods=['POST'])
+async def update_by_document(request: Request, path: str):
     """
     Performs a generic reinforcement of the users vector, using the given term
     :param request:
     :param path:
     :return:
     """
-    from server.users.distance_utils import default_move_session_vector
+    from server.requests import get_form_param
+    from server.users.distance_utils import default_move_session_vector, negative_move_session_vector
 
     engine = get_recommendation_engine(request)
-    session = await engine.update_session_vector_by_doc_uri(path, default_move_session_vector)
+    sentiment: str = get_form_param(request, "sentiment", False, default="positive")
+
+    if sentiment.lower() == "positive":
+        session = await engine.update_session_vector_by_doc_uri(path, default_move_session_vector)
+    elif sentiment.lower() == "negative":
+        session = await engine.update_session_vector_by_doc_uri(path, negative_move_session_vector)
+    else:
+        raise InvalidUsage("Unknown sentiment: '%s'" % sentiment)
 
     return json(session.to_json(), 200)
 

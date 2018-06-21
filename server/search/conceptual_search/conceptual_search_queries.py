@@ -88,7 +88,6 @@ def word_vector_keywords_query(
         k: int=10,
         threshold: float=0.1) -> Q.Query:
     """
-    TODO - Replace below with call to predict
     TODO - (Re)Index normalised vectors
     :param search_term:
     :param model:
