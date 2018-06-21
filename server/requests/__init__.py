@@ -1,3 +1,5 @@
+from sanic.exceptions import InvalidUsage
+
 def _get_param(request, key, required, args, generator, default):
     if key in args:
         values = generator(key)
@@ -10,7 +12,7 @@ def _get_param(request, key, required, args, generator, default):
         message = "Invalid value for required argument '%s' and route '%s'" % (
             key, request.url)
         # Will be automatically caught by handle_exception and return a 400
-        raise ValueError(message)
+        raise InvalidUsage(message)
     else:
         return default
 

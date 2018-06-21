@@ -8,7 +8,7 @@ from server.recommend.engine import RecommendationEngine
 
 from typing import Callable
 
-recommend_blueprint = Blueprint('recommend', url_prefix='recommend')
+recommend_blueprint = Blueprint('recommend', url_prefix='/recommend')
 
 
 def get_recommendation_engine(request: Request) -> RecommendationEngine:

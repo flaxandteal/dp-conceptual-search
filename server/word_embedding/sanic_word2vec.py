@@ -1,23 +1,14 @@
 import gensim
-
-from enum import Enum
-
 from sanic import Sanic
 
 from server.sanic_extension import SanicExtension
+from server.word_embedding.models.unsupervised import Models, UnsupervisedModel
 
 
 _models = {}
 
 
-class Models(Enum):
-    ONS = "ons_supervised.vec"
-
-    def __str__(self):
-        return self.value
-
-
-def load_model(model: Models):
+def load_model(model: Models) -> UnsupervisedModel:
     if model in _models:
         return _models[model]
     raise RuntimeError("No model with name %s" % model)
@@ -37,4 +28,4 @@ class SanicWord2Vec(SanicExtension):
             model_fname = os.path.normpath("%s/%s" % (model_dir, model_name))
             model = gensim.models.KeyedVectors.load_word2vec_format(model_fname)
 
-            _models[model_name] = model
+            _models[model_name] = UnsupervisedModel(model)

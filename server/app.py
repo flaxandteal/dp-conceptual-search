@@ -57,10 +57,12 @@ def init_default_app() -> Sanic:
 def register_blueprints(app: Sanic) -> None:
     # Register blueprint(s)
     from server.search.routes import search_blueprint
+    from server.suggest.routes import suggest_blueprint
     from server.healthcheck.routes import health_check_blueprint
     from server.search.conceptual_search.routes import conceptual_search_blueprint
 
     app.blueprint(search_blueprint)
+    app.blueprint(suggest_blueprint)
     app.blueprint(health_check_blueprint)
     app.blueprint(conceptual_search_blueprint)
 
