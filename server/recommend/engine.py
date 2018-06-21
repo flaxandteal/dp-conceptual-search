@@ -2,8 +2,8 @@ from sanic.request import Request
 
 from server.users.user import User
 from server.users.session import Session
-from server.word_embedding.supervised_models import load_model, SupervisedModels
 from server.users.distance_utils import default_move_session_vector
+from server.word_embedding.sanic_supervised_models import load_model, SupervisedModels
 
 from typing import Callable
 import numpy as np

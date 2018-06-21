@@ -3,12 +3,7 @@ from sanic.request import Request
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
-from server.word_embedding.supervised_models import load_model, SupervisedModels
-
 sessions_blueprint = Blueprint('sessions', url_prefix='/sessions')
-
-model = load_model(SupervisedModels.ONS)
-dim = model.get_dimension()
 
 
 @sessions_blueprint.route('/create/<user_id>', methods=['PUT'])

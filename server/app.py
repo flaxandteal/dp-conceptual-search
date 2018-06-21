@@ -14,7 +14,8 @@ def init_default_app() -> Sanic:
     from server.error_handlers import CustomHandler
     from server.sanic_es import SanicElasticsearch
 
-    from server.word_embedding import supervised_models
+    from server.word_embedding.sanic_word2vec import SanicWord2Vec
+    from server.word_embedding.sanic_supervised_models import SanicFastText
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -25,9 +26,6 @@ def init_default_app() -> Sanic:
 
     logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)
-
-    # Trigger loading of models - TODO improve this
-    supervised_models.init()
 
     if app.config.get("MONGO_ENABLED", False):
         # Init MongoEngine
@@ -46,6 +44,12 @@ def init_default_app() -> Sanic:
 
     # Initialise Elasticsearch client
     SanicElasticsearch(app)
+
+    # Initialise word2vec models
+    SanicWord2Vec(app)
+
+    # Initialise fastText models
+    SanicFastText(app)
 
     return app
 
