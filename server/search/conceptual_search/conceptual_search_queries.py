@@ -62,9 +62,11 @@ def vector_script_score(
     script_score = {
         "lang": ScriptLanguage.KNN.value,
         "params": params,
-        "script": Scripts.BINARY_VECTOR_SCORE.value,
-        "weight": weight
+        "script": Scripts.BINARY_VECTOR_SCORE.value
     }
+
+    if weight > 1:
+        script_score['weight'] = weight
 
     # return script_score
     return ScriptScore(**script_score)
@@ -107,6 +109,23 @@ def word_vector_keywords_query(
     return query
 
 
+def user_rescore_query(user_vector: ndarray, score_mode: BoostMode=BoostMode.MULTIPLY, window_size: int=100) -> dict:
+    user_script_score = vector_script_score(
+        fields.embedding_vector, user_vector)
+
+    rescore = {
+        "window_size": window_size,
+        "query": {
+            "score_mode": score_mode.value,
+            "rescore_query": {
+                "function_score": user_script_score.to_dict()
+            }
+        }
+    }
+
+    return rescore
+
+
 def content_query(
         search_term: str,
         model: SupervisedModel,
@@ -144,17 +163,17 @@ def content_query(
     function_scores = [script_score.to_dict(), date_function.to_dict()]
 
     # If user_vector is specified, add a user vector function score
-    if 'user_vector' in kwargs:
-        user_vector: ndarray = kwargs.get('user_vector')
-
-        if user_vector is not None:
-            assert isinstance(
-                user_vector, ndarray), "Must supply user_vector as ndarray"
-
-            # TODO - Test as rescore query
-            user_script_score = vector_script_score(
-                embedding_vector, user_vector, weight=10)
-            function_scores.append(user_script_score.to_dict())
+    # if 'user_vector' in kwargs:
+    #     user_vector: ndarray = kwargs.get('user_vector')
+    #
+    #     if user_vector is not None:
+    #         assert isinstance(
+    #             user_vector, ndarray), "Must supply user_vector as ndarray"
+    #
+    #         # TODO - Test as rescore query
+    #         user_script_score = vector_script_score(
+    #             embedding_vector, user_vector, weight=10)
+    #         function_scores.append(user_script_score.to_dict())
 
     additional_function_scores = kwargs.get(
         "function_scores", content_filter_functions())

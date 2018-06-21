@@ -28,6 +28,8 @@ class ConceptualSearchEngine(SearchEngine):
         from server.search.sort_by import SortFields
         from server.search.conceptual_search.conceptual_search_queries import content_query
 
+        from numpy import ndarray
+
         kwargs_copy = kwargs.copy()
         sort_by = kwargs_copy.pop("sort_by", SortFields.relevance)
 
@@ -40,7 +42,20 @@ class ConceptualSearchEngine(SearchEngine):
 
             # Prepare the final query and omit the embedding_vector field from
             # _source
-            query_dict = query.to_dict()
+            query_dict = {
+                "query": query.to_dict()
+            }
+
+            # If user_vector is specified, add a user vector function score
+            if 'user_vector' in kwargs:
+                from server.search.conceptual_search.conceptual_search_queries import user_rescore_query
+                user_vector: ndarray = kwargs.get('user_vector')
+
+                if user_vector is not None and isinstance(
+                        user_vector, ndarray):
+
+                    query_dict["rescore"] = user_rescore_query(user_vector)
+
             s = self.build_query(
                 query_dict,
                 search_term=search_term,
