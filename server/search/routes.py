@@ -76,7 +76,7 @@ async def search_departments(request: Request) -> HTTPResponse:
     :return:
     """
     from core.search.indices import Index
-    from core.search.utils import marshall_hits
+    from core.search.response import marshall_hits
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -117,7 +117,7 @@ async def find_document_by_uri(request: Request, path: str='') -> HTTPResponse:
     :return:
     """
     from core.search.indices import Index
-    from core.search.utils import marshall_hits
+    from core.search.response import marshall_hits
     from core.search.queries import match_by_uri
     from core.search.search_engine import SearchEngine
 

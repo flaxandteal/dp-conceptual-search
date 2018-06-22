@@ -1,7 +1,7 @@
 from core.search.hit import Hit
 from core.search.sort_by import SortFields
-from core.search.search_engine import BaseSearchEngine
-from core.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
+
+from elasticsearch_dsl.response import Response
 
 
 def buckets_to_json(buckets) -> (dict, int):
@@ -94,64 +94,53 @@ def marshall_hits(hits) -> list:
     return hits_list
 
 
-async def hits_to_json(
-        responses,
-        page_number: int,
-        page_size: int,
-        sort_by: SortFields=SortFields.relevance) -> dict:
+class ONSResponse(Response):
     """
-    Replicates the JSON response of Babbage
-    :return:
+    Class for marshalling Elasticsearch results to JSON expected by babbage
     """
-    import inspect
 
-    if inspect.isawaitable(responses):
-        responses = await responses
+    def aggs_to_json(self) -> dict:
+        """
 
-    result = {}
-    for search, response in responses:
-        assert isinstance(
-            search, BaseSearchEngine), "Expected instance of BaseSearchEngine, got %s" % type(search)
-        if hasattr(
-                response,
-                "aggregations") and hasattr(
-                response.aggregations,
-                "docCounts"):
-            aggs = response.aggregations.__dict__["_d_"]["docCounts"]
+        :return:
+        """
+        if hasattr(self.aggregations, "docCounts"):
+            aggs = self.aggregations.__dict__["_d_"]["docCounts"]
             buckets = aggs["buckets"]
             if len(buckets) > 0:
                 # Type counts query
                 aggregations, total_hits = buckets_to_json(buckets)
 
-                result["counts"] = {
+                json = {
                     # "numberOfResults": response.hits.total,
                     "numberOfResults": total_hits,
                     "docCounts": aggregations
                 }
-        elif search.query_size == 1:
-            # Featured result query
-            featured_result_hits = [h.to_dict()
-                                    for h in response.hits]
 
-            result["featuredResult"] = {
-                "numberOfResults": len(featured_result_hits),
-                "results": featured_result_hits
-            }
-        else:
-            # Content query - Init Paginator
-            paginator = Paginator(
-                response.hits.total,
-                MAX_VISIBLE_PAGINATOR_LINK,
-                page_number,
-                page_size)
+                return json
 
-            result["result"] = {
-                "numberOfResults": response.hits.total,
-                "took": response.took,
-                "results": marshall_hits(response.hits),
-                "docCounts": {},
-                "paginator": paginator.to_dict(),
-                "sortBy": sort_by.name
-            }
+        return None
 
-    return result
+    def hits_to_json(self, page_number: int, page_size: int, sort_by: SortFields=SortFields.relevance) -> dict:
+        """
+
+        :return:
+        """
+        from core.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
+
+        paginator = Paginator(
+            self.hits.total,
+            MAX_VISIBLE_PAGINATOR_LINK,
+            page_number,
+            page_size)
+
+        json = {
+            "numberOfResults": self.hits.total,
+            "took": self.took,
+            "results": marshall_hits(self.hits),
+            "docCounts": {},
+            "paginator": paginator.to_dict(),
+            "sortBy": sort_by.name
+        }
+
+        return json

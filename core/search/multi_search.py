@@ -1,9 +1,9 @@
 import inspect
 
 from elasticsearch_dsl import MultiSearch
-from elasticsearch_dsl.response import Response
-
 from elasticsearch.exceptions import TransportError
+
+from core.search.response import ONSResponse
 
 
 class AsyncMultiSearch(MultiSearch):
@@ -37,7 +37,7 @@ class AsyncMultiSearch(MultiSearch):
                             'N/A', r['error']['type'], r['error'])
                     r = None
                 else:
-                    r = Response(s, r)
+                    r = ONSResponse(s, r)
                 # Append the search request object and response
                 out.append((s, r))
 

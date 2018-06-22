@@ -1,6 +1,6 @@
 from server.requests import get_form_param
 
-from core.search.utils import hits_to_json
+from server.search.utils import hits_to_json
 from core.search.sort_by import SortFields
 from core.search.indices import Index
 from core.search.search_engine import BaseSearchEngine

@@ -2,6 +2,7 @@ import abc
 
 from elasticsearch_dsl import Search
 
+from core.search.response import ONSResponse
 from core.search.search_type import SearchType
 from core.search.sort_by import SortFields
 
@@ -9,6 +10,8 @@ from core.search.sort_by import SortFields
 class BaseSearchEngine(abc.ABC, Search):
     def __init__(self, **kwargs):
         super(BaseSearchEngine, self).__init__(**kwargs)
+
+        self._response_class = ONSResponse
 
     @property
     def query_size(self):
