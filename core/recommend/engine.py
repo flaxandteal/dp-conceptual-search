@@ -3,7 +3,7 @@ from sanic.request import Request
 from core.users.user import User
 from core.users.session import Session
 from core.users.distance_utils import default_move_session_vector
-from core.word_embedding.sanic_supervised_models import load_model
+from server.word_embedding.sanic_supervised_models import load_model
 from core.word_embedding.models.supervised import SupervisedModels
 
 from typing import Callable

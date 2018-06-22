@@ -6,7 +6,7 @@ from sanic.request import Request
 from server.app import BaseModel
 from core.mongo.document import Document
 
-from core.word_embedding.sanic_supervised_models import load_model, SupervisedModels
+from server.word_embedding.sanic_supervised_models import load_model, SupervisedModels
 
 
 class Session(BaseModel, Document):

@@ -14,8 +14,8 @@ def init_default_app() -> Sanic:
     from server.error_handlers import CustomHandler
     from server.sanic_es import SanicElasticsearch
 
-    from core.word_embedding.sanic_word2vec import SanicWord2Vec
-    from core.word_embedding.sanic_supervised_models import SanicFastText
+    from server.word_embedding.sanic_word2vec import SanicWord2Vec
+    from server.word_embedding.sanic_supervised_models import SanicFastText
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 

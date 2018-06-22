@@ -2,7 +2,7 @@ from core.search.search_engine import SearchEngine
 
 
 class ConceptualSearchEngine(SearchEngine):
-    from core.word_embedding.sanic_supervised_models import load_model
+    from server.word_embedding.sanic_supervised_models import load_model
     from core.word_embedding.models.supervised import SupervisedModels, SupervisedModel
 
     word_embedding_model: SupervisedModel = load_model(SupervisedModels.ONS)
