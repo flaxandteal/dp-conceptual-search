@@ -2,7 +2,7 @@ import fastText
 from sanic import Sanic
 
 from server.sanic_extension import SanicExtension
-from server.word_embedding.models.supervised import SupervisedModels, SupervisedModel
+from core.word_embedding.models.supervised import SupervisedModels, SupervisedModel
 
 
 _models = {}

@@ -1,5 +1,5 @@
-from server.word_embedding.sanic_word2vec import load_model
-from server.word_embedding.models.unsupervised import Models, UnsupervisedModel
+from core.word_embedding.sanic_word2vec import load_model
+from core.word_embedding.models.unsupervised import Models, UnsupervisedModel
 
 
 class SpellChecker(object):

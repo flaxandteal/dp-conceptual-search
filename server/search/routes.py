@@ -5,7 +5,8 @@ from sanic.exceptions import InvalidUsage
 
 from server.search import execute_search
 from server.requests import get_form_param
-from server.search.search_engine import SearchEngine
+
+from core.search.search_engine import SearchEngine
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
@@ -17,7 +18,7 @@ async def search(request: Request) -> HTTPResponse:
     :param request:
     :return:
     """
-    from server.search.type_filter import all_filter_funcs
+    from core.search.filter_functions import all_filter_funcs
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -36,7 +37,7 @@ async def search_data(request: Request) -> HTTPResponse:
     :param request:
     :return:
     """
-    from server.search.type_filter import filters
+    from core.search.filter_functions import filters
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -55,7 +56,7 @@ async def search_publications(request: Request) -> HTTPResponse:
     :param request:
     :return:
     """
-    from server.search.type_filter import filters
+    from core.search.filter_functions import filters
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -74,8 +75,8 @@ async def search_departments(request: Request) -> HTTPResponse:
     :param request:
     :return:
     """
-    from server.search.indices import Index
-    from server.search.utils import marshall_hits
+    from core.search.indices import Index
+    from core.search.utils import marshall_hits
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -115,10 +116,10 @@ async def find_document_by_uri(request: Request, path: str='') -> HTTPResponse:
     :param path:
     :return:
     """
-    from server.search.indices import Index
-    from server.search.utils import marshall_hits
-    from server.search.queries import match_by_uri
-    from server.search.search_engine import SearchEngine
+    from core.search.indices import Index
+    from core.search.utils import marshall_hits
+    from core.search.queries import match_by_uri
+    from core.search.search_engine import SearchEngine
 
     from sanic.exceptions import NotFound
 

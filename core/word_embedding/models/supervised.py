@@ -3,7 +3,7 @@ from enum import Enum
 import numpy as np
 import fastText
 
-from server.word_embedding.utils import cosine_sim, cosine_sim_matrix
+from core.word_embedding.utils import cosine_sim, cosine_sim_matrix
 
 
 class SupervisedModel(fastText.FastText._FastText):

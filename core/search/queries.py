@@ -1,4 +1,4 @@
-from server.search import fields
+from core.search import fields
 from elasticsearch_dsl import query as Q
 
 from typing import List

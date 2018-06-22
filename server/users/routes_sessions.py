@@ -8,8 +8,8 @@ sessions_blueprint = Blueprint('sessions', url_prefix='/sessions')
 
 @sessions_blueprint.route('/create/<user_id>', methods=['PUT'])
 async def create(request: Request, user_id: str):
-    from server.users.user import User
-    from server.users.session import Session
+    from core.users.user import User
+    from core.users.session import Session
 
     session_id = request.cookies.get(Session.session_id_key)
 

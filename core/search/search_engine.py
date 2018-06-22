@@ -2,8 +2,8 @@ import abc
 
 from elasticsearch_dsl import Search
 
-from server.search.search_type import SearchType
-from server.search.sort_by import SortFields
+from core.search.search_type import SearchType
+from core.search.sort_by import SortFields
 
 
 class BaseSearchEngine(abc.ABC, Search):
@@ -19,7 +19,7 @@ class BaseSearchEngine(abc.ABC, Search):
         Appends highligher options onto Elasticsearch query
         :return:
         """
-        from server.search.fields import highlight_fields
+        from core.search.fields import highlight_fields
 
         field_names = [field.name for field in highlight_fields]
 
@@ -44,7 +44,7 @@ class BaseSearchEngine(abc.ABC, Search):
         :param sort_by:
         :return:
         """
-        from server.search.sort_by import query_sort
+        from core.search.sort_by import query_sort
 
         return self.sort(
             *query_sort(sort_by)
@@ -161,7 +161,7 @@ class SearchEngine(BaseSearchEngine):
         :param search_term:
         :return:
         """
-        from server.search.queries import departments_query
+        from core.search.queries import departments_query
 
         query = departments_query(search_term)
         query_dict = {
@@ -196,8 +196,8 @@ class SearchEngine(BaseSearchEngine):
         :param kwargs:
         :return:
         """
-        from server.search.queries import content_query, function_score_content_query
-        from server.search.filter_functions import content_filter_functions
+        from core.search.queries import content_query, function_score_content_query
+        from core.search.filter_functions import content_filter_functions
 
         # Build the standard content query
         query = content_query(search_term)
@@ -219,8 +219,8 @@ class SearchEngine(BaseSearchEngine):
             **kwargs)
 
     def type_counts_query(self, search_term, **kwargs):
-        from server.search.queries import type_counts_query
-        from server.search.type_filter import all_filter_funcs
+        from core.search.queries import type_counts_query
+        from core.search.filter_functions import all_filter_funcs
 
         # Prepare and execute
         return self.content_query(
@@ -236,7 +236,7 @@ class SearchEngine(BaseSearchEngine):
         :param search_term:
         :return:
         """
-        from server.search.content_types import home_page_census, product_page
+        from core.search.content_types import home_page_census, product_page
 
         type_filters = [product_page.name, home_page_census.name]
 

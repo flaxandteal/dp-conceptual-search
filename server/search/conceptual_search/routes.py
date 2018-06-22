@@ -4,7 +4,7 @@ from sanic.exceptions import InvalidUsage
 
 from server.requests import get_form_param
 
-from server.search.routes import execute_search
+from server.search import execute_search
 
 conceptual_search_blueprint = Blueprint(
     'conceptual_search',
@@ -18,10 +18,10 @@ async def conceptual_search(request: Request):
     :param request:
     :return:
     """
-    from server.users.user import User
+    from core.users.user import User
 
-    from server.search.type_filter import all_filter_funcs
-    from server.search.conceptual_search.conceptual_search_engine import ConceptualSearchEngine
+    from core.search.type_filter import all_filter_funcs
+    from core.search.conceptual_search.conceptual_search_engine import ConceptualSearchEngine
 
     search_term = request.args.get("q")
     if search_term is not None:

@@ -1,9 +1,10 @@
 from sanic.request import Request
 
-from server.users.user import User
-from server.users.session import Session
-from server.users.distance_utils import default_move_session_vector
-from server.word_embedding.sanic_supervised_models import load_model, SupervisedModels
+from core.users.user import User
+from core.users.session import Session
+from core.users.distance_utils import default_move_session_vector
+from core.word_embedding.sanic_supervised_models import load_model
+from core.word_embedding.models.supervised import SupervisedModels
 
 from typing import Callable
 import numpy as np
@@ -104,8 +105,8 @@ class RecommendationEngine(object):
         :return:
         """
         from server.search.routes import find_document_by_uri
-        from server.search.fields import embedding_vector
-        from server.word_embedding.utils import decode_float_list
+        from core.search.fields import embedding_vector
+        from core.word_embedding.utils import decode_float_list
 
         from sanic.exceptions import NotFound
 

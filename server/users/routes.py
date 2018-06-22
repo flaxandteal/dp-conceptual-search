@@ -4,7 +4,7 @@ from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
 from server.users import get_user, get_user_id
-from server.users.user import User
+from core.users.user import User
 
 user_blueprint = Blueprint('users', url_prefix='/users')
 

@@ -14,8 +14,8 @@ def init_default_app() -> Sanic:
     from server.error_handlers import CustomHandler
     from server.sanic_es import SanicElasticsearch
 
-    from server.word_embedding.sanic_word2vec import SanicWord2Vec
-    from server.word_embedding.sanic_supervised_models import SanicFastText
+    from core.word_embedding.sanic_word2vec import SanicWord2Vec
+    from core.word_embedding.sanic_supervised_models import SanicFastText
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -96,5 +96,16 @@ def create_app() -> Sanic:
             if key in request.cookies:
                 value = request.cookies.pop(key)
                 request.cookies[key] = hash_value(value)
+
+    if app.config.get("START_MONGO", False):
+        @app.listener("before_server_start")
+        async def start_mongod(_app: Sanic, loop):
+            import os
+            os.system("make mongo-start")
+
+        @app.listener("after_server_stop")
+        async def stop_mongod(_app: Sanic, loop):
+            import os
+            os.system("make mongo-stop")
 
     return app

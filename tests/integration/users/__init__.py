@@ -23,7 +23,7 @@ class TestUsers(TestApp):
         """
         super(TestUsers, self).setUp()
 
-        from server.users.user import User
+        from core.users.user import User
 
         cookies = {User.user_id_key: self.user_id}
         self.put('/users/create', 200, cookies=cookies)

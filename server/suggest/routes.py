@@ -15,7 +15,7 @@ def spell_checker(request: Request) -> HTTPResponse:
     """
     from server.requests import get_request_param
     from server.suggest.spell_checker import SpellChecker
-    from server.word_embedding.models.unsupervised import Models
+    from core.word_embedding.models.unsupervised import Models
 
     query = get_request_param(request, "q", True)
 

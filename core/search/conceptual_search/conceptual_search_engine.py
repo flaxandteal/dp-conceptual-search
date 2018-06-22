@@ -1,9 +1,9 @@
-from server.search.search_engine import SearchEngine
+from core.search.search_engine import SearchEngine
 
 
 class ConceptualSearchEngine(SearchEngine):
-    from server.word_embedding.sanic_supervised_models import load_model
-    from server.word_embedding.models.supervised import SupervisedModels, SupervisedModel
+    from core.word_embedding.sanic_supervised_models import load_model
+    from core.word_embedding.models.supervised import SupervisedModels, SupervisedModel
 
     word_embedding_model: SupervisedModel = load_model(SupervisedModels.ONS)
 
@@ -24,9 +24,9 @@ class ConceptualSearchEngine(SearchEngine):
         :param kwargs:
         :return:
         """
-        from server.search.fields import embedding_vector
-        from server.search.sort_by import SortFields
-        from server.search.conceptual_search.conceptual_search_queries import content_query
+        from core.search.fields import embedding_vector
+        from core.search.sort_by import SortFields
+        from core.search.conceptual_search.conceptual_search_queries import content_query
 
         from numpy import ndarray
 
@@ -48,7 +48,7 @@ class ConceptualSearchEngine(SearchEngine):
 
             # If user_vector is specified, add a user vector function score
             if 'user_vector' in kwargs:
-                from server.search.conceptual_search.conceptual_search_queries import user_rescore_query
+                from core.search.conceptual_search.conceptual_search_queries import user_rescore_query
                 user_vector: ndarray = kwargs.get('user_vector')
 
                 if user_vector is not None and isinstance(
@@ -82,7 +82,7 @@ class ConceptualSearchEngine(SearchEngine):
         :param search_term:
         :return:
         """
-        from server.search.content_types import home_page_census, product_page
+        from core.search.content_types import home_page_census, product_page
 
         type_filters = [product_page.name, home_page_census.name]
 

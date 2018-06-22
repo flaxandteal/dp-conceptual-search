@@ -3,9 +3,9 @@ import numpy as np
 from typing import List
 
 from server.app import BaseModel
-from server.mongo.document import Document
+from core.mongo.document import Document
 
-from server.users.session import Session
+from core.users.session import Session
 
 
 class User(BaseModel, Document):

@@ -13,8 +13,8 @@ class TestUserRecommendation(TestUsers):
 
     @property
     def cookies(self):
-        from server.users.user import User
-        from server.users.session import Session
+        from core.users.user import User
+        from core.users.session import Session
 
         cookies = {User.user_id_key: self.user_id,
                    Session.session_id_key: self.session_id}

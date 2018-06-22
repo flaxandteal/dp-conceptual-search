@@ -1,5 +1,5 @@
 from sanic.request import Request
-from server.users.user import User
+from core.users.user import User
 
 
 def get_user_id(request: Request) -> str:

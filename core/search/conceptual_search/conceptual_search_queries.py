@@ -3,8 +3,8 @@ from elasticsearch_dsl import query as Q
 from enum import Enum
 from numpy import ndarray
 
-from server.search import fields
-from server.word_embedding.models.supervised import SupervisedModel
+from core.search import fields
+from core.word_embedding.models.supervised import SupervisedModel
 
 
 class ScriptScore(Q.Query):
@@ -109,6 +109,13 @@ def word_vector_keywords_query(
 
 
 def user_rescore_query(user_vector: ndarray, score_mode: BoostMode=BoostMode.MULTIPLY, window_size: int=100) -> dict:
+    """
+    Generates a rescore query from a users session vector
+    :param user_vector:
+    :param score_mode:
+    :param window_size:
+    :return:
+    """
     user_script_score = vector_script_score(
         fields.embedding_vector, user_vector)
 
@@ -140,9 +147,9 @@ def content_query(
     :param min_score:
     :return:
     """
-    from server.search.fields import embedding_vector
-    from server.search.filter_functions import content_filter_functions
-    from server.search.queries import content_query as ons_content_query
+    from core.search.fields import embedding_vector
+    from core.search.filter_functions import content_filter_functions
+    from core.search.queries import content_query as ons_content_query
 
     search_vector = model.get_sentence_vector(search_term)
 

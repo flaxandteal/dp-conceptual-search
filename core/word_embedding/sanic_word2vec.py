@@ -2,7 +2,7 @@ import gensim
 from sanic import Sanic
 
 from server.sanic_extension import SanicExtension
-from server.word_embedding.models.unsupervised import Models, UnsupervisedModel
+from core.word_embedding.models.unsupervised import Models, UnsupervisedModel
 
 
 _models = {}

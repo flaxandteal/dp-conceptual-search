@@ -1,10 +1,10 @@
 from server.requests import get_form_param
 
-from server.search.utils import hits_to_json
-from server.search.sort_by import SortFields
-from server.search.indices import Index
-from server.search.search_engine import BaseSearchEngine
-from server.search.multi_search import AsyncMultiSearch
+from core.search.utils import hits_to_json
+from core.search.sort_by import SortFields
+from core.search.indices import Index
+from core.search.search_engine import BaseSearchEngine
+from core.search.multi_search import AsyncMultiSearch
 
 from sanic.request import Request
 from sanic.response import json, HTTPResponse

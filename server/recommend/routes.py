@@ -4,7 +4,7 @@ from sanic.response import json, HTTPResponse
 from sanic.exceptions import InvalidUsage
 
 from server.users import get_user_id
-from server.recommend.engine import RecommendationEngine
+from core.recommend.engine import RecommendationEngine
 
 from typing import Callable
 
@@ -17,7 +17,7 @@ def get_recommendation_engine(request: Request) -> RecommendationEngine:
     :param request:
     :return:
     """
-    from server.users.user import User
+    from core.users.user import User
 
     user_id = get_user_id(request)
 
@@ -52,7 +52,7 @@ async def update_by_document(request: Request, path: str):
     :return:
     """
     from server.requests import get_form_param
-    from server.users.distance_utils import default_move_session_vector, negative_move_session_vector
+    from core.users.distance_utils import default_move_session_vector, negative_move_session_vector
 
     engine = get_recommendation_engine(request)
     sentiment: str = get_form_param(request, "sentiment", False, default="positive")
@@ -75,7 +75,7 @@ async def positive_update(request: Request, term: str):
     :param term:
     :return:
     """
-    from server.users.distance_utils import default_move_session_vector
+    from core.users.distance_utils import default_move_session_vector
     return await update_by_term(request, term, default_move_session_vector)
 
 
@@ -87,7 +87,7 @@ async def negative_update(request: Request, term: str):
     :param term:
     :return:
     """
-    from server.users.distance_utils import negative_move_session_vector
+    from core.users.distance_utils import negative_move_session_vector
     return await update_by_term(request, term, negative_move_session_vector)
 
 
@@ -99,7 +99,7 @@ async def similarity(request: Request, term: str):
     :param term:
     :return: 200 OK with similarity score if user exists. 404 NOT_FOUND if the user doesn't exist.
     """
-    from server.users.user import User
+    from core.users.user import User
 
     user_id = get_user_id(request)
     if user_id is not None:
@@ -122,8 +122,8 @@ async def similarity(request: Request, user_id: str, term: str):
     user = await get_user(user_id)
 
     if user is not None:
-        from server.word_embedding.supervised_models import load_model, SupervisedModels
-        from server.word_embedding.utils import cosine_sim
+        from core.word_embedding import load_model, SupervisedModels
+        from core.word_embedding.utils import cosine_sim
 
         model = load_model(SupervisedModels.ONS)
 

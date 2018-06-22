@@ -1,4 +1,4 @@
-from server.search.content_types import *
+from core.search.content_types import *
 
 from typing import List
 
