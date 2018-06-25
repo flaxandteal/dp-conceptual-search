@@ -1,4 +1,6 @@
-from core.search.type_filter import *
+from ons.search.type_filter import *
+
+from typing import List
 
 
 def type_filter_function(type_filter: TypeFilter) -> List[dict]:

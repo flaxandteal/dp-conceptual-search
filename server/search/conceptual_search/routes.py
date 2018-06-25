@@ -20,8 +20,8 @@ async def conceptual_search(request: Request):
     """
     from core.users.user import User
 
-    from core.search.type_filter import all_filter_funcs
-    from core.search.conceptual_search.conceptual_search_engine import ConceptualSearchEngine
+    from ons.search.type_filter import all_filter_funcs
+    from ons.search.conceptual.search_engine import ConceptualSearchEngine
 
     search_term = request.args.get("q")
     if search_term is not None:

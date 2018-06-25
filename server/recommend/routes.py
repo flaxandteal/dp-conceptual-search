@@ -4,6 +4,7 @@ from sanic.response import json, HTTPResponse
 from sanic.exceptions import InvalidUsage
 
 from server.users import get_user_id
+
 from core.recommend.engine import RecommendationEngine
 
 from typing import Callable
@@ -55,7 +56,8 @@ async def update_by_document(request: Request, path: str):
     from core.users.distance_utils import default_move_session_vector, negative_move_session_vector
 
     engine = get_recommendation_engine(request)
-    sentiment: str = get_form_param(request, "sentiment", False, default="positive")
+    sentiment: str = get_form_param(
+        request, "sentiment", False, default="positive")
 
     if sentiment.lower() == "positive":
         session = await engine.update_session_vector_by_doc_uri(path, default_move_session_vector)

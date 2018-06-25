@@ -3,8 +3,12 @@ from elasticsearch_dsl import query as Q
 from enum import Enum
 from numpy import ndarray
 
-from core.search import fields
+from ons.search import fields
 from core.word_embedding.models.supervised import SupervisedModel
+
+
+class RescoreQuery(Q.Query):
+    name = "rescore"
 
 
 class ScriptScore(Q.Query):
@@ -108,7 +112,10 @@ def word_vector_keywords_query(
     return query
 
 
-def user_rescore_query(user_vector: ndarray, score_mode: BoostMode=BoostMode.MULTIPLY, window_size: int=100) -> dict:
+def user_rescore_query(
+        user_vector: ndarray,
+        score_mode: BoostMode=BoostMode.MULTIPLY,
+        window_size: int=100) -> RescoreQuery:
     """
     Generates a rescore query from a users session vector
     :param user_vector:
@@ -129,7 +136,7 @@ def user_rescore_query(user_vector: ndarray, score_mode: BoostMode=BoostMode.MUL
         }
     }
 
-    return rescore
+    return RescoreQuery(**rescore)
 
 
 def content_query(
@@ -147,9 +154,8 @@ def content_query(
     :param min_score:
     :return:
     """
-    from core.search.fields import embedding_vector
-    from core.search.filter_functions import content_filter_functions
-    from core.search.queries import content_query as ons_content_query
+    from ons.search.filter_functions import content_filter_functions
+    from ons.search.queries import content_query as ons_content_query
 
     search_vector = model.get_sentence_vector(search_term)
 
@@ -163,7 +169,7 @@ def content_query(
     should = [dis_max_query, terms_query]
 
     # Build function scores
-    script_score = vector_script_score(embedding_vector, search_vector)
+    script_score = vector_script_score(fields.embedding_vector, search_vector)
     date_function = date_decay_function()
 
     function_scores = [script_score.to_dict(), date_function.to_dict()]

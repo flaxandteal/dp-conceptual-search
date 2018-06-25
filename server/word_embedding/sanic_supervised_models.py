@@ -28,6 +28,6 @@ class SanicFastText(SanicExtension):
 
         for model_name in SupervisedModels:
             model_fname = os.path.normpath("%s/%s" % (model_dir, model_name))
-            model = fastText.load_model(model_fname)
+            model = SupervisedModel(model_fname)
 
             _models[model_name] = model

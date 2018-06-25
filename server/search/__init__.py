@@ -1,10 +1,12 @@
 from server.requests import get_form_param
 
 from server.search.utils import hits_to_json
-from core.search.sort_by import SortFields
-from core.search.indices import Index
-from core.search.search_engine import BaseSearchEngine
-from core.search.multi_search import AsyncMultiSearch
+
+from ons.search.sort_fields import SortFields
+from ons.search.indicies import Index
+from ons.search.search_engine import AbstractSearchClient
+
+from core.search.client.async_multi_search import AsyncMultiSearch
 
 from sanic.request import Request
 from sanic.response import json, HTTPResponse
@@ -19,7 +21,7 @@ async def execute_search(request: Request, search_engine_cls: ClassVar, search_t
     Simple search API to query Elasticsearch
     TODO - Modify to prevent building query multiple times
     """
-    if not issubclass(search_engine_cls, BaseSearchEngine):
+    if not issubclass(search_engine_cls, AbstractSearchClient):
         raise InvalidUsage(
             "expected instance of 'BaseSearchEngine', got %s" %
             search_engine_cls)

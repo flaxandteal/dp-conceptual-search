@@ -2,7 +2,7 @@ import numpy as np
 
 from typing import List
 
-from server.app import BaseModel
+from core.mongo import BaseModel
 from core.mongo.document import Document
 
 from core.users.session import Session

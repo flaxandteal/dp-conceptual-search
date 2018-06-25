@@ -1,19 +1,17 @@
-import inspect
-
+from inspect import isawaitable
 from elasticsearch_dsl import MultiSearch
 from elasticsearch.exceptions import TransportError
 
-from core.search.response import ONSResponse
-
 
 class AsyncMultiSearch(MultiSearch):
-    def __init__(self, *args, **kwargs):
-        super(AsyncMultiSearch, self).__init__(*args, **kwargs)
-
+    """
+    A multi search client which supports asynchronous http calls
+    """
     async def execute(self, ignore_cache=False, raise_on_error=True):
         """
         Execute the multi search request and return a list of search results.
         """
+        from elasticsearch_dsl.response import Response
         from elasticsearch_dsl.connections import connections
 
         if ignore_cache or not hasattr(self, '_response'):
@@ -26,7 +24,7 @@ class AsyncMultiSearch(MultiSearch):
                 **self._params
             )
 
-            if inspect.isawaitable(responses):
+            if isawaitable(responses):
                 responses = await responses
 
             out = []
@@ -37,7 +35,13 @@ class AsyncMultiSearch(MultiSearch):
                             'N/A', r['error']['type'], r['error'])
                     r = None
                 else:
-                    r = ONSResponse(s, r)
+                    if hasattr(
+                            s, "_response_class") and s._response_class is not None:
+                        r = s._response_class(s, r)
+                    elif hasattr(self, "_response_class") and self._response_class is not None:
+                        r = self._response_class(s, r)
+                    else:
+                        r = Response(s, r)
                 # Append the search request object and response
                 out.append((s, r))
 

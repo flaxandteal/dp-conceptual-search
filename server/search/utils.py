@@ -1,5 +1,5 @@
-from core.search.sort_by import SortFields
-from core.search.search_engine import BaseSearchEngine
+from ons.search.sort_fields import SortFields
+from ons.search.search_engine import AbstractSearchClient
 
 
 async def hits_to_json(
@@ -12,7 +12,7 @@ async def hits_to_json(
     :return:
     """
     import inspect
-    from core.search.response import ONSResponse
+    from ons.search.response import ONSResponse
 
     if inspect.isawaitable(responses):
         responses = await responses
@@ -20,9 +20,10 @@ async def hits_to_json(
     result = {}
     for search, response in responses:
         assert isinstance(
-            search, BaseSearchEngine), "Expected instance of BaseSearchEngine, got %s" % type(search)
+            search, AbstractSearchClient), "Expected instance of BaseSearchEngine, got %s" % type(search)
 
-        assert isinstance(response, ONSResponse), "Expected instance of ONSResponse, got %s" % type(response)
+        assert isinstance(
+            response, ONSResponse), "Expected instance of ONSResponse, got %s" % type(response)
 
         if hasattr(
                 response,
@@ -40,6 +41,7 @@ async def hits_to_json(
                 "results": featured_result_hits
             }
         else:
-            result["result"] = response.hits_to_json(page_number, page_size, sort_by=sort_by)
+            result["result"] = response.hits_to_json(
+                page_number, page_size, sort_by=sort_by)
 
     return result

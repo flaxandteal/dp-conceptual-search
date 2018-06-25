@@ -3,10 +3,8 @@ from bson import ObjectId
 
 from sanic.request import Request
 
-from server.app import BaseModel
+from core.mongo import BaseModel
 from core.mongo.document import Document
-
-from server.word_embedding.sanic_supervised_models import load_model, SupervisedModels
 
 
 class Session(BaseModel, Document):
@@ -19,17 +17,13 @@ class Session(BaseModel, Document):
             self,
             user_oid: ObjectId,
             session_id: str,
-            session_vector: list=None,
+            session_vector: list=[],
             **kwargs):
         super(Session, self).__init__(**kwargs)
 
         self.user_oid = user_oid
         self.session_id = session_id
 
-        self.dim = load_model(SupervisedModels.ONS).get_dimension()
-
-        if session_vector is None:
-            session_vector = np.zeros(self.dim).tolist()
         self.session_vector = session_vector
 
     @classmethod

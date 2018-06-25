@@ -2,8 +2,6 @@ from sanic import Sanic
 from sanic.request import Request
 from sanic.log import logger
 
-from sanic_motor import BaseModel
-
 
 def init_default_app() -> Sanic:
     import os
@@ -28,6 +26,7 @@ def init_default_app() -> Sanic:
     app.config.from_pyfile('config_%s.py' % config_name)
 
     if app.config.get("MONGO_ENABLED", False):
+        from core.mongo import BaseModel
         # Init MongoEngine
         logger.info(
             "Initialising motor engine on uri '%s'" %

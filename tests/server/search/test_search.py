@@ -101,7 +101,7 @@ class SearchTestSuite(TestApp):
         """
         from tests.server.search.dummy_documents import test_document, test_aggs
 
-        target = "%s?q=%s" % (self.uri_prefix,  self.search_term)
+        target = "%s?q=%s" % (self.uri_prefix, self.search_term)
         doc = test_document['_source']
         expected_keys = ['counts', 'featuredResult', 'result']
 

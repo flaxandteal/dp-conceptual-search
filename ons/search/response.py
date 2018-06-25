@@ -1,7 +1,21 @@
-from core.search.hit import Hit
-from core.search.sort_by import SortFields
+from ons.search.sort_fields import SortFields
 
 from elasticsearch_dsl.response import Response
+
+
+class Hit(dict):
+    def __init__(self, *args, **kwargs):
+        super(Hit, self).__init__(*args, **kwargs)
+
+    def set_value(self, field_name, value):
+        if field_name in self:
+            self[field_name] = value
+        elif "." in field_name:
+            parts = field_name.split(".")
+            if parts[0] == "description" and len(parts) <= 2:
+                self["description"][parts[1]] = value
+        else:
+            raise Exception("Unable to set field %s" % field_name)
 
 
 def buckets_to_json(buckets) -> (dict, int):
@@ -121,12 +135,13 @@ class ONSResponse(Response):
 
         return None
 
-    def hits_to_json(self, page_number: int, page_size: int, sort_by: SortFields=SortFields.relevance) -> dict:
+    def hits_to_json(self, page_number: int, page_size: int,
+                     sort_by: SortFields=SortFields.relevance) -> dict:
         """
 
         :return:
         """
-        from core.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
+        from ons.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
 
         paginator = Paginator(
             self.hits.total,

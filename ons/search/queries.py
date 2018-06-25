@@ -1,16 +1,12 @@
-from core.search import fields
+from ons.search import fields
+
 from elasticsearch_dsl import query as Q
+from elasticsearch_dsl.aggs import A, Agg
 
 from typing import List
 
-# Define the static type counts query structure
-type_counts_query = {
-    "docCounts": {
-        "terms": {
-            "field": "_type"
-        }
-    }
-}
+
+type_counts_query = A("terms", field=fields._type.name)
 
 
 def match_by_uri(uri: str) -> Q.Query:
