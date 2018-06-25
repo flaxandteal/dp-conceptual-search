@@ -3,8 +3,6 @@ from sanic.request import Request
 from sanic.response import json, HTTPResponse
 from sanic.exceptions import InvalidUsage
 
-from server.users import get_user_id
-
 from core.recommend.engine import RecommendationEngine
 
 from typing import Callable
@@ -19,11 +17,13 @@ def get_recommendation_engine(request: Request) -> RecommendationEngine:
     :return:
     """
     from core.users.user import User
+    from server.users import get_user_id, get_session_id
 
     user_id = get_user_id(request)
+    session_id = get_session_id(request)
 
-    if user_id is not None:
-        engine = RecommendationEngine(request, user_id)
+    if user_id is not None and session_id is not None:
+        engine = RecommendationEngine(user_id, session_id)
 
         return engine
     raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
@@ -102,6 +102,7 @@ async def similarity(request: Request, term: str):
     :return: 200 OK with similarity score if user exists. 404 NOT_FOUND if the user doesn't exist.
     """
     from core.users.user import User
+    from server.users import get_user_id
 
     user_id = get_user_id(request)
     if user_id is not None:

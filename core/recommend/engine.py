@@ -1,5 +1,3 @@
-from sanic.request import Request
-
 from core.users.user import User
 from core.users.session import Session
 from core.users.distance_utils import default_move_session_vector
@@ -13,9 +11,9 @@ import numpy as np
 
 class RecommendationEngine(object):
 
-    def __init__(self, request: Request, user_id: str):
-        self.request = request
+    def __init__(self, user_id: str, session_id: str):
         self.user_id = user_id
+        self.session_id = session_id
 
         # Get a handle on the model - NB it has already been loaded into memory
         # by this point.
@@ -47,14 +45,8 @@ class RecommendationEngine(object):
 
         if session is None:
             # Create the session
-            if Session.session_id_key not in self.request.cookies:
-                from sanic.exceptions import NotFound
-                raise NotFound(
-                    "Unabale to find/create session for user '%s'" %
-                    self.user_id)
 
-            sid = self.request.cookies.get(Session.session_id_key)
-            session = Session(user.id, sid)
+            session = Session(user.id, self.session_id)
             await session.write()
 
         return session
@@ -110,8 +102,6 @@ class RecommendationEngine(object):
 
         from ons.search.fields import embedding_vector
 
-        from sanic.exceptions import NotFound
-
         response: dict = await find_document_by_uri(self.request, doc_uri)
 
         # Document exists - get the embedding_vector
@@ -126,4 +116,4 @@ class RecommendationEngine(object):
 
                 decoded_doc_vector = np.array(decode_float_list(doc_vector))
                 return await self.update_session_vector(decoded_doc_vector, update_func)
-        raise NotFound("No document found for uri '%s'" % doc_uri)
+        raise ValueError("No document found for uri '%s'" % doc_uri)

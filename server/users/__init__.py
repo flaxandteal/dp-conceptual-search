@@ -1,4 +1,5 @@
 from sanic.request import Request
+
 from core.users.user import User
 
 
@@ -9,6 +10,16 @@ def get_user_id(request: Request) -> str:
     :return: user_id as str if exists, else None
     """
     return request.cookies.get(User.user_id_key, None)
+
+
+def get_session_id(request: Request) -> str:
+    """
+    Retrieves the user_id field from request cookies
+    :param request:
+    :return: user_id as str if exists, else None
+    """
+    from core.users.session import Session
+    return request.cookies.get(Session.session_id_key, None)
 
 
 async def get_user(user_id: str) -> User:
