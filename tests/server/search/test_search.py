@@ -8,6 +8,8 @@ class SearchTestSuite(TestApp):
     uri_prefix = "/search/ons"
     departments_search_term = "education"
 
+    maxDiff = None
+
     def check_search_result(self, result, expected_document: dict):
         # Assert result contains correct keys
         expected_result_keys = [
@@ -184,6 +186,7 @@ class SearchTestSuite(TestApp):
 
         test_departments_document['_source']['terms'] = highlighted_terms
         test_departments_document['_source']['_type'] = 'test'
+        test_departments_document['_source']['_score'] = 1.0
 
         target = "/search/ons/departments?q=%s" % self.departments_search_term
         expected_keys = ['numberOfResults', 'took', 'results']

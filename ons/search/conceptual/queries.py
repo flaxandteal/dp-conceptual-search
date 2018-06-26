@@ -174,19 +174,6 @@ def content_query(
 
     function_scores = [script_score.to_dict(), date_function.to_dict()]
 
-    # If user_vector is specified, add a user vector function score
-    # if 'user_vector' in kwargs:
-    #     user_vector: ndarray = kwargs.get('user_vector')
-    #
-    #     if user_vector is not None:
-    #         assert isinstance(
-    #             user_vector, ndarray), "Must supply user_vector as ndarray"
-    #
-    #         # TODO - Test as rescore query
-    #         user_script_score = vector_script_score(
-    #             embedding_vector, user_vector, weight=10)
-    #         function_scores.append(user_script_score.to_dict())
-
     additional_function_scores = kwargs.get(
         "function_scores", content_filter_functions())
 
