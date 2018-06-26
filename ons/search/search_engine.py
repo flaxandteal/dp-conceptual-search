@@ -86,7 +86,7 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
         # Calculate from_start param
         from_start = 0 if current_page <= 1 else (current_page - 1) * size
 
-        # Clone self to add additonal parals
+        # Clone self to add additional params
         s: AbstractSearchClient = self._clone()
 
         # Set base query

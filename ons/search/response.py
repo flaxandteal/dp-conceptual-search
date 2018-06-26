@@ -104,6 +104,7 @@ def marshall_hits(hits) -> list:
 
         # set _type field
         hit_dict["_type"] = hit.meta.doc_type
+        hit_dict["_score"] = hit.meta.score
         hits_list.append(hit_dict)
     return hits_list
 

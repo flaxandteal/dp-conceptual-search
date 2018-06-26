@@ -129,7 +129,7 @@ async def similarity(request: Request, user_id: str, term: str):
 
         from core.word_embedding.models.supervised import SupervisedModels
         from core.word_embedding.utils import cosine_sim
-        
+
         model = load_model(SupervisedModels.ONS)
 
         term_vector = model.get_sentence_vector(term)

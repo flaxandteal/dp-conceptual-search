@@ -47,6 +47,10 @@ class ConceptualSearchEngine(SearchEngine):
                 sort_by=None,  # None to prevent sorting from influencing scores
                 **kwargs)
 
+            # Setup pagination
+            from_start = 0 if current_page <= 1 else (current_page - 1) * size
+            s: ConceptualSearchEngine = s[from_start:size]
+
             # Add the rescore?
             # If user_vector is specified, add a user vector function score
             if self.user_vector_key in kwargs:
