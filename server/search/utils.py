@@ -26,8 +26,11 @@ def get_type_filters(request: Request, list_type: str):
     type_filters_key = get_form_param(
         request, "filter", False, list_type)
 
+    if isinstance(type_filters_key, list):
+        return type_filters_key
+
     available_filters_list = available_filters()
-    if type_filters_key is not None and type_filters_key in available_filters_list:
+    if type_filters_key is not None  and type_filters_key in available_filters_list:
         type_filters = filters_for_type(type_filters_key)
 
     return type_filters
@@ -86,6 +89,7 @@ async def type_counts_query(request: Request, search_engine_cls: ClassVar[Abstra
     ONS type counts query
     :param request:
     :param search_engine_cls:
+    :param list_type:
     :return:
     """
     from sanic.response import json

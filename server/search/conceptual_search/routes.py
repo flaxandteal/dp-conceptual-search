@@ -34,13 +34,9 @@ async def get_user_vector(request: Request):
 
 async def search(request: Request, fn: Callable, list_type: str, **kwargs):
     from ons.search.conceptual.search_engine import ConceptualSearchEngine
-
     if list_type in available_list_types:
         user_vector = await get_user_vector(request)
-        if user_vector is not None:
-            return await fn(request, ConceptualSearchEngine, list_type=list_type, user_vector=user_vector, **kwargs)
-        else:
-            raise InvalidUsage("%s cookie not provided" % User.user_id_key)
+        return await fn(request, ConceptualSearchEngine, list_type=list_type, user_vector=user_vector, **kwargs)
     raise NotFound("No route for list type '%s'" % list_type)
 
 
@@ -70,3 +66,19 @@ async def type_counts_query(request: Request, list_type: str):
     from server.search.utils import type_counts_query
 
     return await search(request, type_counts_query, list_type)
+
+
+@conceptual_search_blueprint.route(
+    '/<list_type>/featured', methods=['GET', 'POST'])
+async def featured_result_query(request: Request, list_type: str):
+    """
+    Redirects to search featured result
+    :param request:
+    :param list_type:
+    :return:
+    """
+    from sanic.response import redirect
+
+    search_term = request.args.get("q")
+
+    return redirect('/search/%s/featured?q=%s' % (list_type, search_term))
