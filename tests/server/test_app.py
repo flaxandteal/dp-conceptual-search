@@ -14,10 +14,20 @@ class TestApp(unittest.TestCase):
     def assert_response_code(self, request, response, code: int):
         self.assertIsNotNone(request, msg="request should not be none")
         self.assertIsNotNone(response, msg="response should not be none")
-        self.assertIsNotNone(response.body, msg="response body should not be none")
-        self.assertEqual(response.status, code, msg="exit code should be '%d'" % code)
+        self.assertIsNotNone(response.body,
+                             msg="response body should not be none")
+        self.assertEqual(
+            response.status,
+            code,
+            msg="exit code should be '%d'" %
+            code)
 
-    def _route_and_check(self, method: str, uri: str, expected_code: int, **kwargs):
+    def _route_and_check(
+            self,
+            method: str,
+            uri: str,
+            expected_code: int,
+            **kwargs):
         fn = getattr(self._client, method)
         request, response = fn(uri, **kwargs)
         self.assert_response_code(request, response, expected_code)

@@ -1,10 +1,11 @@
+from sanic.request import Request
 from sanic.handlers import ErrorHandler
 from sanic.exceptions import SanicException
 
 
 class CustomHandler(ErrorHandler):
 
-    def default(self, request, exception):
+    def default(self, request: Request, exception):
         # Here, we have access to the exception object
         # and can do anything with it (log, send to external service, etc)
 

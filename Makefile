@@ -17,6 +17,17 @@ fastText:
 test: test_requirements
 	python manager.py test
 
+integration-test: test_requirements
+	MONGO_ENABLED=true nosetests -s -v tests.integration
+
+all-tests: test integration-test
+
+mongo-start:
+	mongod --fork --logpath /var/log/mongod.log --dbpath /data/db
+
+mongo-stop:
+	mongod --fork --logpath /var/log/mongod.log --dbpath /data/db --shutdown
+
 pep8:
 	autopep8 --in-place --aggressive --aggressive -r ./
 

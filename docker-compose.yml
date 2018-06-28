@@ -1,0 +1,32 @@
+version: '2'
+services:
+    conceptual-search-base:
+        image: dp-conceptual-search-base:latest
+        build:
+          context: .
+          dockerfile: Dockerfile.base
+        depends_on:
+          - mongo
+
+    conceptual-search:
+        image: dp-conceptual-search-base:latest
+        command: python manager.py
+        environment:
+          - MONGO_SEARCH_DATABASE=local
+          - MONGO_BIND_ADDR=mongodb://mongo:27017
+        ports:
+          - '5000:5000'
+        links:
+          - mongo
+
+    mongo:
+         image: mongo:latest
+         container_name: "mongo"
+         environment:
+           - MONGO_DATA_DIR=/data/db
+           - MONGO_LOG_DIR=/dev/null
+
+           - ./data/db:/data/db
+         ports:
+             - "27017:27017"
+         command: mongod --smallfiles --logpath=/dev/null # --quiet
