@@ -65,7 +65,8 @@ class ConceptualSearchEngine(SearchEngine):
                     s: ConceptualSearchEngine = s.extra(**rescore.to_dict())
 
             # Exclude embedding vector for source
-            s: ConceptualSearchEngine = s.source(exclude=[embedding_vector.name])
+            s: ConceptualSearchEngine = s.source(
+                exclude=[embedding_vector.name])
 
             return s
         else:

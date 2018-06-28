@@ -114,6 +114,9 @@ class ONSResponse(Response):
     Class for marshalling Elasticsearch results to JSON expected by babbage
     """
 
+    def featured_result_to_json(self) -> dict:
+        return self.hits_to_json(1, 1)
+
     def aggs_to_json(self) -> dict:
         """
 

@@ -1,44 +1,72 @@
 from sanic import Blueprint
 from sanic.request import Request
-from sanic.exceptions import InvalidUsage
+from sanic.exceptions import InvalidUsage, NotFound
 
-from server.requests import get_form_param
+from core.users.user import User
 
-from server.search import execute_search
+from typing import Callable
 
 conceptual_search_blueprint = Blueprint(
     'conceptual_search',
     url_prefix='/search/conceptual')
 
 
-@conceptual_search_blueprint.route('/ons', methods=["GET", "POST"])
-async def conceptual_search(request: Request):
+available_list_types = ['ons', 'onsdata', 'onspublications']
+
+
+async def get_user_vector(request: Request):
     """
-    Performs a search request using the new ConceptualSearchEngine
+    Extract user vector using user id cookie
     :param request:
     :return:
     """
-    from core.users.user import User
+    user_vector = None
+    if User.user_id_key in request.cookies:
+        user_id = request.cookies.get(User.user_id_key)
+        user: User = await User.find_by_user_id(user_id)
 
-    from ons.search.type_filter import all_filter_funcs
+        if user is not None:
+            # Compute the user vector
+            user_vector = await user.get_user_vector()
+
+    return user_vector
+
+
+async def search(request: Request, fn: Callable, list_type: str, **kwargs):
     from ons.search.conceptual.search_engine import ConceptualSearchEngine
 
-    search_term = request.args.get("q")
-    if search_term is not None:
-        # Get any content type filters
-        type_filters = get_form_param(
-            request, "filter", False, all_filter_funcs())
+    if list_type in available_list_types:
+        user_vector = await get_user_vector(request)
+        if user_vector is not None:
+            return await fn(request, ConceptualSearchEngine, list_type=list_type, user_vector=user_vector, **kwargs)
+        else:
+            raise InvalidUsage("%s cookie not provided" % User.user_id_key)
+    raise NotFound("No route for list type '%s'" % list_type)
 
-        user_vector = None
-        if User.user_id_key in request.cookies:
-            user_id = request.cookies.get(User.user_id_key)
-            user: User = await User.find_by_user_id(user_id)
 
-            if user is not None:
-                # Compute the user vector
-                user_vector = await user.get_user_vector()
+@conceptual_search_blueprint.route(
+    '/<list_type>/content', methods=['GET', 'POST'])
+async def ons_content_query(request: Request, list_type: str):
+    """
+    ONS content query
+    :param request:
+    :param list_type: ons, onsdata or onspublications
+    :return:
+    """
+    from server.search.utils import content_query
 
-        response = await execute_search(request, ConceptualSearchEngine, search_term,
-                                        type_filters, user_vector=user_vector)
-        return response
-    raise InvalidUsage("no query provided")
+    return await search(request, content_query, list_type)
+
+
+@conceptual_search_blueprint.route(
+    '/<list_type>/counts', methods=['GET', 'POST'])
+async def type_counts_query(request: Request, list_type: str):
+    """
+    ONS type counts query
+    :param request:
+    :param list_type: ons, onsdata or onspublications
+    :return:
+    """
+    from server.search.utils import type_counts_query
+
+    return await search(request, type_counts_query, list_type)

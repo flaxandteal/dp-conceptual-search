@@ -21,6 +21,7 @@ def init_default_app() -> Sanic:
 
     # Initialise app
     app = Sanic(log_config=default_log_config)
+    # app = Sanic()
 
     logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)

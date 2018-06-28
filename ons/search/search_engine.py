@@ -10,6 +10,8 @@ from ons.search.paginator import RESULTS_PER_PAGE
 from elasticsearch_dsl import query as Q
 from elasticsearch_dsl.aggs import Agg
 
+from typing import List
+
 
 class AbstractSearchClient(AsyncSearch, abc.ABC):
     """
@@ -57,7 +59,6 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
         :param type_filters:
         :return:
         """
-
         if not isinstance(type_filters, list):
             type_filters = [type_filters]
 
@@ -134,10 +135,15 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def type_counts_query(self, search_term, **kwargs):
+    def type_counts_query(
+            self,
+            search_term,
+            type_filters: List[str]=None,
+            **kwargs):
         """
         ONS aggregations query to compute _type counts
         :param search_term:
+        :param type_filters:
         :param kwargs:
         :return:
         """
@@ -158,10 +164,16 @@ class SearchEngine(AbstractSearchClient):
     Default ONS search client.
     """
 
-    def departments_query(self, search_term: str):
+    def departments_query(
+            self,
+            search_term: str,
+            current_page: int,
+            size: int):
         """
         Executes the ONS departments query
         :param search_term:
+        :param current_page:
+        :param size:
         :return:
         """
         from ons.search.queries import departments_query
@@ -173,15 +185,21 @@ class SearchEngine(AbstractSearchClient):
 
         self.update_from_dict(query_dict)
 
-        s = self._clone()
+        s: SearchEngine = self._clone()
 
         # Set search_type and highlight options
-        s = s.search_type(SearchType.DFS_QUERY_THEN_FETCH)
-        s = s.highlight(
+        s: SearchEngine = s.search_type(SearchType.DFS_QUERY_THEN_FETCH)
+        s: SearchEngine = s.highlight(
             "terms",
             fragment_size=0,
             pre_tags=["<strong>"],
             post_tags=["</strong>"])
+
+        # Calculate from_start param
+        from_start = 0 if current_page <= 1 else (current_page - 1) * size
+
+        # Setup pagination
+        s: SearchEngine = s[from_start:size]
 
         return s
 
@@ -219,16 +237,23 @@ class SearchEngine(AbstractSearchClient):
             size=size,
             **kwargs)
 
-    def type_counts_query(self, search_term, **kwargs):
+    def type_counts_query(
+            self,
+            search_term,
+            type_filters: List[str]=None,
+            **kwargs):
         from ons.search.queries import type_counts_query
-        from ons.search.filter_functions import all_filter_funcs
+
+        if type_filters is None:
+            from ons.search.type_filter import default_filters
+            type_filters = default_filters()
 
         # Prepare and execute
         return self.content_query(
             search_term,
             function_scores=None,
             aggs=type_counts_query,
-            type_filters=all_filter_funcs(),
+            type_filters=type_filters,
             **kwargs)
 
     def featured_result_query(self, search_term):
