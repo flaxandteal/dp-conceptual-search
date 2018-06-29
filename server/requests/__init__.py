@@ -68,5 +68,5 @@ def get_json_param(request: Request, key, required, default=None):
             request.json,
             request.json.get,
             default)
-    except InvalidUsage:
+    except (AttributeError, InvalidUsage):
         return get_form_param(request, key, request, default=default)
