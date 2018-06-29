@@ -89,31 +89,3 @@ class RecommendationEngine(object):
         """
         term_vector = self.model.get_sentence_vector(search_term.lower())
         return await self.update_session_vector(term_vector, update_func=update_func)
-
-    async def update_session_vector_by_doc_uri(self, doc_uri: str, update_func: Callable) -> Session:
-        """
-        Update a user via their latest session using the provided document uri
-        :param doc_uri:
-        :param update_func:
-        :return:
-        """
-        from server.search.routes import find_document_by_uri
-        from core.word_embedding.utils import decode_float_list
-
-        from ons.search.fields import embedding_vector
-
-        response: dict = await find_document_by_uri(self.request, doc_uri)
-
-        # Document exists - get the embedding_vector
-        documents: list = response.get('results', [])
-
-        if len(documents) > 0:
-            document = documents[0]
-
-            doc_vector = document.get(embedding_vector.name)
-            if doc_vector is not None and isinstance(doc_vector, str):
-                # Decode the vector
-
-                decoded_doc_vector = np.array(decode_float_list(doc_vector))
-                return await self.update_session_vector(decoded_doc_vector, update_func)
-        raise ValueError("No document found for uri '%s'" % doc_uri)

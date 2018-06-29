@@ -1,7 +1,7 @@
 from sanic.request import Request
 from sanic.exceptions import InvalidUsage
 
-from server.requests import get_form_param
+from server.requests import get_json_param
 
 from ons.search.indicies import Index
 from ons.search.response import ONSResponse
@@ -23,7 +23,7 @@ def get_type_filters(request: Request, list_type: str):
 
     type_filters = default_filters()
 
-    type_filters_key = get_form_param(
+    type_filters_key = get_json_param(
         request, "filter", False, list_type)
 
     if isinstance(type_filters_key, list):
@@ -57,12 +57,12 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
         type_filters = get_type_filters(request, list_type)
 
         # Get sort_by. Default to relevance
-        sort_by_str = get_form_param(request, "sort_by", False, "relevance")
+        sort_by_str = get_json_param(request, "sort_by", False, "relevance")
         sort_by = SortFields[sort_by_str]
 
         # Get page_number/size params
-        page_number = int(get_form_param(request, "page", False, 1))
-        page_size = int(get_form_param(request, "size", False, 10))
+        page_number = int(get_json_param(request, "page", False, 1))
+        page_size = int(get_json_param(request, "size", False, 10))
 
         params = {**{'type_filters': type_filters, 'sort_by': sort_by}, **kwargs}
 

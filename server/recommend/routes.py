@@ -52,21 +52,47 @@ async def update_by_document(request: Request, path: str):
     :param path:
     :return:
     """
+    import numpy as np
+
     from server.requests import get_form_param
     from core.users.distance_utils import default_move_session_vector, negative_move_session_vector
 
-    engine = get_recommendation_engine(request)
-    sentiment: str = get_form_param(
-        request, "sentiment", False, default="positive")
+    from server.search.routes import find_document_by_uri
+    from core.word_embedding.utils import decode_float_list
 
-    if sentiment.lower() == "positive":
-        session = await engine.update_session_vector_by_doc_uri(path, default_move_session_vector)
-    elif sentiment.lower() == "negative":
-        session = await engine.update_session_vector_by_doc_uri(path, negative_move_session_vector)
-    else:
-        raise InvalidUsage("Unknown sentiment: '%s'" % sentiment)
+    from ons.search.fields import embedding_vector
 
-    return json(session.to_json(), 200)
+    from sanic.exceptions import NotFound
+
+    # Query for a page with this uri
+    response: dict = await find_document_by_uri(request, path)
+
+    # Document exists - get the embedding_vector
+    documents: list = response.get('results', [])
+
+    if len(documents) > 0:
+        document = documents[0]
+
+        doc_vector = document.get(embedding_vector.name)
+        if doc_vector is not None and isinstance(doc_vector, str):
+            # Decode the vector
+            decoded_doc_vector = np.array(decode_float_list(doc_vector))
+
+            # Update the user
+
+            engine = get_recommendation_engine(request)
+            sentiment: str = get_form_param(
+                request, "sentiment", False, default="positive")
+
+            if sentiment.lower() == "positive":
+                session = await engine.update_session_vector(decoded_doc_vector, default_move_session_vector)
+            elif sentiment.lower() == "negative":
+                session = await engine.update_session_vector(decoded_doc_vector, negative_move_session_vector)
+            else:
+                raise InvalidUsage("Unknown sentiment: '%s'" % sentiment)
+
+            return json(session.to_json(), 200)
+    raise NotFound("Unable to find page with uri '%s'" % path)
 
 
 @recommend_blueprint.route('/update/positive/<term>', methods=['POST'])

@@ -48,7 +48,19 @@ def get_form_param(request: Request, key, required, default=None):
     :param default:
     :return:
     """
-    if request.json is not None:
+    return _get_param(
+        request,
+        key,
+        required,
+        request.form,
+        request.form.getlist,
+        default)
+
+
+def get_json_param(request: Request, key, required, default=None):
+    from sanic.exceptions import InvalidUsage
+
+    try:
         return _get_param(
             request,
             key,
@@ -56,11 +68,5 @@ def get_form_param(request: Request, key, required, default=None):
             request.json,
             request.json.get,
             default)
-    else:
-        return _get_param(
-            request,
-            key,
-            required,
-            request.form,
-            request.form.getlist,
-            default)
+    except InvalidUsage:
+        return get_form_param(request, key, request, default=default)
