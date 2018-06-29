@@ -48,8 +48,7 @@ class ConceptualSearchEngine(SearchEngine):
                 **kwargs)
 
             # Setup pagination
-            from_start = 0 if current_page <= 1 else (current_page - 1) * size
-            s: ConceptualSearchEngine = s[from_start:size]
+            s: ConceptualSearchEngine = s.paginate(current_page, size)
 
             # Add the rescore?
             # If user_vector is specified, add a user vector function score

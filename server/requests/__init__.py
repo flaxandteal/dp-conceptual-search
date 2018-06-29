@@ -69,4 +69,4 @@ def get_json_param(request: Request, key, required, default=None):
             request.json.get,
             default)
     except (AttributeError, InvalidUsage):
-        return get_form_param(request, key, request, default=default)
+        return get_form_param(request, key, required, default=default)

@@ -10,7 +10,6 @@ def spell_checker(request: Request) -> HTTPResponse:
     """
     Spell checks each token in query
     :param request:
-    :param query:
     :return:
     """
     from server.requests import get_request_param

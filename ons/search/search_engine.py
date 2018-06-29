@@ -26,6 +26,15 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
 
         self._response_class = ONSResponse
 
+    def paginate(self, current_page: int, size: int):
+        s: AbstractSearchClient = self._clone()
+
+        # Calculate from_start param
+        from_start = 0 if current_page <= 1 else (current_page - 1) * size
+        end = from_start + size
+
+        return s[from_start:end]
+
     def add_highlight_fields(self, fragment_size: int=0):
         """
         Adds highlight options to the search query
@@ -67,8 +76,8 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
     def build(
             self,
             query: Q.Query,
+            aggs: Agg = None,
             current_page: int=1,
-            aggs: Agg=None,
             size: int=RESULTS_PER_PAGE,
             sort_by: SortFields=SortFields.relevance,
             search_type: SearchType=SearchType.DFS_QUERY_THEN_FETCH,
@@ -83,10 +92,6 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
         :param search_type:
         :return:
         """
-
-        # Calculate from_start param
-        from_start = 0 if current_page <= 1 else (current_page - 1) * size
-
         # Clone self to add additional params
         s: AbstractSearchClient = self._clone()
 
@@ -94,7 +99,7 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
         s: AbstractSearchClient = s.query(query)
 
         # Setup pagination
-        s: AbstractSearchClient = s[from_start:size]
+        s: AbstractSearchClient = s.paginate(current_page, size)
 
         # Setup aggregations
         if aggs is not None:
@@ -197,9 +202,10 @@ class SearchEngine(AbstractSearchClient):
 
         # Calculate from_start param
         from_start = 0 if current_page <= 1 else (current_page - 1) * size
+        end = from_start + size
 
         # Setup pagination
-        s: SearchEngine = s[from_start:size]
+        s: SearchEngine = s[from_start:end]
 
         return s
 

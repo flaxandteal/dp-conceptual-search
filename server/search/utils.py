@@ -61,8 +61,8 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
         sort_by = SortFields[sort_by_str]
 
         # Get page_number/size params
-        page_number = int(get_json_param(request, "page", False, 1))
-        page_size = int(get_json_param(request, "size", False, 10))
+        page_number = int(request.args.get("page", 1))
+        page_size = int(request.args.get("size", 10))
 
         params = {**{'type_filters': type_filters, 'sort_by': sort_by}, **kwargs}
 
