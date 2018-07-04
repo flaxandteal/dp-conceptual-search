@@ -19,7 +19,7 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
     """
 
     aggs_key = "aggs"
-    type_filters = "type_filters"
+    type_filters_key = "type_filters"
 
     def __init__(self, *args, **kwargs):
         super(AsyncSearch, self).__init__(*args, **kwargs)
@@ -102,11 +102,11 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
         s: AbstractSearchClient = s.paginate(current_page, size)
 
         # Setup aggregations
-        if aggs is not None:
+        if aggs is not None and isinstance(aggs, Agg):
             s.aggs.bucket('docCounts', aggs)
 
         # Add type filters
-        type_filters = kwargs.get(self.type_filters, None)
+        type_filters = kwargs.get(self.type_filters_key, None)
         if type_filters is not None:
             s: AbstractSearchClient = s.type_filter(type_filters)
 

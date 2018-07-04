@@ -108,7 +108,7 @@ async def find_document(request: Request, path: str='') -> HTTPResponse:
     return json(response)
 
 
-async def find_document_by_uri(request: Request, path: str='') -> HTTPResponse:
+async def find_document_by_uri(request: Request, path: str='') -> dict:
     """
     Locates a document by its uri.
     :param request:

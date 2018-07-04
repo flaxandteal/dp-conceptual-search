@@ -122,6 +122,8 @@ class ONSResponse(Response):
 
         :return:
         """
+        from ons.search import type_filter
+
         if hasattr(self.aggregations, "docCounts"):
             aggs = self.aggregations.__dict__["_d_"]["docCounts"]
             buckets = aggs["buckets"]

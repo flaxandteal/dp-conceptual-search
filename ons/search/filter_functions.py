@@ -33,6 +33,7 @@ def content_filter_functions() -> List[dict]:
         article_download,
         timeseries,
         compendium_landing_page,
+        static_foi,
         static_adhoc,
         dataset_landing_page]
 

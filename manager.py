@@ -31,5 +31,6 @@ if __name__ == "__main__":
         test()
     else:
         host = os.getenv("BIND_HOST", '0.0.0.0')
-        post = int(os.getenv("BIND_PORT", 5000))
-        run(app_host=host, app_port=post)
+        port = int(os.getenv("BIND_PORT", 5000))
+        workers = int(os.getenv("SANIC_WORKERS", 1))
+        run(app_host=host, app_port=port, app_workers=workers)

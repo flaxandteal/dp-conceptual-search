@@ -19,9 +19,7 @@ def get_type_filters(request: Request, list_type: str):
     :param list_type:
     :return:
     """
-    from ons.search.type_filter import default_filters, filters_for_type, available_filters
-
-    type_filters = default_filters()
+    from ons.search.type_filter import filters_for_type, available_filters
 
     type_filters_key = get_json_param(
         request, "filter", False, list_type)
@@ -30,10 +28,11 @@ def get_type_filters(request: Request, list_type: str):
         return type_filters_key
 
     available_filters_list = available_filters()
-    if type_filters_key is not None  and type_filters_key in available_filters_list:
+    if type_filters_key is not None and type_filters_key in available_filters_list:
         type_filters = filters_for_type(type_filters_key)
-
-    return type_filters
+        return type_filters
+    else:
+        raise InvalidUsage("No such filter type: '%s'" % type_filters_key)
 
 
 async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSearchClient], list_type: str, **kwargs):
@@ -93,20 +92,18 @@ async def type_counts_query(request: Request, search_engine_cls: ClassVar[Abstra
     :return:
     """
     from sanic.response import json
+    from ons.search.type_filter import default_filters
 
     search_term = request.args.get("q")
     if search_term is not None:
         app = request.app
         es_client = app.es_client
 
-        # Get any content type filters
-        type_filters = get_type_filters(request, list_type)
-
         s = search_engine_cls(
             using=es_client,
             index=Index.ONS.value).type_counts_query(
             search_term,
-            type_filters=type_filters,
+            type_filters=default_filters(),
             **kwargs)
 
         response: ONSResponse = s.execute()

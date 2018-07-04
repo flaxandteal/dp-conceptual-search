@@ -57,7 +57,7 @@ class BoostMode(Enum):
 def vector_script_score(
         field: fields.Field,
         vector: ndarray,
-        weight: int=1) -> Q.Query:
+        weight: float=1.0) -> Q.Query:
     params = {
         "cosine": True,
         "field": field.name,
@@ -77,7 +77,7 @@ def vector_script_score(
 
 
 def date_decay_function() -> Q.Query:
-    q = Q.SF('gauss', **{fields.releaseDate.name: {
+    q = Q.SF('linear', **{fields.releaseDate.name: {
         "origin": "now",
         "scale": "365d",
         "offset": "30d",
@@ -114,13 +114,17 @@ def word_vector_keywords_query(
 
 def user_rescore_query(
         user_vector: ndarray,
-        score_mode: BoostMode=BoostMode.MULTIPLY,
-        window_size: int=100) -> RescoreQuery:
+        score_mode: BoostMode=BoostMode.AVG,
+        window_size: int=100,
+        query_weight: float=0.5,
+        rescore_query_weight: float=1.2) -> RescoreQuery:
     """
     Generates a rescore query from a users session vector
     :param user_vector:
     :param score_mode:
     :param window_size:
+    :param query_weight:
+    :param rescore_query_weight:
     :return:
     """
     user_script_score = vector_script_score(
@@ -132,7 +136,9 @@ def user_rescore_query(
             "score_mode": score_mode.value,
             "rescore_query": {
                 "function_score": user_script_score.to_dict()
-            }
+            },
+            "query_weight": query_weight,
+            "rescore_query_weight": rescore_query_weight
         }
     }
 
@@ -156,6 +162,7 @@ def content_query(
     """
     from ons.search.filter_functions import content_filter_functions
     from ons.search.queries import content_query as ons_content_query
+    from ons.search.queries import function_score_content_query
 
     search_vector = model.get_sentence_vector(search_term)
 
@@ -173,6 +180,7 @@ def content_query(
     date_function = date_decay_function()
 
     function_scores = [script_score.to_dict(), date_function.to_dict()]
+    # function_scores = [script_score.to_dict()]
 
     additional_function_scores = kwargs.get(
         "function_scores", content_filter_functions())
@@ -188,4 +196,4 @@ def content_query(
         boost_mode=boost_mode.value,
         functions=function_scores)
 
-    return function_score
+    return Q.DisMax(queries=[function_score_content_query(dis_max_query, content_filter_functions()), function_score])
