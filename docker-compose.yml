@@ -6,17 +6,21 @@ services:
           context: .
           dockerfile: Dockerfile.base
         depends_on:
+          - elasticsearch
           - mongo
 
     conceptual-search:
         image: dp-conceptual-search-base:latest
         command: python manager.py
         environment:
+          - ELASTIC_SEARCH_SERVER=elasticsearch:9200
+          - MONGO_ENABLED=true
           - MONGO_SEARCH_DATABASE=local
           - MONGO_BIND_ADDR=mongodb://mongo:27017
         ports:
           - '5000:5000'
         links:
+          - elasticsearch
           - mongo
 
     mongo:
@@ -30,3 +34,10 @@ services:
          ports:
              - "27017:27017"
          command: mongod --smallfiles --logpath=/dev/null # --quiet
+
+    elasticsearch:
+        image: sully0190/elasticsearch-fast-vector-scoring:2.4.4
+        container_name: "elasticsearch"
+        ports:
+          - "9300:9300"
+          - "9200:9200"
