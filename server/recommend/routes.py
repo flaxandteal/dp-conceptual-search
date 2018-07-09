@@ -136,6 +136,81 @@ async def similarity(request: Request, term: str):
     raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
 
 
+@recommend_blueprint.route('/content/', methods=['GET', 'POST'])
+@recommend_blueprint.route('/content/<path:path>', methods=['GET', 'POST'])
+async def content_query(request: Request, path: str):
+    """
+    Request for recommended content.
+    If user_id cookie is present, combine into function score.
+    :param request:
+    :param path:
+    :return:
+    """
+    import numpy as np
+
+    from core.users.user import User
+    from core.word_embedding.utils import decode_float_list
+
+    from server.requests import get_form_param
+    from server.search.routes import find_document_by_uri
+
+    from ons.search.indicies import Index
+    from ons.search.response import ONSResponse
+    from ons.search.fields import embedding_vector
+    from ons.search.conceptual.search_engine import ConceptualSearchEngine
+    from ons.search.conceptual.queries import vector_script_score, FunctionScore, BoostMode
+
+    # Query for a page with this uri
+    response: dict = await find_document_by_uri(request, path)
+
+    # Document exists - get the embedding_vector
+    documents: list = response.get('results', [])
+
+    if len(documents) > 0:
+        document = documents[0]
+
+        doc_vector = document.get(embedding_vector.name)
+        if doc_vector is not None and isinstance(doc_vector, str):
+            # Decode the vector
+            decoded_doc_vector = np.array(decode_float_list(doc_vector))
+
+            # Create the query
+            queries = []
+            doc_query = vector_script_score(embedding_vector, decoded_doc_vector)
+
+            queries.append(doc_query.to_dict())
+
+            if User.user_id_key in request.cookies:
+                from server.users import get_user
+                uid = request.cookies.get(User.user_id_key)
+
+                user: User = await get_user(uid)
+                if user is not None:
+                    user_vector = await user.get_user_vector()
+
+                    user_query = vector_script_score(embedding_vector, user_vector)
+                    queries.append(user_query.to_dict())
+
+            # Build the function score query
+            function_score_query = FunctionScore(functions=queries, boost_mode=BoostMode.AVG.value)
+
+            # Execute the query
+            app = request.app
+            es_client = app.es_client
+            s = ConceptualSearchEngine(using=es_client, index=Index.ONS.value)
+
+            size = get_form_param(request, "size", False, 10)
+
+            s = s.query(function_score_query)[:size]
+            response: ONSResponse = await s.execute()
+
+            result = response.hits_to_json(0, size)
+
+            return json(result, 200)
+
+    return json("No document with uri: %s" % path, 404)
+
+
 @recommend_blueprint.route('/similarity/<user_id>/<term>', methods=['GET'])
 async def similarity(request: Request, user_id: str, term: str):
     """

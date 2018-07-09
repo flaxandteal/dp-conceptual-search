@@ -1,11 +1,6 @@
 dp-conceptual-search
 ==================
 
-# TODO
-
-* Install NLP plugin and add entities search to base content query
-* Prototype knowledge engine using conceptual search API and [DrQA](https://github.com/facebookresearch/DrQA#installing-drqa)
-
 # Configuration
 
 ### Environment variables
@@ -23,6 +18,7 @@ dp-conceptual-search
 | SEARCH_LEARNING_RATE         | 0.25                      | Rate at which search tries to learn about user interests (float, capped at 1.0).
 | MONGO_SEARCH_DATABASE        | local                     | Default database for mongoDB.
 | MONGO_BIND_ADDR              | mongodb://localhost:27017 | Default mongoDB bind address (must start with mongodb:// and end with port)
+| ENABLE_PROMETHEUS_METRICS    | False                     | Enable/disable the /metircs endpoint for prometheus.
 
 # Running
 
@@ -32,10 +28,16 @@ gunicorn server (supports multi-processing for multiple workers and threads per 
 
 # Testing
 
-To run the tests use: ```make test```
+To run the unit tests, use: ```make test```.
+
+# Integration
+
+To run the integration tests, use  ```make integration-test```.
 
 ### Licence
 
 Copyright ©‎ 2016, Office for National Statistics (https://www.ons.gov.uk)
 
 Released under MIT license, see [LICENSE](LICENSE.md) for details.
+
+This software uses the fastText library, see [LICENSE](LICENSE.fastText.md) for details.

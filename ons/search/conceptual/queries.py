@@ -168,12 +168,19 @@ def content_query(
 
     # Build the original ONS content query
     dis_max_query = ons_content_query(search_term)
+    should = [dis_max_query]
 
-    # # Build additional keywords query
-    terms_query = word_vector_keywords_query(
-        search_term, model)
-
-    should = [dis_max_query, terms_query]
+    # Try to build additional keywords query
+    try:
+        terms_query = word_vector_keywords_query(
+            search_term, model)
+        should.append(terms_query)
+    except ValueError as e:
+        # Log the error but continue with the query (we can still return results, just can't
+        # auto generate keywords for matching.
+        # Note the script score will still facilitate non-keyword matching.
+        from sanic.log import logger
+        logger.warning("Caught exception while generating model keywords: %s", str(e), exc_info=1)
 
     # Build function scores
     script_score = vector_script_score(fields.embedding_vector, search_vector)

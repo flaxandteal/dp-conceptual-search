@@ -122,8 +122,6 @@ class ONSResponse(Response):
 
         :return:
         """
-        from ons.search import type_filter
-
         if hasattr(self.aggregations, "docCounts"):
             aggs = self.aggregations.__dict__["_d_"]["docCounts"]
             buckets = aggs["buckets"]
@@ -139,7 +137,7 @@ class ONSResponse(Response):
 
                 return json
 
-        return None
+        return {}
 
     def hits_to_json(self, page_number: int, page_size: int,
                      sort_by: SortFields=SortFields.relevance) -> dict:
