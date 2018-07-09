@@ -142,6 +142,7 @@ async def content_query(request: Request, path: str):
     """
     Request for recommended content.
     If user_id cookie is present, combine into function score.
+    TODO - refactor and simplify
     :param request:
     :param path:
     :return:
@@ -153,12 +154,16 @@ async def content_query(request: Request, path: str):
 
     from server.requests import get_form_param
     from server.search.routes import find_document_by_uri
+    from server.word_embedding.sanic_word2vec import Models, UnsupervisedModel
+    from server.word_embedding.sanic_word2vec import load_model as load_unsup_model
+    from server.word_embedding.sanic_supervised_models import SupervisedModels, SupervisedModel
+    from server.word_embedding.sanic_supervised_models import load_model as load_sup_model
 
     from ons.search.indicies import Index
     from ons.search.response import ONSResponse
     from ons.search.fields import embedding_vector
     from ons.search.conceptual.search_engine import ConceptualSearchEngine
-    from ons.search.conceptual.queries import vector_script_score, FunctionScore, BoostMode
+    from ons.search.conceptual.queries import vector_script_score, word_vector_keywords_query, FunctionScore, BoostMode
 
     # Query for a page with this uri
     response: dict = await find_document_by_uri(request, path)
@@ -180,6 +185,11 @@ async def content_query(request: Request, path: str):
 
             queries.append(doc_query.to_dict())
 
+            unsupervised_model: UnsupervisedModel = load_unsup_model(Models.ONS)
+            supervised_model: SupervisedModel = load_sup_model(SupervisedModels.ONS)
+
+            similar_by_vector: list = [r[0] for r in unsupervised_model.model.similar_by_vector(decoded_doc_vector)]
+
             if User.user_id_key in request.cookies:
                 from server.users import get_user
                 uid = request.cookies.get(User.user_id_key)
@@ -191,8 +201,15 @@ async def content_query(request: Request, path: str):
                     user_query = vector_script_score(embedding_vector, user_vector)
                     queries.append(user_query.to_dict())
 
+                    # Get similar words
+                    similar_by_vector.extend([r[0] for r in unsupervised_model.model.similar_by_vector(user_vector)])
+
+            sentence = " ".join(list(set(similar_by_vector)))
+
+            keywords_query = word_vector_keywords_query(sentence, supervised_model)
+
             # Build the function score query
-            function_score_query = FunctionScore(functions=queries, boost_mode=BoostMode.AVG.value)
+            function_score_query = FunctionScore(query=keywords_query, functions=queries, boost_mode=BoostMode.AVG.value)
 
             # Execute the query
             app = request.app
