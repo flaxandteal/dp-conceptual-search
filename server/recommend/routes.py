@@ -204,7 +204,7 @@ async def content_query(request: Request, path: str):
 
     # Paginate
     page_number = int(get_form_param(request, "page", False, 1))
-    page_size = int(get_form_param(request, "size", False, 1))
+    page_size = int(get_form_param(request, "size", False, 10))
     s: ConceptualSearchEngine = s.paginate(page_number, page_size)
 
     # Execute

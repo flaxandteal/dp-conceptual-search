@@ -221,6 +221,8 @@ def recommended_content_query(
     Query for recommended content using a page embedding vector and an (optional) user vector.
     :return:
     """
+    from collections import OrderedDict
+
     from ons.search.queries import match_by_uri
     from ons.search.fields import embedding_vector
 
@@ -253,7 +255,7 @@ def recommended_content_query(
             [r[0] for r in unsupervised_model.model.similar_by_vector(user_vector)])
 
     # Remove duplicate terms from similar_by_vector and build sentence
-    sentence = " ".join(list(set(similar_by_vector)))
+    sentence = " ".join(list(OrderedDict.fromkeys(similar_by_vector)))
 
     # Build the keywords query from this sentence
     keywords_query = word_vector_keywords_query(sentence, supervised_model)
