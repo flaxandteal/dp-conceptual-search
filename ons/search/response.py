@@ -115,7 +115,7 @@ class ONSResponse(Response):
     """
 
     def featured_result_to_json(self) -> dict:
-        return self.hits_to_json(1, 1)
+        return self.response_to_json(1, 1)
 
     def aggs_to_json(self) -> dict:
         """
@@ -139,8 +139,13 @@ class ONSResponse(Response):
 
         return {}
 
-    def hits_to_json(self, page_number: int, page_size: int,
-                     sort_by: SortFields=SortFields.relevance) -> dict:
+    def hits_to_json(self):
+        from ons.search.paginator import RESULTS_PER_PAGE
+
+        return self.response_to_json(0, RESULTS_PER_PAGE)
+
+    def response_to_json(self, page_number: int, page_size: int,
+                         sort_by: SortFields=SortFields.relevance) -> dict:
         """
 
         :return:

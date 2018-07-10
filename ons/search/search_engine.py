@@ -26,6 +26,16 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
 
         self._response_class = ONSResponse
 
+    def search_by_uri(self, uri: str):
+        """
+        Search for a single page by its uri.
+        :param uri:
+        :return:
+        """
+        from ons.search.queries import match_by_uri
+
+        return self.query(match_by_uri(uri))
+
     def paginate(self, current_page: int, size: int):
         s: AbstractSearchClient = self._clone()
 

@@ -77,7 +77,7 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
         if isawaitable(response):
             response = await response
 
-        result = response.hits_to_json(page_number, page_size, sort_by)
+        result = response.response_to_json(page_number, page_size, sort_by)
 
         return json(result, 200)
     raise InvalidUsage("no query provided")

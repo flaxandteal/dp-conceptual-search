@@ -187,7 +187,6 @@ def content_query(
     date_function = date_decay_function()
 
     function_scores = [script_score.to_dict(), date_function.to_dict()]
-    # function_scores = [script_score.to_dict()]
 
     additional_function_scores = kwargs.get(
         "function_scores", content_filter_functions())
@@ -204,3 +203,53 @@ def content_query(
         functions=function_scores)
 
     return Q.DisMax(queries=[function_score_content_query(dis_max_query, content_filter_functions()), function_score])
+
+
+def recommended_content_query(page_uri: str, decoded_doc_vector: ndarray, user_vector: ndarray=None):
+    """
+    Query for recommended content using a page embedding vector and an (optional) user vector.
+    :return:
+    """
+    from ons.search.queries import match_by_uri
+    from ons.search.fields import embedding_vector
+
+    from server.word_embedding.sanic_word2vec import Models, UnsupervisedModel
+    from server.word_embedding.sanic_word2vec import load_model as load_unsup_model
+    from server.word_embedding.sanic_supervised_models import SupervisedModels, SupervisedModel
+    from server.word_embedding.sanic_supervised_models import load_model as load_sup_model
+
+    # Build the function scores list
+    doc_query = vector_script_score(embedding_vector, decoded_doc_vector)
+    function_scores = [doc_query.to_dict()]
+
+    # Finally, get similar terms to this vector for a terms query
+    # Get a reference to the models
+    unsupervised_model: UnsupervisedModel = load_unsup_model(Models.ONS)
+    supervised_model: SupervisedModel = load_sup_model(SupervisedModels.ONS)
+
+    similar_by_vector: list = [r[0] for r in unsupervised_model.model.similar_by_vector(decoded_doc_vector)]
+
+    if user_vector is not None:
+        # Build the user query
+        user_query = vector_script_score(embedding_vector, user_vector)
+
+        # Add to the function scores
+        function_scores.append(user_query.to_dict())
+
+        # Get similar words
+        similar_by_vector.extend([r[0] for r in unsupervised_model.model.similar_by_vector(user_vector)])
+
+    # Remove duplicate terms from similar_by_vector and build sentence
+    sentence = " ".join(list(set(similar_by_vector)))
+
+    # Build the keywords query from this sentence
+    keywords_query = word_vector_keywords_query(sentence, supervised_model)
+
+    # Explicitly exclude current page_uri
+    query = Q.Bool(must_not=[match_by_uri(page_uri)], should=[keywords_query])
+
+    # Build the function score query
+    function_score_query = FunctionScore(query=query, functions=function_scores,
+                                         boost_mode=BoostMode.AVG.value)
+
+    return function_score_query

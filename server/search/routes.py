@@ -95,7 +95,7 @@ async def departments(request: Request) -> HTTPResponse:
         if inspect.isawaitable(response):
             response = await response
 
-        result = response.hits_to_json(page_number, page_size, sort_by)
+        result = response.response_to_json(page_number, page_size, sort_by)
 
         return json(result)
     raise InvalidUsage("no query provided")
@@ -116,8 +116,7 @@ async def find_document_by_uri(request: Request, path: str='') -> dict:
     :return:
     """
     from ons.search.indicies import Index
-    from ons.search.response import marshall_hits
-    from ons.search.queries import match_by_uri
+    from ons.search.response import ONSResponse
     from ons.search.search_engine import SearchEngine
 
     from sanic.exceptions import NotFound
@@ -127,18 +126,13 @@ async def find_document_by_uri(request: Request, path: str='') -> dict:
     client = request.app.es_client
 
     s = SearchEngine(using=client, index=Index.ONS.value)
-    s = s.query(match_by_uri(path))
+    response: ONSResponse = s.search_by_uri(path).execute()
 
-    response = s.execute()
     if isawaitable(response):
         response = await response
 
     if response.hits.total > 0:
-        result = {
-            "numberOfResults": response.hits.total,
-            "took": response.took,
-            "results": marshall_hits(response.hits)
-        }
+        result = response.hits_to_json()
 
         return result
     raise NotFound("No document found with uri '%s'" % path)

@@ -94,3 +94,55 @@ class ConceptualSearchEngine(SearchEngine):
             type_filters=type_filters,
             size=1)
         return s
+
+    async def recommend_query(self, page_uri: str, user_id: str=None):
+        """
+        Executes a query which returns documents similar to the given page uri.
+        If user_is is specified, and the user exists, then the users session vector
+        is used in conjunction with the page embedding vector for more personalised results.
+        :param page_uri:
+        :param user_id:
+        :raise NotFound: Page with uri page_uri does not exist.
+        :return:
+        """
+        import numpy as np
+        from sanic.exceptions import NotFound
+
+        from core.word_embedding.utils import decode_float_list
+
+        from ons.search.response import ONSResponse
+        from ons.search.fields import embedding_vector
+        from ons.search.conceptual.queries import recommended_content_query
+
+        # First, execute the page_uri query
+        s: ConceptualSearchEngine = self._clone()
+        s: ConceptualSearchEngine = s.search_by_uri(page_uri)
+        response: ONSResponse = await s.execute()
+
+        if response.hits.total > 0:
+            json_data = response.hits_to_json()
+            documents: list = json_data.get('results', [])
+            document = documents[0]
+
+            doc_vector = document.get(embedding_vector.name)
+
+            # Decode the vector
+            decoded_doc_vector = np.array(decode_float_list(doc_vector))
+            user_vector = None
+
+            # No longer need search engine instance
+            del s
+
+            # Add user vector?
+            if user_id is not None:
+                from core.users.user import User
+
+                user = await User.find_by_user_id(user_id)
+                if user is not None:
+                    # Get the user vector
+                    user_vector = await user.get_user_vector()
+
+            # Build the query
+            query = recommended_content_query(page_uri, decoded_doc_vector, user_vector=user_vector)
+            return self.query(query)
+        raise NotFound("No document found with uri '%s'" % page_uri)
