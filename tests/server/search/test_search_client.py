@@ -296,6 +296,9 @@ class FakeElasticsearch(Elasticsearch):
             'timed_out': False
         }
 
+        if "aggs" in body:
+            result["aggregations"] = self._aggregations
+
         if matches:
             hits = []
             for match in matches:

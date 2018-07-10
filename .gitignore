@@ -1,9 +1,9 @@
 .idea/
 .coverage
+.mypy_cache/
 *.log
 **/*.pyc
 **/**/*.pyc
 
 cover/
-tests/server/search/.cache/
-supervised_models/
+tests/server/**/.cache/

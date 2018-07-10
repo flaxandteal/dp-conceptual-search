@@ -1,0 +1,9 @@
+FROM sully0190/python-mongo:3.6
+
+COPY . /dp-conceptual-search
+WORKDIR /dp-conceptual-search
+
+ENV MONGO_ENABLED=true
+
+# Build the app
+RUN make build clean

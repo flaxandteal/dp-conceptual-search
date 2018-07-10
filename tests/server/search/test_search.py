@@ -4,139 +4,191 @@ from tests.server.test_app import TestApp
 
 class SearchTestSuite(TestApp):
 
-    def test_valid_search_returns_200(self):
+    search_term = "rpi"
+    uri_prefix = "/search/ons"
+    departments_search_term = "education"
+
+    maxDiff = None
+
+    def search_and_assert(self, list_type: str):
         """
-        Test that a valid search query returns a 200 OK response.
+        Tests the ONS search API for a specified list_type
+        :param list_type:
         :return:
         """
-        request, response = self.client.post('/search/ons?q=rpi')
+        from tests.server.search.dummy_documents import test_document
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 200)
+        target = "/search/%s/content?q=%s" % (list_type, self.search_term)
 
-        self.assertIsNotNone(response.json)
-        self.assertIsInstance(response.json, dict)
+        request, response = self.get(target, 200)
 
-        expected_keys = ['result', 'counts', 'featuredResult']
+        # Check the search results
+        json_data = response.json
+
+        self.assertIsNotNone(json_data, "json response should not be none")
+        self.assertIsInstance(
+            json_data,
+            dict,
+            "json response should be instance of dict")
+
+        expected_keys = [
+            'numberOfResults',
+            'took',
+            'results',
+            'paginator',
+            'sortBy']
         for key in expected_keys:
-            self.assertTrue(key in response.json)
-            self.assertIsNotNone(response.json[key])
-            self.assertIsInstance(response.json[key], dict)
-            self.assertGreater(len(response.json[key]), 0)
+            self.assertIn(key, json_data)
 
-    def test_invalid_search_returns_400(self):
+        # Make sure we got the document we expected
+        self.assertEqual(json_data['numberOfResults'], 1)
+
+        doc = json_data['results'][0]
+        test_source = test_document['_source']
+        self.assertEqual(doc['type'], test_source['type'])
+        self.assertEqual(doc['uri'], test_source['uri'])
+        self.assertEqual(doc['description'], test_source['description'])
+
+    def count_and_assert(self, list_type: str):
         """
-        Test that not specifying a query term raises a 400 BAD_REQUEST for the primary search method.
+        Tests the ONS aggregations API for a specified list_type
+        :param list_type:
         :return:
         """
-        request, response = self.client.post('/search/ons')
+        from tests.server.search.dummy_documents import test_aggs
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 400)
+        target = "/search/%s/counts?q=%s" % (list_type, self.search_term)
 
-    def test_valid_search_data_returns_200(self):
-        """
-        Test that a valid search data query returns a 200 OK response.
-        :return:
-        """
-        request, response = self.client.post('/search/ons/data?q=rpi')
+        request, response = self.get(target, 200)
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 200)
+        # Check the search results
+        json_data = response.json
 
-        self.assertIsNotNone(response.json)
-        self.assertIsInstance(response.json, dict)
+        self.assertIsNotNone(json_data, "json response should not be none")
+        self.assertIsInstance(
+            json_data,
+            dict,
+            "json response should be instance of dict")
 
-        expected_keys = ['result', 'counts', 'featuredResult']
+        expected_keys = ['numberOfResults', 'docCounts']
         for key in expected_keys:
-            self.assertTrue(key in response.json)
-            self.assertIsNotNone(response.json[key])
-            self.assertIsInstance(response.json[key], dict)
-            self.assertGreater(len(response.json[key]), 0)
+            self.assertIn(key, json_data)
 
-    def test_invalid_search_data_returns_400(self):
+        # Make sure we got the aggregations we expected
+        total_expected = 409
+        self.assertEqual(json_data['numberOfResults'], total_expected)
+
+        doc_counts: dict = json_data['docCounts']
+        self.assertIsInstance(doc_counts, dict)
+
+        expected_buckets = test_aggs.get("buckets")
+
+        for bucket in expected_buckets:
+            key = bucket.get('key')
+            counts = bucket.get('doc_count')
+
+            self.assertIn(key, doc_counts)
+            self.assertEqual(doc_counts.get(key), counts)
+
+    def test_search(self):
         """
-        Test that not specifying a query term raises a 400 BAD_REQUEST for search data.
+        Tests the default ONS content search
         :return:
         """
-        request, response = self.client.post('/search/ons/data')
+        self.search_and_assert("ons")
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 400)
-
-    def test_valid_search_publications_returns_200(self):
+    def test_search_data(self):
         """
-        Test that a valid search publications query returns a 200 OK response.
+        Tests the ONS search_data API
         :return:
         """
-        request, response = self.client.post('/search/ons/publications?q=rpi')
+        self.search_and_assert("onsdata")
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 200)
-
-        self.assertIsNotNone(response.json)
-        self.assertIsInstance(response.json, dict)
-
-        expected_keys = ['result', 'counts', 'featuredResult']
-        for key in expected_keys:
-            self.assertTrue(key in response.json)
-            self.assertIsNotNone(response.json[key])
-            self.assertIsInstance(response.json[key], dict)
-            self.assertGreater(len(response.json[key]), 0)
-
-    def test_invalid_search_publications_returns_400(self):
+    def test_search_publications(self):
         """
-        Test that not specifying a query term raises a 400 BAD_REQUEST for search publications.
+        Tests the ONS search_publications API
         :return:
         """
-        request, response = self.client.post('/search/ons/publications')
+        self.search_and_assert("onspublications")
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 400)
-
-    def test_valid_search_departments_returns_200(self):
+    def test_counts(self):
         """
-        Test that a valid search against the departments index returns a 200 OK response.
+        Tests the default ONS content search
         :return:
         """
-        request, response = self.client.post('/search/ons/departments?q=rpi')
+        self.count_and_assert("ons")
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 200)
+    def test_counts_data(self):
+        """
+        Tests the ONS search_data API
+        :return:
+        """
+        self.count_and_assert("onsdata")
 
-        self.assertIsNotNone(response.json)
-        self.assertIsInstance(response.json, dict)
+    def test_counts_publications(self):
+        """
+        Tests the ONS search_publications API
+        :return:
+        """
+        self.count_and_assert("onspublications")
 
+    def test_search_departments(self):
+        """
+        Tests the ONS departments endpoint
+        :return:
+        """
+        from tests.server.search.dummy_documents import test_departments_document
+
+        highlighted_terms = [
+            "DFE",
+            "<strong>education</strong>",
+            "A level",
+            "degree",
+            "NVQ",
+            "school",
+            "college",
+            "university",
+            "curriculum",
+            "qualification",
+            "teacher training",
+            "pupil absence",
+            "exclusions",
+            "school workforce",
+            "key stage",
+            "higher <strong>education</strong>"]
+
+        test_departments_document['_source']['terms'] = highlighted_terms
+        test_departments_document['_source']['_type'] = 'test'
+        test_departments_document['_source']['_score'] = 1.0
+
+        target = "/search/ons/departments?q=%s" % self.departments_search_term
         expected_keys = ['numberOfResults', 'took', 'results']
+
+        request, response = self.get(target, 200)
+
+        # Check the search results
+        json_data = response.json
+
         for key in expected_keys:
-            self.assertTrue(key in response.json)
-            self.assertIsNotNone(response.json[key])
+            self.assertIn(key, json_data)
 
-    def test_invalid_search_departments_returns_400(self):
-        """
-        Test that not specifying a query term raises a 400 BAD_REQUEST against the departments index.
-        :return:
-        """
-        request, response = self.client.post('/search/ons/departments')
+        self.assertEqual(
+            json_data['numberOfResults'],
+            1,
+            "departments result should contain one hit")
 
-        self.assertIsNotNone(request)
-        self.assertIsNotNone(response)
-        self.assertIsNotNone(response.body)
-        self.assertEqual(response.status, 400)
+        result = json_data['results']
+
+        self.assertIsNotNone(result, "departments result should not be none")
+        self.assertIsInstance(
+            result, list, "departments result should be instance of list")
+
+        hit = result[0]
+
+        self.assertEqual(
+            test_departments_document["_source"],
+            hit,
+            "returned hit should match expected dummy document")
 
 
 if __name__ == "__main__":

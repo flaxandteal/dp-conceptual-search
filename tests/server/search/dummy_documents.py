@@ -5,7 +5,7 @@ test_document = {
     "_score": 0.021380631,
     "_source": {
         "uri": "/economy/inflationandpriceindices",
-        "type": "product_page",
+        "type": "test",
                 "description": {
                     "title": "Inflation and price indices",
                     "summary": "The rate of increase in prices for goods and services. Measures of inflation and prices include consumer price inflation, producer price inflation, the house price index, index of private housing rental prices, and construction output price indices. ",
@@ -25,9 +25,9 @@ test_document = {
 
 test_departments_document = {
     "_index": "departments",
+    "_score": 1.0,
     "_type": "test",
     "_id": "dfe",
-    "_score": 5.461977,
     "_source": {
         "code": "dfe",
         "name": "The Department for Education",
