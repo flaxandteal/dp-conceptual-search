@@ -34,6 +34,38 @@ To run the unit tests, use: ```make test```.
 
 To run the integration tests, use  ```make integration-test```.
 
+# Structure
+
+The code is organised into three main modules:
+
+* ```core```
+* ```ons```
+* ```server```
+
+The ```core``` module implements common functionality for search, working with mongoDB, 
+loading (un)supervised word embedding modules, spell checking, and user / session tracking. The core recommendation
+engine is also implemented here, and is responsible for updating user session vectors using the supplied models.
+
+The ```ons``` module contains code specific to the ONS search implementation, such as Elasticsearch queries, index names, 
+content types, sort fields, filter functions, type filters, and pagination. Any modifications to the queries being 
+executed in either the vanilla search engine (babbage replica), or the new conceptual search engine, should
+be made in this module. The implementation of both search engines follow the same pattern:
+
+1. Define methods to build queries in a ```queries.py``` file, using the ```elasticsearch_dsl``` module.
+2. Define  a ```SearchEngine``` class which extends the ```AbstractSearchClient``` (see ```ons/search/search_engine.py```)
+3. Define utilty methods on  ```SearchEngine``` class as required, following the clone patten as seen in the 
+```ons/search/search_engine.SearchEngine``` class
+4. Manipulate ```SearchEngine``` class in server routes to execute queries.
+
+To implement conceptual search, we simply extend the ```ons/search/search_engine.SearchEngine``` class and redefine the 
+original content query (see ```ons/search/queries.py```) to take advantage of our pre-trained models and
+indexed embedding vectors (see ```ons/search/conceptual/queries.py``` and ```ons/search/conceptual/search_engine.py```).
+As such, all the core logic for pagination, field highlighting, aggregations, sorting and type filtering need only be implemented once
+in ```ons/search/search_engine.AbstractSearchClient```.
+
+Finally, the ```server``` module hosts the ```sanic``` asynchronous HTTP server and all routes. Details of which routes are
+registered and various app configurations can be found in ```server/app.py```.
+
 ### Licence
 
 Copyright ©‎ 2016, Office for National Statistics (https://www.ons.gov.uk)
