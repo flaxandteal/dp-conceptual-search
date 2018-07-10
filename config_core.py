@@ -16,4 +16,6 @@ MOTOR_URI = "{bind_addr}/{db}".format(
 )
 
 # Prometheus metrics endpoint
-ENABLE_PROMETHEUS_METRICS = os.environ.get('ENABLE_PROMETHEUS_METRICS', 'False').lower() == 'true'
+ENABLE_PROMETHEUS_METRICS = os.environ.get(
+    'ENABLE_PROMETHEUS_METRICS',
+    'False').lower() == 'true'

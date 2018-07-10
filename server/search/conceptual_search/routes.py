@@ -83,4 +83,6 @@ async def featured_result_query(request: Request, list_type: str):
     search_term = request.args.get("q")
     search_term_encoded = parse.quote_plus(search_term)
 
-    return redirect('/search/%s/featured?q=%s' % (list_type, search_term_encoded))
+    return redirect(
+        '/search/%s/featured?q=%s' %
+        (list_type, search_term_encoded))

@@ -180,7 +180,10 @@ def content_query(
         # auto generate keywords for matching.
         # Note the script score will still facilitate non-keyword matching.
         from sanic.log import logger
-        logger.warning("Caught exception while generating model keywords: %s", str(e), exc_info=1)
+        logger.warning(
+            "Caught exception while generating model keywords: %s",
+            str(e),
+            exc_info=1)
 
     # Build function scores
     script_score = vector_script_score(fields.embedding_vector, search_vector)
@@ -202,10 +205,18 @@ def content_query(
         boost_mode=boost_mode.value,
         functions=function_scores)
 
-    return Q.DisMax(queries=[function_score_content_query(dis_max_query, content_filter_functions()), function_score])
+    return Q.DisMax(
+        queries=[
+            function_score_content_query(
+                dis_max_query,
+                content_filter_functions()),
+            function_score])
 
 
-def recommended_content_query(page_uri: str, decoded_doc_vector: ndarray, user_vector: ndarray=None):
+def recommended_content_query(
+        page_uri: str,
+        decoded_doc_vector: ndarray,
+        user_vector: ndarray=None):
     """
     Query for recommended content using a page embedding vector and an (optional) user vector.
     :return:
@@ -227,7 +238,8 @@ def recommended_content_query(page_uri: str, decoded_doc_vector: ndarray, user_v
     unsupervised_model: UnsupervisedModel = load_unsup_model(Models.ONS)
     supervised_model: SupervisedModel = load_sup_model(SupervisedModels.ONS)
 
-    similar_by_vector: list = [r[0] for r in unsupervised_model.model.similar_by_vector(decoded_doc_vector)]
+    similar_by_vector: list = [
+        r[0] for r in unsupervised_model.model.similar_by_vector(decoded_doc_vector)]
 
     if user_vector is not None:
         # Build the user query
@@ -237,7 +249,8 @@ def recommended_content_query(page_uri: str, decoded_doc_vector: ndarray, user_v
         function_scores.append(user_query.to_dict())
 
         # Get similar words
-        similar_by_vector.extend([r[0] for r in unsupervised_model.model.similar_by_vector(user_vector)])
+        similar_by_vector.extend(
+            [r[0] for r in unsupervised_model.model.similar_by_vector(user_vector)])
 
     # Remove duplicate terms from similar_by_vector and build sentence
     sentence = " ".join(list(set(similar_by_vector)))
@@ -249,7 +262,9 @@ def recommended_content_query(page_uri: str, decoded_doc_vector: ndarray, user_v
     query = Q.Bool(must_not=[match_by_uri(page_uri)], should=[keywords_query])
 
     # Build the function score query
-    function_score_query = FunctionScore(query=query, functions=function_scores,
-                                         boost_mode=BoostMode.AVG.value)
+    function_score_query = FunctionScore(
+        query=query,
+        functions=function_scores,
+        boost_mode=BoostMode.AVG.value)
 
     return function_score_query

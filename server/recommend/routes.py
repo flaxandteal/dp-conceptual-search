@@ -172,6 +172,7 @@ async def similarity(request: Request, user_id: str, term: str):
         return json(response, 200)
     return json("User '%s' not found" % user_id, 404)
 
+
 @recommend_blueprint.route('/content/', methods=['GET', 'POST'])
 @recommend_blueprint.route('/content/<path:path>', methods=['GET', 'POST'])
 async def content_query(request: Request, path: str):

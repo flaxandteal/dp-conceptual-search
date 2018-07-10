@@ -143,6 +143,7 @@ class ConceptualSearchEngine(SearchEngine):
                     user_vector = await user.get_user_vector()
 
             # Build the query
-            query = recommended_content_query(page_uri, decoded_doc_vector, user_vector=user_vector)
+            query = recommended_content_query(
+                page_uri, decoded_doc_vector, user_vector=user_vector)
             return self.query(query)
         raise NotFound("No document found with uri '%s'" % page_uri)

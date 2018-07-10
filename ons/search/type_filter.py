@@ -25,16 +25,16 @@ corporate_information_type_filter = TypeFilter(
 
 
 _default_filters = [
-        bulletin_type_filter,
-        article_type_filter,
-        compendia_type_filter,
-        time_series_type_filter,
-        datasets_type_filter,
-        user_requested_data_type_filter,
-        qmi_type_filter,
-        methodology_type_filter,
-        methodology_article_type_filter,
-        corporate_information_type_filter]
+    bulletin_type_filter,
+    article_type_filter,
+    compendia_type_filter,
+    time_series_type_filter,
+    datasets_type_filter,
+    user_requested_data_type_filter,
+    qmi_type_filter,
+    methodology_type_filter,
+    methodology_article_type_filter,
+    corporate_information_type_filter]
 
 
 """
