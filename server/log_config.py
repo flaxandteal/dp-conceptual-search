@@ -7,6 +7,10 @@ log_level = os.getenv("SEARCH_LOG_LEVEL", "INFO")
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
+
+    def __init__(self, *args, **kwargs):
+        super(CustomJsonFormatter, self).__init__(*args, json_indent=4, **kwargs)
+
     def add_fields(self, log_record, record, message_dict):
         super(
             CustomJsonFormatter,
