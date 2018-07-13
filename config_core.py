@@ -3,7 +3,7 @@ import os
 LOGO = None
 MONGO_ENABLED = os.environ.get(
     'MONGO_ENABLED',
-    'True').lower() == 'true'
+    'False').lower() == 'true'
 
 MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
 
