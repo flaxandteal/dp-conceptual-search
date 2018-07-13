@@ -21,8 +21,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         super(
             CustomJsonFormatter,
             self).__init__(
-            *
-            args,
+            *args,
             json_indent=4,
             **kwargs)
 
@@ -82,10 +81,10 @@ supported_keys = [
     'pathname',
     'funcName',
     'lineno',
-    # 'module',
+    'module',
     'message',
     'name',
-    'process',
+    # 'process',
     # 'processName',
     # 'thread',
     # 'threadName'
