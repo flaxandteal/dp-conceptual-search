@@ -9,9 +9,9 @@ log_level = os.getenv("SEARCH_LOG_LEVEL", "INFO")
 
 
 level_style_dict = {
-    'INFO': 'default',
-    'WARN': 'paraiso-light',
-    'ERROR': 'monokai'
+    'INFO': 'rainbow_dash',
+    'WARN': 'monokai',
+    'ERROR': 'vim'
 }
 
 
