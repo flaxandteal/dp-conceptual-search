@@ -1,6 +1,6 @@
-from sanic import Blueprint
+from sanic import Sanic, Blueprint
 from sanic.request import Request
-from sanic.exceptions import InvalidUsage, NotFound
+from sanic.exceptions import NotFound
 
 from core.users.user import User
 
@@ -20,16 +20,28 @@ async def get_user_vector(request: Request):
     :param request:
     :return:
     """
-    user_vector = None
-    if User.user_id_key in request.cookies:
-        user_id = request.cookies.get(User.user_id_key)
-        user: User = await User.find_by_user_id(user_id)
+    from core.utils import service_is_available
+    current_app: Sanic = request.app
 
-        if user is not None:
-            # Compute the user vector
-            user_vector = await user.get_user_vector()
+    host = current_app.config.get('MONGO_DEFAULT_HOST')
+    port = int(current_app.config.get('MONGO_DEFAULT_PORT'))
 
-    return user_vector
+    if current_app.config.get(
+            'MONGO_ENABLED',
+            False) and service_is_available(
+            host,
+            port):
+        user_vector = None
+        if User.user_id_key in request.cookies:
+            user_id = request.cookies.get(User.user_id_key)
+            user: User = await User.find_by_user_id(user_id)
+
+            if user is not None:
+                # Compute the user vector
+                user_vector = await user.get_user_vector()
+
+        return user_vector
+    return None
 
 
 async def search(request: Request, fn: Callable, list_type: str, **kwargs):

@@ -36,7 +36,8 @@ class SanicFastText(SanicExtension):
             num_words = len(model.get_words())
             num_labels = len(model.get_labels())
             dimension = model.get_dimension()
-            logger.info("Loaded supervised fastText model '%s' with input/output matrix dimensions: (%d, %d)/(%d, %d)" %
-                        (model_name, num_words, dimension, num_labels, dimension))
+            logger.info(
+                "Loaded supervised fastText model '%s' with input/output matrix dimensions: (%d, %d)/(%d, %d)" %
+                (model_name, num_words, dimension, num_labels, dimension))
 
             _models[model_name] = model

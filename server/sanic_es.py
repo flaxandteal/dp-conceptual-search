@@ -23,7 +23,7 @@ def async_enabled() -> bool:
     return async_client_enabled
 
 
-def get_elastic_search_client(
+async def get_elastic_search_client(
         search_url: str,
         search_timeout: int,
         loop=None,
@@ -38,6 +38,7 @@ def get_elastic_search_client(
     :return:
     """
     from sanic.log import logger
+    from inspect import isawaitable
 
     if async_client:
         from elasticsearch_async import AsyncElasticsearch
@@ -52,7 +53,7 @@ def get_elastic_search_client(
                 "AsyncElasticsearch client requires the Sanic event loop!")
             sys.exit(1)
 
-        return AsyncElasticsearch(
+        client = AsyncElasticsearch(
             search_url, loop=loop, timeout=search_timeout)
     else:
         from elasticsearch_async import Elasticsearch
@@ -61,7 +62,30 @@ def get_elastic_search_client(
             "Initialising Elasticsearch client URL:%s timeout:%d" %
             (search_url, search_timeout))
 
-        return Elasticsearch(search_url, timeout=search_timeout)
+        client = Elasticsearch(search_url, timeout=search_timeout)
+
+    try:
+        # Check cluster health
+        info = client.cluster.health()
+        if isawaitable(info):
+            info = await info
+    except Exception as e:
+        import sys
+        from sanic.log import logger
+        message = "Unable to make initial connection to Elasticsearch on url '%s': %s" % (
+            search_url, e)
+        logger.error(message)
+        sys.exit(1)
+
+    if "status" not in info or info["status"] == "red":
+        import sys
+        from sanic.log import logger
+        message = "Elasticsearch cluster status unavailable or red: '%s'" % (
+            info["status"] if "status" in info else "unavailable")
+        logger.error(message)
+        sys.exit(1)
+
+    return client
 
 
 class SanicElasticsearch(SanicExtension):
@@ -84,7 +108,7 @@ class SanicElasticsearch(SanicExtension):
                 search_timeout = get_search_timeout()
                 async_client = async_enabled()
 
-                _app.es_client = get_elastic_search_client(
+                _app.es_client = await get_elastic_search_client(
                     search_url, search_timeout, async_client=async_client, loop=loop)
             else:
                 from tests.server.search.test_search_client import FakeElasticsearch

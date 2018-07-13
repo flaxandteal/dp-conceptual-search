@@ -1,6 +1,6 @@
 from sanic import Blueprint
 from sanic.request import Request
-from sanic.response import json, HTTPResponse
+from sanic.response import HTTPResponse
 from sanic.exceptions import InvalidUsage, NotFound
 
 from ons.search.search_engine import SearchEngine
@@ -11,6 +11,40 @@ search_blueprint = Blueprint('search', url_prefix='/search')
 
 
 available_list_types = ['ons', 'onsdata', 'onspublications']
+
+
+@search_blueprint.route('/', methods=['POST'])
+async def proxy_elatiscsearch_query(request: Request):
+    """
+    Proxies Elasticsearch queries to support legacy babbage APIs going forwards.
+    :param request:
+    :return:
+    """
+    from json import loads
+    from sanic.response import json as json_response
+
+    from ons.search.indicies import Index
+    from ons.search.response import ONSResponse
+    from ons.search.search_engine import SearchEngine
+
+    body = request.body
+
+    if body is not None:
+        query = loads(body)
+
+        if isinstance(query, str):
+            query = loads(query)
+
+        current_app = request.app
+        es_client = current_app.es_client
+
+        s = SearchEngine(using=es_client, index=Index.ONS.value)
+        s.update_from_dict(query)
+
+        response: ONSResponse = await s.execute()
+
+        return json_response(response.hits_to_json(), 200)
+    raise InvalidUsage("Request body not specified")
 
 
 async def search(request: Request, fn: Callable, list_type: str, **kwargs):
@@ -68,6 +102,8 @@ async def departments(request: Request) -> HTTPResponse:
     :param request:
     :return:
     """
+    from sanic.response import json
+
     from ons.search.indicies import Index
     from ons.search.response import ONSResponse
     from ons.search.sort_fields import SortFields
@@ -104,6 +140,8 @@ async def departments(request: Request) -> HTTPResponse:
 @search_blueprint.route('/uri/')
 @search_blueprint.route('/uri/<path:path>')
 async def find_document(request: Request, path: str='') -> HTTPResponse:
+    from sanic.response import json
+
     response = await find_document_by_uri(request, path)
     return json(response)
 

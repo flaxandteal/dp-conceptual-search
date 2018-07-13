@@ -26,12 +26,21 @@ def init_default_app() -> Sanic:
     app.config.from_pyfile('config_%s.py' % config_name)
 
     if app.config.get("MONGO_ENABLED", False):
-        from core.mongo import BaseModel
-        # Init MongoEngine
-        logger.info(
-            "Initialising motor engine on uri '%s'" %
-            app.config.get('MOTOR_URI'))
-        BaseModel.init_app(app)
+        from core.utils import service_is_available
+        host = app.config.get('MONGO_DEFAULT_HOST')
+        port = int(app.config.get('MONGO_DEFAULT_PORT'))
+        if service_is_available(host, port):
+            from core.mongo import BaseModel
+            # Init MongoEngine
+            logger.info(
+                "Initialising motor engine on uri '%s'" %
+                app.config.get('MOTOR_URI'))
+            BaseModel.init_app(app)
+        else:
+            logger.error(
+                "Unable to make initial connection to mongoDB on uri '%s'" %
+                app.config.get('MOTOR_URI'))
+            raise SystemExit
 
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
         from sanic_prometheus import monitor
