@@ -22,3 +22,8 @@ MOTOR_URI = "{bind_addr}/{db}".format(
 ENABLE_PROMETHEUS_METRICS = os.environ.get(
     'ENABLE_PROMETHEUS_METRICS',
     'False').lower() == 'true'
+
+
+COLOURED_LOGGING_ENABLED = os.environ.get(
+    'COLOURED_LOGGING_ENABLED',
+    'True').lower() == 'true'

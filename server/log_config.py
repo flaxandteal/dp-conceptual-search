@@ -4,6 +4,14 @@ from pythonjsonlogger import jsonlogger
 from datetime import datetime
 
 log_level = os.getenv("SEARCH_LOG_LEVEL", "INFO")
+colour_logging_enabled = os.environ.get('COLOURED_LOGGING_ENABLED', 'True').lower() == 'true'
+
+
+level_style_dict = {
+    'INFO': 'default',
+    'WARN': 'paraiso-light',
+    'ERROR': 'monokai'
+}
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
@@ -38,6 +46,20 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
                 log_record['status'], str):
             # Convert to str to stay consistent with other apps
             log_record['status'] = str(log_record['status'])
+
+    def format(self, record):
+        formatted_json = super(CustomJsonFormatter, self).format(record)
+
+        if colour_logging_enabled:
+            from logging import LogRecord
+            from pygments import highlight, lexers, formatters
+            if isinstance(record, LogRecord):
+                colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.Terminal256Formatter(style=level_style_dict.get(record.levelname, 'default')))
+            else:
+                colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.Terminal256Formatter())
+            return colorful_json
+        else:
+            return formatted_json
 
 
 def log_format(x):
