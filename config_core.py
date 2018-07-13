@@ -26,4 +26,4 @@ ENABLE_PROMETHEUS_METRICS = os.environ.get(
 
 COLOURED_LOGGING_ENABLED = os.environ.get(
     'COLOURED_LOGGING_ENABLED',
-    'True').lower() == 'true'
+    'False').lower() == 'true'

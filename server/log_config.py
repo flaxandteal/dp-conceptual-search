@@ -3,10 +3,9 @@ import os
 from pythonjsonlogger import jsonlogger
 from datetime import datetime
 
+from config_core import COLOURED_LOGGING_ENABLED
+
 log_level = os.getenv("SEARCH_LOG_LEVEL", "INFO")
-colour_logging_enabled = os.environ.get(
-    'COLOURED_LOGGING_ENABLED',
-    'True').lower() == 'true'
 
 
 level_style_dict = {
@@ -52,7 +51,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
     def format(self, record):
         formatted_json = super(CustomJsonFormatter, self).format(record)
 
-        if colour_logging_enabled:
+        if COLOURED_LOGGING_ENABLED:
             from logging import LogRecord
             from pygments import highlight, lexers, formatters
             if isinstance(record, LogRecord):
