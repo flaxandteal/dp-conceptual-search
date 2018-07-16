@@ -172,9 +172,17 @@ def content_query(
 
     # Try to build additional keywords query
     try:
-        terms_query = word_vector_keywords_query(
-            search_term, model)
-        should.append(terms_query)
+        tokens = [t.lower() for t in search_term.split()]
+        known_tokens = [t for t in tokens if t in model.words]
+
+        if len(known_tokens) > 0:
+            known_search_terms = " ".join(known_tokens)
+            terms_query = word_vector_keywords_query(
+                known_search_terms, model)
+            should.append(terms_query)
+        else:
+            from sanic.log import logger
+            logger.debug("No known words in query '%s' for keyword generation" % search_term)
     except ValueError as e:
         # Log the error but continue with the query (we can still return results, just can't
         # auto generate keywords for matching.

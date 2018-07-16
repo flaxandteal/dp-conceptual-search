@@ -12,6 +12,9 @@ class SupervisedModel(fastText.FastText._FastText):
 
         self.prefix = prefix
 
+        # Words
+        self.words = self.get_words()
+
         # Labels
         self.labels = np.array([l.replace(self.prefix, "")
                                 for l in self.get_labels()])

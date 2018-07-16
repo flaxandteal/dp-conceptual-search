@@ -43,13 +43,13 @@ async def elastic_search_health(request: Request) -> (dict, int):
     from elasticsearch.exceptions import ConnectionError
 
     current_app: Sanic = request.app
+    code = 200
 
     try:
         info = current_app.es_client.cluster.health()
         if inspect.isawaitable(info):
             info = await info
 
-            code = 200
             if "status" not in info or info["status"] == "red":
                 code = 500
     except ConnectionError as err:
