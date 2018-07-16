@@ -35,7 +35,7 @@ def get_type_filters(request: Request, list_type: str):
         raise InvalidUsage("No such filter type: '%s'" % type_filters_key)
 
 
-async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSearchClient], list_type: str, **kwargs):
+async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSearchClient], list_type: str, **kwargs) -> dict:
     """
     ONS content query
     :param request:
@@ -44,8 +44,6 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
     :return:
     """
     from ons.search.sort_fields import SortFields
-
-    from sanic.response import json
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -79,11 +77,11 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
 
         result = response.response_to_json(page_number, page_size, sort_by)
 
-        return json(result, 200)
+        return result
     raise InvalidUsage("no query provided")
 
 
-async def type_counts_query(request: Request, search_engine_cls: ClassVar[AbstractSearchClient], list_type: str=None, **kwargs):
+async def type_counts_query(request: Request, search_engine_cls: ClassVar[AbstractSearchClient], **kwargs) -> dict:
     """
     ONS type counts query
     :param request:
@@ -91,7 +89,6 @@ async def type_counts_query(request: Request, search_engine_cls: ClassVar[Abstra
     :param list_type:
     :return:
     """
-    from sanic.response import json
     from ons.search.type_filter import default_filters
 
     search_term = request.args.get("q")
@@ -112,19 +109,17 @@ async def type_counts_query(request: Request, search_engine_cls: ClassVar[Abstra
 
         result = response.aggs_to_json()
 
-        return json(result, 200)
+        return result
     raise InvalidUsage("no query provided")
 
 
-async def featured_result_query(request: Request, search_engine_cls: ClassVar[AbstractSearchClient], **kwargs):
+async def featured_result_query(request: Request, search_engine_cls: ClassVar[AbstractSearchClient], **kwargs) -> dict:
     """
     ONS featured result query
     :param request:
     :param search_engine_cls:
     :return:
     """
-    from sanic.response import json
-
     search_term = request.args.get("q")
     if search_term is not None:
         app = request.app
@@ -142,5 +137,5 @@ async def featured_result_query(request: Request, search_engine_cls: ClassVar[Ab
 
         result = response.featured_result_to_json()
 
-        return json(result, 200)
+        return result
     raise InvalidUsage("no query provided")

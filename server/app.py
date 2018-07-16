@@ -111,15 +111,4 @@ def create_app() -> Sanic:
                 value = request.cookies.pop(key)
                 request.cookies[key] = hash_value(value)
 
-    if app.config.get("START_MONGO", False):
-        @app.listener("before_server_start")
-        async def start_mongod(_app: Sanic, loop):
-            import os
-            os.system("make mongo-start")
-
-        @app.listener("after_server_stop")
-        async def stop_mongod(_app: Sanic, loop):
-            import os
-            os.system("make mongo-stop")
-
     return app

@@ -48,10 +48,13 @@ async def proxy_elatiscsearch_query(request: Request):
 
 
 async def search(request: Request, fn: Callable, list_type: str, **kwargs):
+    from sanic.response import json
+
     from ons.search.search_engine import SearchEngine
 
     if list_type in available_list_types:
-        return await fn(request, SearchEngine, list_type=list_type, **kwargs)
+        result = await fn(request, SearchEngine, list_type=list_type, **kwargs)
+        return json(result, 200)
     raise NotFound("No route for list type '%s'" % list_type)
 
 
@@ -89,10 +92,12 @@ async def featured_result_query(request: Request):
     :param list_type: ons, onsdata or onspublications
     :return:
     """
+    from sanic.response import json
     from ons.search.search_engine import SearchEngine
     from server.search.utils import featured_result_query
 
-    return await featured_result_query(request, SearchEngine)
+    result = await featured_result_query(request, SearchEngine)
+    return json(result, 200)
 
 
 @search_blueprint.route('/ons/departments', methods=["GET", "POST"])
@@ -133,7 +138,7 @@ async def departments(request: Request) -> HTTPResponse:
 
         result = response.response_to_json(page_number, page_size, sort_by)
 
-        return json(result)
+        return json(result, 200)
     raise InvalidUsage("no query provided")
 
 
@@ -143,7 +148,7 @@ async def find_document(request: Request, path: str='') -> HTTPResponse:
     from sanic.response import json
 
     response = await find_document_by_uri(request, path)
-    return json(response)
+    return json(response, 200)
 
 
 async def find_document_by_uri(request: Request, path: str='') -> dict:

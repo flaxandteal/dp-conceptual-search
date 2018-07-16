@@ -1,17 +1,15 @@
+from typing import Callable
 from sanic import Sanic, Blueprint
 from sanic.request import Request
 from sanic.exceptions import NotFound
 
 from core.users.user import User
 
-from typing import Callable
+from server.search.routes import available_list_types
 
 conceptual_search_blueprint = Blueprint(
     'conceptual_search',
     url_prefix='/search/conceptual')
-
-
-available_list_types = ['ons', 'onsdata', 'onspublications']
 
 
 async def get_user_vector(request: Request):
@@ -44,6 +42,8 @@ async def get_user_vector(request: Request):
 
 
 async def search(request: Request, fn: Callable, list_type: str, **kwargs):
+    from sanic.response import json
+
     from ons.search.conceptual.search_engine import ConceptualSearchEngine
 
     user_vector_query = request.args.get('user_vector_query', 'false')
@@ -52,7 +52,8 @@ async def search(request: Request, fn: Callable, list_type: str, **kwargs):
 
     if list_type in available_list_types:
         user_vector = await get_user_vector(request) if user_vector_query else None
-        return await fn(request, ConceptualSearchEngine, list_type=list_type, user_vector=user_vector, **kwargs)
+        result = await fn(request, ConceptualSearchEngine, list_type=list_type, user_vector=user_vector, **kwargs)
+        return json(result, 200)
     raise NotFound("No route for list type '%s'" % list_type)
 
 
