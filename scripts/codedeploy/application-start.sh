@@ -37,7 +37,7 @@ docker run -d                                                           \
   --env=ELASTIC_SEARCH_ASYNC_ENABLED=$ELASTIC_SEARCH_ASYNC_ENABLED      \
   --env=ELASTIC_SEARCH_TIMEOUT=$ELASTIC_SEARCH_TIMEOUT                  \
   --env=SEARCH_INDEX=$SEARCH_INDEX                                      \
-  --env=MONGO_ENABLED=$MONGO_ENABLED                                    \
+  --env=USER_RECOMMENDATION_ENABLED=$USER_RECOMMENDATION_ENABLED        \
   --env=BIND_HOST=$BIND_HOST                                            \
   --env=BIND_PORT=$BIND_PORT                                            \
   --env=GA_SALT=$GA_SALT                                                \

@@ -8,6 +8,8 @@ def init_default_app() -> Sanic:
     import asyncio
     import uvloop
 
+    from config_core import USER_RECOMMENDATION_ENABLED
+
     from server.log_config import default_log_config
     from server.error_handlers import CustomHandler
     from server.sanic_es import SanicElasticsearch
@@ -25,8 +27,10 @@ def init_default_app() -> Sanic:
     logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)
 
-    if app.config.get("MONGO_ENABLED", False):
+    if USER_RECOMMENDATION_ENABLED:
+        # Use mongoDB to track user interests
         from core.utils import service_is_available
+
         host = app.config.get('MONGO_DEFAULT_HOST')
         port = int(app.config.get('MONGO_DEFAULT_PORT'))
         if service_is_available(host, port):
@@ -64,6 +68,8 @@ def init_default_app() -> Sanic:
 
 def register_blueprints(app: Sanic) -> None:
     # Register blueprint(s)
+    from config_core import USER_RECOMMENDATION_ENABLED
+
     from server.search.routes import search_blueprint
     from server.suggest.routes import suggest_blueprint
     from server.healthcheck.routes import health_check_blueprint
@@ -74,7 +80,7 @@ def register_blueprints(app: Sanic) -> None:
     app.blueprint(health_check_blueprint)
     app.blueprint(conceptual_search_blueprint)
 
-    if app.config.get('MONGO_ENABLED', False):
+    if USER_RECOMMENDATION_ENABLED:
         from server.users.routes import user_blueprint
         from server.users.routes_sessions import sessions_blueprint
         from server.recommend.routes import recommend_blueprint

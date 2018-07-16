@@ -62,7 +62,7 @@ async def elastic_search_health(request: Request) -> (dict, int):
 # Define healthcheck API
 @health_check_blueprint.route("/")
 async def health_check(request: Request):
-    current_app: Sanic = request.app
+    from config_core import USER_RECOMMENDATION_ENABLED
 
     health = {}
     code = 200
@@ -75,7 +75,7 @@ async def health_check(request: Request):
         health['elasticsearch'] = 'unavailable'
         code = 500
 
-    if current_app.config.get('MONGO_ENABLED'):
+    if USER_RECOMMENDATION_ENABLED:
         mdb_health, mdb_code = mongo_health(request)
 
         if mdb_code == 200:

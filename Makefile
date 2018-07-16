@@ -18,7 +18,7 @@ test: test_requirements
 	python manager.py test
 
 integration-test: test_requirements
-	MONGO_ENABLED=true nosetests -s -v tests.integration
+	USER_RECOMMENDATION_ENABLED=true nosetests -s -v tests.integration
 
 all-tests: test integration-test
 

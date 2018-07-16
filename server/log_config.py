@@ -84,6 +84,7 @@ supported_keys = [
     'module',
     'message',
     'name',
+    'pathname',
     # 'process',
     # 'processName',
     # 'thread',

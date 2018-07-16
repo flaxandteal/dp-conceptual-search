@@ -20,17 +20,16 @@ async def get_user_vector(request: Request):
     :param request:
     :return:
     """
+    from config_core import USER_RECOMMENDATION_ENABLED
+
     from core.utils import service_is_available
+
     current_app: Sanic = request.app
 
     host = current_app.config.get('MONGO_DEFAULT_HOST')
     port = int(current_app.config.get('MONGO_DEFAULT_PORT'))
 
-    if current_app.config.get(
-            'MONGO_ENABLED',
-            False) and service_is_available(
-            host,
-            port):
+    if USER_RECOMMENDATION_ENABLED and service_is_available(host, port):
         user_vector = None
         if User.user_id_key in request.cookies:
             user_id = request.cookies.get(User.user_id_key)
@@ -46,8 +45,13 @@ async def get_user_vector(request: Request):
 
 async def search(request: Request, fn: Callable, list_type: str, **kwargs):
     from ons.search.conceptual.search_engine import ConceptualSearchEngine
+
+    user_vector_query = request.args.get('user_vector_query', 'false')
+    if isinstance(user_vector_query, str):
+        user_vector_query: bool = user_vector_query.lower() == 'true'
+
     if list_type in available_list_types:
-        user_vector = await get_user_vector(request)
+        user_vector = await get_user_vector(request) if user_vector_query else None
         return await fn(request, ConceptualSearchEngine, list_type=list_type, user_vector=user_vector, **kwargs)
     raise NotFound("No route for list type '%s'" % list_type)
 

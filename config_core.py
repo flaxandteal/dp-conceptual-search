@@ -1,8 +1,8 @@
 import os
 
 LOGO = None
-MONGO_ENABLED = os.environ.get(
-    'MONGO_ENABLED',
+USER_RECOMMENDATION_ENABLED = os.environ.get(
+    'USER_RECOMMENDATION_ENABLED',
     'False').lower() == 'true'
 
 MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
