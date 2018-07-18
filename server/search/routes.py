@@ -42,8 +42,12 @@ async def proxy_elatiscsearch_query(request: Request):
         s.update_from_dict(query)
 
         response: ONSResponse = await s.execute()
+        hits = response.hits_to_json()
+        aggs = response.aggs_to_json()
 
-        return json_response(response.hits_to_json(), 200)
+        result = {**hits, **aggs}
+
+        return json_response(result, 200)
     raise InvalidUsage("Request body not specified")
 
 

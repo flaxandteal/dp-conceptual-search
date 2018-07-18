@@ -179,6 +179,12 @@ class SearchEngine(AbstractSearchClient):
     Default ONS search client.
     """
 
+    query_key = "query"
+    terms_key = "terms"
+    highlight_open_tag = "<strong>"
+    highlight_close_tag = "</strong>"
+    function_scores_key = "function_scores"
+
     def departments_query(
             self,
             search_term: str,
@@ -195,7 +201,7 @@ class SearchEngine(AbstractSearchClient):
 
         query = departments_query(search_term)
         query_dict = {
-            "query": query.to_dict()
+            self.query_key: query.to_dict()
         }
 
         self.update_from_dict(query_dict)
@@ -205,10 +211,10 @@ class SearchEngine(AbstractSearchClient):
         # Set search_type and highlight options
         s: SearchEngine = s.search_type(SearchType.DFS_QUERY_THEN_FETCH)
         s: SearchEngine = s.highlight(
-            "terms",
+            self.terms_key,
             fragment_size=0,
-            pre_tags=["<strong>"],
-            post_tags=["</strong>"])
+            pre_tags=[self.highlight_open_tag],
+            post_tags=[self.highlight_close_tag])
 
         # Calculate from_start param
         from_start = 0 if current_page <= 1 else (current_page - 1) * size
@@ -240,7 +246,7 @@ class SearchEngine(AbstractSearchClient):
         query = content_query(search_term)
 
         function_scores = kwargs.get(
-            "function_scores", content_filter_functions())
+            self.function_scores_key, content_filter_functions())
 
         if function_scores is not None:
             query = function_score_content_query(

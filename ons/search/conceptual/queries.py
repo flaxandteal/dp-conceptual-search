@@ -182,7 +182,9 @@ def content_query(
             should.append(terms_query)
         else:
             from sanic.log import logger
-            logger.debug("No known words in query '%s' for keyword generation" % search_term)
+            logger.debug(
+                "No known words in query '%s' for keyword generation" %
+                search_term)
     except ValueError as e:
         # Log the error but continue with the query (we can still return results, just can't
         # auto generate keywords for matching.
