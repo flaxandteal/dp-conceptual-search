@@ -44,7 +44,6 @@ def init_default_app() -> Sanic:
             logger.error(
                 "Unable to make initial connection to mongoDB on uri '%s'" %
                 app.config.get('MOTOR_URI'))
-            raise SystemExit
 
     if app.config.get("ENABLE_PROMETHEUS_METRICS", False):
         from sanic_prometheus import monitor

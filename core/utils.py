@@ -42,7 +42,7 @@ def throw_if_service_unavailable(host: str, port: int):
 
     sock = None
     try:
-        sock = socket.create_connection((host, port), timeout=1)
+        sock = socket.create_connection((host, port), timeout=30)
     except socket.error as err:
         raise ServiceUnavailableException(
             "Unable to connect to service at {host}:{port} due to {err}" .format(
