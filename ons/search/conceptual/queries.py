@@ -162,7 +162,6 @@ def content_query(
     """
     from ons.search.filter_functions import content_filter_functions
     from ons.search.queries import content_query as ons_content_query
-    from ons.search.queries import function_score_content_query
 
     search_vector = model.get_sentence_vector(search_term)
 
@@ -201,6 +200,7 @@ def content_query(
 
     function_scores = [script_score.to_dict(), date_function.to_dict()]
 
+    # Add content type function scores if specified
     additional_function_scores = kwargs.get(
         "function_scores", content_filter_functions())
 
@@ -209,18 +209,14 @@ def content_query(
             additional_function_scores = [additional_function_scores]
         function_scores.extend(additional_function_scores)
 
+    # Build the final function score query
     function_score = FunctionScore(
         query=Q.Bool(should=should),
         min_score=min_score,
         boost_mode=boost_mode.value,
         functions=function_scores)
 
-    return Q.Bool(
-        should=[
-            function_score_content_query(
-                dis_max_query,
-                content_filter_functions()),
-            function_score])
+    return function_score
 
 
 def recommended_content_query(
