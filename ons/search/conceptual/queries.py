@@ -77,7 +77,7 @@ def vector_script_score(
 
 
 def date_decay_function() -> Q.Query:
-    q = Q.SF('linear', **{fields.releaseDate.name: {
+    q = Q.SF('exp', **{fields.releaseDate.name: {
         "origin": "now",
         "scale": "365d",
         "offset": "30d",
@@ -215,8 +215,8 @@ def content_query(
         boost_mode=boost_mode.value,
         functions=function_scores)
 
-    return Q.DisMax(
-        queries=[
+    return Q.Bool(
+        should=[
             function_score_content_query(
                 dis_max_query,
                 content_filter_functions()),
