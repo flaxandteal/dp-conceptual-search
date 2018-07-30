@@ -7,21 +7,19 @@ class SearchStats(object):
     db = "local"
     collection = "searchstats"
 
-    def __init__(self, conceptual_search: bool=False):
+    def __init__(self):
         self._client = pymongo.MongoClient()
         self._db = self._client.get_database(self.db)
         self._collection = self._db.get_collection(self.collection)
 
         self._docs = []
 
-        self.conceptual_search = conceptual_search
-        self._load(self.conceptual_search)
+        self._load()
 
-    def _load(self, conceptual_search: bool):
+    def _load(self):
         if len(self._docs) == 0:
             for doc in self._collection.find():
-                if "conceptualsearch" in doc and doc.get("conceptualsearch") == conceptual_search:
-                    self._docs.append(doc)
+                self._docs.append(doc)
 
     def __len__(self):
         return len(self._docs)

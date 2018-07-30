@@ -41,10 +41,8 @@ class NDCG(object):
 
         dcg_dict = {}
         for key in self.judgements:
-            dcg_dict[key] = {"dcg": [], "urls": [], "rank": []}
-
-        for key in dcg_dict:
             total = 0.0
+            dcg_dict[key] = {"dcg": [], "urls": [], "rank": []}
             judgements = self.judgements[key]
 
             sorted_judgements = sorted(judgements.items(), key=lambda kv: kv[1]['rank'])

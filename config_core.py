@@ -1,9 +1,34 @@
 import os
 
+
+def bool_env(var_name, default=False):
+    """
+    Get an environment variable coerced to a boolean value.
+    Example:
+        Bash:
+            $ export SOME_VAL=True
+        settings.py:
+            SOME_VAL = bool_env('SOME_VAL', False)
+    Arguments:
+        var_name: The name of the environment variable.
+        default: The default to use if `var_name` is not specified in the
+                 environment.
+    Returns: `var_name` or `default` coerced to a boolean using the following
+        rules:
+            "False", "false" or "" => False
+            Any other non-empty string => True
+    """
+    from os import getenv
+
+    test_val = getenv(var_name, default)
+    # Explicitly check for 'False', 'false', and '0' since all non-empty
+    # string are normally coerced to True.
+    if test_val in ('False', 'false', '0'):
+        return False
+    return bool(test_val)
+
+
 LOGO = None
-USER_RECOMMENDATION_ENABLED = os.environ.get(
-    'USER_RECOMMENDATION_ENABLED',
-    'False').lower() == 'true'
 
 MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
 
@@ -18,12 +43,11 @@ MOTOR_URI = "{bind_addr}/{db}".format(
     db=MONGO_SEARCH_DATABASE
 )
 
+# User recommendation
+USER_RECOMMENDATION_ENABLED = bool_env('USER_RECOMMENDATION_ENABLED', False)
+
 # Prometheus metrics endpoint
-ENABLE_PROMETHEUS_METRICS = os.environ.get(
-    'ENABLE_PROMETHEUS_METRICS',
-    'False').lower() == 'true'
+ENABLE_PROMETHEUS_METRICS = bool_env('ENABLE_PROMETHEUS_METRICS', False)
 
-
-COLOURED_LOGGING_ENABLED = os.environ.get(
-    'COLOURED_LOGGING_ENABLED',
-    'False').lower() == 'true'
+# Logging
+COLOURED_LOGGING_ENABLED = bool_env('COLOURED_LOGGING_ENABLED', False)
