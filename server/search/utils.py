@@ -71,6 +71,11 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
             page_size,
             **params)
 
+        import os
+        from json import dumps
+        data = dumps(s.to_dict(), indent=4)
+        os.system("echo '%s' | pbcopy" % data)
+
         response: ONSResponse = s.execute()
         if isawaitable(response):
             response = await response

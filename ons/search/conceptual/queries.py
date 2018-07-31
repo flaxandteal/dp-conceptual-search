@@ -57,7 +57,7 @@ class BoostMode(Enum):
 def vector_script_score(
         field: fields.Field,
         vector: ndarray,
-        weight: float=1.0) -> Q.Query:
+        weight: float = 1.0) -> Q.Query:
     params = {
         "cosine": True,
         "field": field.name,
@@ -76,12 +76,13 @@ def vector_script_score(
     return ScriptScore(**script_score)
 
 
-def date_decay_function() -> Q.Query:
-    q = Q.SF('exp', **{fields.releaseDate.name: {
-        "origin": "now",
-        "scale": "365d",
-        "offset": "30d",
-        "decay": 0.5
+def date_decay_function(fn: str = "exp", origin: str = "now", scale: str = "365d", offset: str = "30d",
+                        decay: float = 0.5) -> Q.Query:
+    q = Q.SF(fn, **{fields.releaseDate.name: {
+        "origin": origin,
+        "scale": scale,
+        "offset": offset,
+        "decay": decay
     }})
     return q
 
@@ -89,8 +90,8 @@ def date_decay_function() -> Q.Query:
 def word_vector_keywords_query(
         search_term: str,
         model: SupervisedModel,
-        k: int=10,
-        threshold: float=0.1) -> Q.Query:
+        k: int = 10,
+        threshold: float = 0.1) -> Q.Query:
     """
     :param search_term:
     :param model:
@@ -112,10 +113,10 @@ def word_vector_keywords_query(
 
 def user_rescore_query(
         user_vector: ndarray,
-        score_mode: BoostMode=BoostMode.AVG,
-        window_size: int=100,
-        query_weight: float=0.5,
-        rescore_query_weight: float=1.2) -> RescoreQuery:
+        score_mode: BoostMode = BoostMode.AVG,
+        window_size: int = 100,
+        query_weight: float = 0.5,
+        rescore_query_weight: float = 1.2) -> RescoreQuery:
     """
     Generates a rescore query from a users session vector
     :param user_vector:
@@ -146,8 +147,8 @@ def user_rescore_query(
 def content_query(
         search_term: str,
         model: SupervisedModel,
-        boost_mode: BoostMode=BoostMode.AVG,
-        min_score: float=0.01,
+        boost_mode: BoostMode = BoostMode.AVG,
+        min_score: float = 0.01,
         **kwargs) -> Q.Query:
     """
     Conceptual search (main) content query.
@@ -158,37 +159,93 @@ def content_query(
     :param min_score:
     :return:
     """
+    from sanic.log import logger
     from core.word_embedding.utils import clean_string
 
     from ons.search.filter_functions import content_filter_functions
     from ons.search.queries import content_query as ons_content_query
+    from ons.search.queries import function_score_content_query
 
-    search_vector = model.get_sentence_vector(clean_string(search_term))
+    # Add content type function scores if specified
+    content_function_scores = kwargs.get(
+        "function_scores", content_filter_functions())
+
+    if content_function_scores is None:
+        content_function_scores = content_filter_functions()
+    if hasattr(content_function_scores, "__iter__") is False:
+        content_function_scores = [content_function_scores]
+
+    dis_max_query = ons_content_query(search_term)
 
     # Build the original ONS content query
+    original_function_score = function_score_content_query(dis_max_query, content_function_scores)
+
+    clean_search_term = clean_string(search_term)
+    search_vector = model.get_sentence_vector(clean_search_term)
+
+    # Build function scores
+    script_score = vector_script_score(fields.embedding_vector, search_vector)
+    date_function = date_decay_function()
+
+    function_scores = [script_score.to_dict()]
+
+    terms_query = word_vector_keywords_query(
+        clean_search_term, model)
+
+    # Build the final function score query
+    function_score = FunctionScore(
+        query=terms_query,
+        min_score=min_score,
+        boost_mode=boost_mode.value,
+        functions=function_scores)
+
+    return Q.Bool(
+        should=[
+            original_function_score,
+            function_score
+        ]
+    )
+
+
+def old_content_query(
+        search_term: str,
+        model: SupervisedModel,
+        boost_mode: BoostMode = BoostMode.AVG,
+        min_score: float = 0.01,
+        **kwargs) -> Q.Query:
+    """
+    Conceptual search (main) content query.
+    Requires embedding_vectors to be indexed in Elasticsearch.
+    :param search_term:
+    :param model:
+    :param boost_mode:
+    :param min_score:
+    :return:
+    """
+    from sanic.log import logger
+    from core.word_embedding.utils import clean_string
+
+    from ons.search.filter_functions import content_filter_functions
+    from ons.search.queries import content_query as ons_content_query
+    from ons.search.queries import function_score_content_query
+
+    clean_search_term = clean_string(search_term)
+
+    search_vector = model.get_sentence_vector(clean_search_term)
+
     dis_max_query = ons_content_query(search_term)
     should = [dis_max_query]
 
     # Try to build additional keywords query
     try:
-        tokens = [t.lower() for t in search_term.split()]
-        known_tokens = [t for t in tokens if t in model.words]
-
-        if len(known_tokens) > 0:
-            known_search_terms = " ".join(known_tokens)
-            terms_query = word_vector_keywords_query(
-                known_search_terms, model)
-            should.append(terms_query)
-        else:
-            from sanic.log import logger
-            logger.debug(
-                "No known words in query '%s' for keyword generation" %
-                search_term)
+        terms_query = word_vector_keywords_query(
+            clean_search_term, model)
+        logger.debug("Generated additional keywords for query '%s': %s" % (search_term, terms_query))
+        should.append(terms_query)
     except ValueError as e:
         # Log the error but continue with the query (we can still return results, just can't
         # auto generate keywords for matching.
         # Note the script score will still facilitate non-keyword matching.
-        from sanic.log import logger
         logger.warning(
             "Caught exception while generating model keywords: %s",
             str(e),
@@ -204,10 +261,15 @@ def content_query(
     additional_function_scores = kwargs.get(
         "function_scores", content_filter_functions())
 
-    if additional_function_scores is not None:
-        if hasattr(additional_function_scores, "__iter__") is False:
-            additional_function_scores = [additional_function_scores]
-        function_scores.extend(additional_function_scores)
+    if additional_function_scores is None:
+        additional_function_scores = content_filter_functions()
+    if hasattr(additional_function_scores, "__iter__") is False:
+        additional_function_scores = [additional_function_scores]
+
+    # Build the original ONS content query
+    function_score_dis_max = function_score_content_query(dis_max_query, additional_function_scores)
+
+    function_scores.extend(additional_function_scores)
 
     # Build the final function score query
     function_score = FunctionScore(
@@ -216,13 +278,16 @@ def content_query(
         boost_mode=boost_mode.value,
         functions=function_scores)
 
-    return function_score
+    return Q.Bool(
+        should=[function_score_dis_max,
+                function_score]
+    )
 
 
 def recommended_content_query(
         page_uri: str,
         decoded_doc_vector: ndarray,
-        user_vector: ndarray=None):
+        user_vector: ndarray = None):
     """
     Query for recommended content using a page embedding vector and an (optional) user vector.
     :return:

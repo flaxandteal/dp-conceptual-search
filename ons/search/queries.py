@@ -95,5 +95,6 @@ def content_query(search_term: str) -> Q.DisMax:
 
 def function_score_content_query(
         query: Q.Query,
-        function_scores: list) -> Q.Query:
-    return Q.FunctionScore(query=query, functions=function_scores)
+        function_scores: list,
+        boost: float=1.0) -> Q.Query:
+    return Q.FunctionScore(query=query, functions=function_scores, boost=boost)

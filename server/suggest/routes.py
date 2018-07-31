@@ -13,8 +13,9 @@ def spell_checker(request: Request) -> HTTPResponse:
     :return:
     """
     from server.requests import get_request_param
+    from server.word_embedding.sanic_word2vec import Models
+
     from core.suggest.spell_checker import SpellChecker
-    from core.word_embedding.models.unsupervised import Models
 
     query = get_request_param(request, "q", True)
 

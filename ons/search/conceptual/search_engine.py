@@ -5,8 +5,9 @@ from numpy import ndarray
 
 
 class ConceptualSearchEngine(SearchEngine):
-    from server.word_embedding.sanic_supervised_models import load_model
-    from core.word_embedding.models.supervised import SupervisedModels, SupervisedModel
+    from server.word_embedding.sanic_supervised_models import load_model, SupervisedModels
+
+    from core.word_embedding.models.supervised import SupervisedModel
 
     user_vector_key = "user_vector"
     word_embedding_model: SupervisedModel = load_model(SupervisedModels.ONS)
@@ -63,7 +64,7 @@ class ConceptualSearchEngine(SearchEngine):
                     rescore = user_rescore_query(user_vector)
                     s: ConceptualSearchEngine = s.extra(**rescore.to_dict())
 
-            # Exclude embedding vector for source
+            # Exclude embedding vector from source
             s: ConceptualSearchEngine = s.source(
                 exclude=[embedding_vector.name])
 

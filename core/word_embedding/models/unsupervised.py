@@ -1,12 +1,4 @@
-from enum import Enum
 from gensim.models.keyedvectors import Word2VecKeyedVectors
-
-
-class Models(Enum):
-    ONS = "ons_supervised.vec"
-
-    def __str__(self):
-        return self.value
 
 
 class UnsupervisedModel(object):

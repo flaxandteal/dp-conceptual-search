@@ -1,5 +1,3 @@
-from enum import Enum
-
 import numpy as np
 import fastText
 
@@ -86,10 +84,3 @@ class SupervisedModel(fastText.FastText._FastText):
         :return:
         """
         return cosine_sim(vec1, vec2)
-
-
-class SupervisedModels(Enum):
-    ONS = "ons_supervised.bin"
-
-    def __str__(self):
-        return self.value
