@@ -4,7 +4,8 @@ def test():
         check_output(['nosetests',
                       '-v',
                       '-s',
-                      '--exclude-dir=./tests/integration'])
+                      '--exclude-dir=./tests/integration',
+                      '--exclude-dir=./tests/regression'])
         # '--with-coverage',
         # '--cover-package=server',
         # '--cover-branches',

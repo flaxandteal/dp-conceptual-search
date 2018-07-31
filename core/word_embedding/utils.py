@@ -7,6 +7,12 @@ from typing import List
 dbig = np.dtype('>f8')
 
 
+def clean_string(string):
+    import re
+
+    return re.sub("[^a-zA-Z ]", "", string).lower()
+
+
 def decode_float_list(base64_string) -> List[float]:
     bytes = base64.b64decode(base64_string)
     return np.frombuffer(bytes, dtype=dbig).tolist()

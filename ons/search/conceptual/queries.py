@@ -92,7 +92,6 @@ def word_vector_keywords_query(
         k: int=10,
         threshold: float=0.1) -> Q.Query:
     """
-    TODO - (Re)Index normalised vectors
     :param search_term:
     :param model:
     :param k:
@@ -107,7 +106,6 @@ def word_vector_keywords_query(
         match_queries.append(Q.Match(
             **{fields.keywords.name: {"query": label.replace("_", " "), "boost": probability}}))
 
-    # query = Q.DisMax(queries=match_queries)
     query = Q.Bool(should=match_queries)
     return query
 
@@ -160,10 +158,12 @@ def content_query(
     :param min_score:
     :return:
     """
+    from core.word_embedding.utils import clean_string
+
     from ons.search.filter_functions import content_filter_functions
     from ons.search.queries import content_query as ons_content_query
 
-    search_vector = model.get_sentence_vector(search_term)
+    search_vector = model.get_sentence_vector(clean_string(search_term))
 
     # Build the original ONS content query
     dis_max_query = ons_content_query(search_term)
@@ -246,7 +246,7 @@ def recommended_content_query(
     unsupervised_model: UnsupervisedModel = load_unsup_model(Models.ONS)
     supervised_model: SupervisedModel = load_sup_model(SupervisedModels.ONS)
 
-    similar_by_vector: list = [
+    similar_by_vector = [
         r[0] for r in unsupervised_model.model.similar_by_vector(decoded_doc_vector)]
 
     if user_vector is not None:

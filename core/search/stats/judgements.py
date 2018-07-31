@@ -14,7 +14,9 @@ class Judgements(dict):
 
         for key in self:
             # Sort
-            sorted_values = sorted(self[key].items(), key=lambda kv: kv[1]["count"])
+            sorted_values = sorted(
+                self[key].items(),
+                key=lambda kv: kv[1]["count"])
 
             # Normalise
             j = np.linspace(0, max_judgement, len(sorted_values))

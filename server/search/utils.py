@@ -63,7 +63,7 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
 
         params = {**{'type_filters': type_filters, 'sort_by': sort_by}, **kwargs}
 
-        s = search_engine_cls(
+        s: AbstractSearchClient = search_engine_cls(
             using=es_client,
             index=Index.ONS.value).content_query(
             search_term,

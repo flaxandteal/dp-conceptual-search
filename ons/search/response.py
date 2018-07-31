@@ -1,6 +1,6 @@
-from ons.search.sort_fields import SortFields
-
 from elasticsearch_dsl.response import Response
+
+from ons.search.sort_fields import SortFields
 
 
 class Hit(dict):
@@ -63,8 +63,10 @@ def highlight(highlighted_text: str, val: str, tag: str='strong') -> str:
     tokens = val.split()
 
     for i in range(len(tokens)):
-        if not tokens[i].startswith(tag_start) and highlighted_text in tokens[i]:
-            tokens[i] = "{tag_start}{token}{tag_end}".format(tag_start=tag_start, token=tokens[i], tag_end=tag_end)
+        if not tokens[i].startswith(
+                tag_start) and highlighted_text in tokens[i]:
+            tokens[i] = "{tag_start}{token}{tag_end}".format(
+                tag_start=tag_start, token=tokens[i], tag_end=tag_end)
 
     return " ".join(tokens)
 
@@ -119,7 +121,7 @@ class ONSResponse(Response):
 
     def aggs_to_json(self) -> dict:
         """
-
+        Returns search aggregations as formatted JSON.
         :return:
         """
         if hasattr(self.aggregations, "docCounts"):
@@ -140,6 +142,10 @@ class ONSResponse(Response):
         return {}
 
     def hits_to_json(self):
+        """
+        Returns search hits only as formatted JSON.
+        :return:
+        """
         from ons.search.paginator import RESULTS_PER_PAGE
 
         return self.response_to_json(0, RESULTS_PER_PAGE)
@@ -147,7 +153,7 @@ class ONSResponse(Response):
     def response_to_json(self, page_number: int, page_size: int,
                          sort_by: SortFields=SortFields.relevance) -> dict:
         """
-
+        Builds and returns the full JSON response expected by Babbage.
         :return:
         """
         from ons.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK

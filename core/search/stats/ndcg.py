@@ -20,7 +20,8 @@ def ideal_gain(num: int):
     return ideal_gain_arr
 
 
-def ideal_discounted_cumulative_gain(num: int, ideal_gain_arr: np.ndarray=None):
+def ideal_discounted_cumulative_gain(
+        num: int, ideal_gain_arr: np.ndarray=None):
     if ideal_gain_arr is None:
         ideal_gain_arr = ideal_gain(num)
 
@@ -45,7 +46,8 @@ class NDCG(object):
             dcg_dict[key] = {"dcg": [], "urls": [], "rank": []}
             judgements = self.judgements[key]
 
-            sorted_judgements = sorted(judgements.items(), key=lambda kv: kv[1]['rank'])
+            sorted_judgements = sorted(
+                judgements.items(), key=lambda kv: kv[1]['rank'])
             for url, data in sorted_judgements:
                 total += data["judgement"] / float(data["rank"])
                 dcg_dict[key]["dcg"].append(total)

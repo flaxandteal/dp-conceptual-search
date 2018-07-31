@@ -2,6 +2,8 @@ import pymongo
 
 from core.search.stats.judgements import Judgements
 
+from ons.search.stats.request import Request
+
 
 class SearchStats(object):
     db = "local"
@@ -49,7 +51,8 @@ class SearchStats(object):
         """
         judgements = Judgements()
         for doc in self._docs:
-            rank = doc.get("linkindex") + ((doc.get("pageindex") - 1) * doc.get("pagesize"))
+            rank = doc.get("linkindex") + \
+                ((doc.get("pageindex") - 1) * doc.get("pagesize"))
             term = doc.get("term")
             url = doc.get('url')
 
@@ -57,5 +60,16 @@ class SearchStats(object):
 
         # Normalise
         judgements.normalise(max_judgement=max_judgement)
+
+        return judgements
+
+    def mock_judgements(self, request: Request, max_judgement=4.):
+        judgements = self.judgements(max_judgement=max_judgement)
+
+        for key in judgements:
+            for uri in judgements[key]:
+                page, index = request.find_hit_for_query(key, uri)
+                new_rank = request.rank(page, index)
+                judgements[key][uri]['rank'] = new_rank
 
         return judgements
