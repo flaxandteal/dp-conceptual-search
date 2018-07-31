@@ -175,73 +175,53 @@ def content_query(
     if hasattr(content_function_scores, "__iter__") is False:
         content_function_scores = [content_function_scores]
 
+    # Build the original content query
     dis_max_query = ons_content_query(search_term)
 
-    # Build the original ONS content query
-    original_function_score = function_score_content_query(dis_max_query, content_function_scores)
+    # Prepare a date decay function
+    date_function = date_decay_function(fn="exp", scale="365d", offset="30d", decay=0.5)
 
+    # Add to the content type function scores
+    function_scores = content_function_scores.copy()
+    function_scores.append(date_function.to_dict())
+
+    # Build the original ONS content query with date decay function
+    original_function_score = function_score_content_query(dis_max_query, function_scores, boost=10.0)
+
+    # Prepare the search term for keyword generation
     clean_search_term = clean_string(search_term)
     search_vector = model.get_sentence_vector(clean_search_term)
 
     # Build function scores
     script_score = vector_script_score(fields.embedding_vector, search_vector)
-    date_function = date_decay_function()
+    date_function = date_decay_function(fn="exp", scale="365d", offset="30d", decay=0.9)
 
-    function_scores = [script_score.to_dict()]
+    # Collect the function scores as query dicts
+    function_scores = [script_score.to_dict(), date_function.to_dict()]
 
-    terms_query = word_vector_keywords_query(
-        clean_search_term, model)
-
-    # Build the final function score query
-    function_score = FunctionScore(
-        query=terms_query,
-        min_score=min_score,
-        boost_mode=boost_mode.value,
-        functions=function_scores)
-
-    return Q.Bool(
-        should=[
-            original_function_score,
-            function_score
-        ]
-    )
-
-
-def old_content_query(
-        search_term: str,
-        model: SupervisedModel,
-        boost_mode: BoostMode = BoostMode.AVG,
-        min_score: float = 0.01,
-        **kwargs) -> Q.Query:
-    """
-    Conceptual search (main) content query.
-    Requires embedding_vectors to be indexed in Elasticsearch.
-    :param search_term:
-    :param model:
-    :param boost_mode:
-    :param min_score:
-    :return:
-    """
-    from sanic.log import logger
-    from core.word_embedding.utils import clean_string
-
-    from ons.search.filter_functions import content_filter_functions
-    from ons.search.queries import content_query as ons_content_query
-    from ons.search.queries import function_score_content_query
-
-    clean_search_term = clean_string(search_term)
-
-    search_vector = model.get_sentence_vector(clean_search_term)
-
-    dis_max_query = ons_content_query(search_term)
-    should = [dis_max_query]
-
-    # Try to build additional keywords query
     try:
+        # Try to build additional keywords query
         terms_query = word_vector_keywords_query(
             clean_search_term, model)
         logger.debug("Generated additional keywords for query '%s': %s" % (search_term, terms_query))
-        should.append(terms_query)
+
+        # Build the final function score query
+        conceptual_function_score = FunctionScore(
+            query=terms_query,
+            min_score=min_score,
+            boost_mode=boost_mode.value,
+            functions=function_scores)
+
+        # Combine original query and new conceptual search query in bool clause
+        query = Q.Bool(
+            should=[
+                original_function_score,
+                conceptual_function_score
+            ]
+        )
+
+        return query
+
     except ValueError as e:
         # Log the error but continue with the query (we can still return results, just can't
         # auto generate keywords for matching.
@@ -251,37 +231,8 @@ def old_content_query(
             str(e),
             exc_info=1)
 
-    # Build function scores
-    script_score = vector_script_score(fields.embedding_vector, search_vector)
-    date_function = date_decay_function()
-
-    function_scores = [script_score.to_dict(), date_function.to_dict()]
-
-    # Add content type function scores if specified
-    additional_function_scores = kwargs.get(
-        "function_scores", content_filter_functions())
-
-    if additional_function_scores is None:
-        additional_function_scores = content_filter_functions()
-    if hasattr(additional_function_scores, "__iter__") is False:
-        additional_function_scores = [additional_function_scores]
-
-    # Build the original ONS content query
-    function_score_dis_max = function_score_content_query(dis_max_query, additional_function_scores)
-
-    function_scores.extend(additional_function_scores)
-
-    # Build the final function score query
-    function_score = FunctionScore(
-        query=Q.Bool(should=should),
-        min_score=min_score,
-        boost_mode=boost_mode.value,
-        functions=function_scores)
-
-    return Q.Bool(
-        should=[function_score_dis_max,
-                function_score]
-    )
+        # Fall back on original ONS query
+        return original_function_score
 
 
 def recommended_content_query(
