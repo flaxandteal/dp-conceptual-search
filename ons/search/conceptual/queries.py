@@ -76,8 +76,12 @@ def vector_script_score(
     return ScriptScore(**script_score)
 
 
-def date_decay_function(fn: str = "exp", origin: str = "now", scale: str = "365d", offset: str = "30d",
-                        decay: float = 0.5) -> Q.Query:
+def date_decay_function(
+        fn: str = "exp",
+        origin: str = "now",
+        scale: str = "365d",
+        offset: str = "30d",
+        decay: float = 0.5) -> Q.Query:
     q = Q.SF(fn, **{fields.releaseDate.name: {
         "origin": origin,
         "scale": scale,
@@ -179,14 +183,16 @@ def content_query(
     dis_max_query = ons_content_query(search_term)
 
     # Prepare a date decay function
-    date_function = date_decay_function(fn="exp", scale="365d", offset="30d", decay=0.5)
+    date_function = date_decay_function(
+        fn="exp", scale="365d", offset="30d", decay=0.5)
 
     # Add to the content type function scores
     function_scores = content_function_scores.copy()
     function_scores.append(date_function.to_dict())
 
     # Build the original ONS content query with date decay function
-    original_function_score = function_score_content_query(dis_max_query, function_scores, boost=10.0)
+    original_function_score = function_score_content_query(
+        dis_max_query, function_scores, boost=10.0)
 
     # Prepare the search term for keyword generation
     clean_search_term = clean_string(search_term)
@@ -194,7 +200,8 @@ def content_query(
 
     # Build function scores
     script_score = vector_script_score(fields.embedding_vector, search_vector)
-    date_function = date_decay_function(fn="exp", scale="365d", offset="30d", decay=0.9)
+    date_function = date_decay_function(
+        fn="exp", scale="365d", offset="30d", decay=0.9)
 
     # Collect the function scores as query dicts
     function_scores = [script_score.to_dict(), date_function.to_dict()]
@@ -203,7 +210,8 @@ def content_query(
         # Try to build additional keywords query
         terms_query = word_vector_keywords_query(
             clean_search_term, model)
-        logger.debug("Generated additional keywords for query '%s': %s" % (search_term, terms_query))
+        logger.debug("Generated additional keywords for query '%s': %s" % (
+            search_term, terms_query))
 
         # Build the final function score query
         conceptual_function_score = FunctionScore(
