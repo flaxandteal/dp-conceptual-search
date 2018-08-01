@@ -1,11 +1,14 @@
 from elasticsearch_dsl.response import Response
+from elasticsearch_dsl.response.hit import Hit, HitMeta
+
+from typing import List
 
 from ons.search.sort_fields import SortFields
 
 
-class Hit(dict):
+class SimpleHit(dict):
     def __init__(self, *args, **kwargs):
-        super(Hit, self).__init__(*args, **kwargs)
+        super(SimpleHit, self).__init__(*args, **kwargs)
 
     def set_value(self, field_name, value):
         if field_name in self:
@@ -46,6 +49,8 @@ def get_var(input_dict: dict, accessor_string: str):
     current_data = input_dict
     for chunk in accessor_string.split('.'):
         current_data = current_data.get(chunk, {})
+        if not isinstance(current_data, dict):
+            break
     return current_data
 
 
@@ -71,43 +76,49 @@ def highlight(highlighted_text: str, val: str, tag: str='strong') -> str:
     return " ".join(tokens)
 
 
-def marshall_hits(hits) -> list:
+def marshall_hits(hits: List[Hit]) -> list:
     """
     Converts Elasticsearch hits into a valid JSON response.
     :param hits:
     :return:
     """
     import re
+    from ons.search import fields
 
     hits_list = []
     for hit in hits:
-        hit_dict = Hit(hit.to_dict())
-        if hasattr(hit.meta, "highlight"):
-            highlight_dict = hit.meta.highlight.to_dict()
-            for highlight_key in highlight_dict:
-                for fragment in highlight_dict[highlight_key]:
-                    fragment = fragment.strip()
-                    if "<strong>" in fragment and "</strong>" in fragment:
-                        highlighted_text = " ".join(re.findall(
-                            "<strong>(.*?)</strong>", fragment))
+        hit_dict = SimpleHit(hit.to_dict())
+        if hasattr(hit, "meta"):
+            meta: HitMeta = hit.meta
+            if hasattr(meta, "highlight"):
+                highlight_dict = meta.highlight.to_dict()
+                for highlight_key in highlight_dict:
+                    for fragment in highlight_dict[highlight_key]:
+                        fragment = fragment.strip()
+                        if "<strong>" in fragment and "</strong>" in fragment:
+                            highlighted_text = " ".join(re.findall(
+                                "<strong>(.*?)</strong>", fragment))
 
-                        val = get_var(hit_dict, highlight_key)
+                            val = get_var(hit_dict, highlight_key)
 
-                        if isinstance(val, str):
-                            hit_dict.set_value(
-                                highlight_key, highlight(
-                                    highlighted_text, val))
-                        elif hasattr(val, "__iter__"):
-                            highlighted_vals = []
-                            for v in val:
-                                highlighted_vals.append(
-                                    highlight(highlighted_text, v))
-                            hit_dict.set_value(highlight_key, highlighted_vals)
+                            if isinstance(val, str):
+                                hit_dict.set_value(
+                                    highlight_key, highlight(
+                                        highlighted_text, val))
 
-        # set _type field
-        hit_dict["_type"] = hit.meta.doc_type
-        hit_dict["_score"] = hit.meta.score
-        hits_list.append(hit_dict)
+                            elif hasattr(val, "__iter__"):
+                                highlighted_vals = []
+                                for v in val:
+                                    highlighted_vals.append(
+                                        highlight(highlighted_text, v))
+                                if highlight_key == fields.keywords_raw.name:
+                                    highlight_key = fields.keywords.name
+                                hit_dict.set_value(highlight_key, highlighted_vals)
+
+            # set _type field
+            hit_dict["_type"] = meta.doc_type
+            hit_dict["_meta"] = meta.to_dict()
+            hits_list.append(hit_dict)
     return hits_list
 
 

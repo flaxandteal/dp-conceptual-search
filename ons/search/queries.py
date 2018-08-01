@@ -63,7 +63,7 @@ def departments_query(search_term: str) -> Q.Query:
     return Q.Match(**{"terms": {"query": search_term, "type": "boolean"}})
 
 
-def content_query(search_term: str) -> Q.DisMax:
+def content_query(search_term: str, **kwargs) -> Q.DisMax:
     """
     Returns the default ONS content query
 
@@ -87,7 +87,8 @@ def content_query(search_term: str) -> Q.DisMax:
             match(fields.keywords.name, search_term, type="boolean", operator="AND"),
             multi_match([fields.cdid.name, fields.datasetId.name], search_term),
             match(fields.searchBoost.name, search_term, type="boolean", operator="AND", boost=100.0)
-        ]
+        ],
+        **kwargs
     )
 
     return q

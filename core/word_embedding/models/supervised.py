@@ -57,6 +57,22 @@ class SupervisedModel(fastText.FastText._FastText):
 
         return parsed_labels, probabilities
 
+    def predict_and_format(self, text, k=1, threshold=0.0):
+        """
+        Overwrites super method but removes prefix from labels
+        :param text:
+        :param k:
+        :param threshold:
+        :return:
+        """
+        labels, probabilities = self.predict(text, k=k, threshold=threshold)
+
+        formatted_labels = []
+        for label in labels:
+            formatted_labels.append(label.replace("_", " "))
+
+        return formatted_labels, probabilities
+
     def keywords(self, text, top_n=10):
         labels, proba = self.predict(text, k=top_n)
 

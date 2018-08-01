@@ -105,13 +105,15 @@ def word_vector_keywords_query(
     :param threshold:
     :return:
     """
-    labels, probabilities = model.predict(
+    labels, probabilities = model.predict_and_format(
         search_term, k=k, threshold=threshold)
 
     match_queries = []
     for label, probability in zip(labels, probabilities):
+        # match_queries.append(Q.Match(
+        #     **{fields.keywords.name: {"query": label, "boost": probability}}))
         match_queries.append(Q.Match(
-            **{fields.keywords.name: {"query": label.replace("_", " "), "boost": probability}}))
+            **{fields.keywords_raw.name: {"query": label}}))
 
     query = Q.Bool(should=match_queries)
     return query
@@ -153,7 +155,6 @@ def user_rescore_query(
 def content_query(
         search_term: str,
         model: SupervisedModel,
-        boost_mode: BoostMode = BoostMode.AVG,
         min_score: float = 0.01,
         **kwargs) -> Q.Query:
     """
@@ -170,7 +171,6 @@ def content_query(
 
     from ons.search.filter_functions import content_filter_functions
     from ons.search.queries import content_query as ons_content_query
-    from ons.search.queries import function_score_content_query
 
     # Add content type function scores if specified
     content_function_scores = kwargs.get(
@@ -186,15 +186,17 @@ def content_query(
 
     # Prepare a date decay function
     date_function = date_decay_function(
-        fn="exp", scale="365d", offset="30d", decay=0.5)
+        fn="exp", scale="365d", offset="30d", decay=0.75)
 
     # Add to the content type function scores
     function_scores = content_function_scores.copy()
     function_scores.append(date_function.to_dict())
 
     # Build the original ONS content query with date decay function
-    original_function_score = function_score_content_query(
-        dis_max_query, function_scores, boost=10.0)
+    original_function_score = FunctionScore(
+        query=dis_max_query,
+        functions=function_scores
+    )
 
     # Prepare the search term for keyword generation
     clean_search_term = clean_string(search_term)
@@ -202,8 +204,6 @@ def content_query(
 
     # Build function scores
     script_score = vector_script_score(fields.embedding_vector, search_vector)
-    date_function = date_decay_function(
-        fn="exp", scale="365d", offset="30d", decay=0.9)
 
     # Collect the function scores as query dicts
     function_scores = [script_score.to_dict(), date_function.to_dict()]
@@ -219,18 +219,15 @@ def content_query(
         conceptual_function_score = FunctionScore(
             query=terms_query,
             min_score=min_score,
-            boost_mode=boost_mode.value,
+            boost_mode=BoostMode.REPLACE.value,  # Replace scores with product of script and date score
             functions=function_scores)
 
-        # Combine original query and new conceptual search query in bool clause
-        query = Q.Bool(
-            should=[
+        return Q.DisMax(
+            queries=[
                 original_function_score,
                 conceptual_function_score
             ]
         )
-
-        return query
 
     except ValueError as e:
         # Log the error but continue with the query (we can still return results, just can't

@@ -31,6 +31,7 @@ summary = Field("description.summary", highlight=True)
 releaseDate = Field("description.releaseDate")
 metaDescription = Field("description.metaDescription", highlight=True)
 keywords = Field("description.keywords", highlight=True)
+keywords_raw = Field("description.keywords.keywords_raw", highlight=True)
 _type = Field("_type")
 cdid = Field("description.cdid", highlight=True)
 datasetId = Field("description.datasetId", highlight=True)
@@ -55,6 +56,7 @@ field_list = [
     releaseDate,
     metaDescription,
     keywords,
+    keywords_raw,
     _type,
     cdid,
     datasetId,
