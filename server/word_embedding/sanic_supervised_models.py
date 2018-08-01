@@ -1,11 +1,20 @@
-import fastText
+import os
+from enum import Enum
 from sanic import Sanic
 
 from server.sanic_extension import SanicExtension
-from core.word_embedding.models.supervised import SupervisedModels, SupervisedModel
+
+from core.word_embedding.models.supervised import SupervisedModel
 
 
 _models = {}
+
+
+class SupervisedModels(Enum):
+    ONS = os.environ.get("ONS_SUPERVISED_MODEL_NAME", "ons_supervised.bin")
+
+    def __str__(self):
+        return self.value
 
 
 def load_model(model: SupervisedModels) -> SupervisedModel:

@@ -1,12 +1,5 @@
-from enum import Enum
 from gensim.models.keyedvectors import Word2VecKeyedVectors
-
-
-class Models(Enum):
-    ONS = "ons_supervised.vec"
-
-    def __str__(self):
-        return self.value
+from numpy import ndarray
 
 
 class UnsupervisedModel(object):
@@ -20,3 +13,19 @@ class UnsupervisedModel(object):
         for i, word in enumerate(words):
             w_rank[word] = i
         self.words = w_rank
+
+    def similar_by_vector(self, vector: ndarray, ret_sim=False, **kwargs):
+        """
+        Returns similar terms (and optionally, their similarity) to the given word vector.
+        :param vector:
+        :param ret_sim:
+        :return:
+        """
+        if ret_sim:
+            similar = [
+                s for s in self.model.similar_by_vector(
+                    vector, **kwargs)]
+        else:
+            similar = [s[0]
+                       for s in self.model.similar_by_vector(vector, **kwargs)]
+        return similar

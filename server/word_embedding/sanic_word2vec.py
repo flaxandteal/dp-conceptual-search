@@ -1,11 +1,21 @@
+import os
 import gensim
+from enum import Enum
 from sanic import Sanic
 
 from server.sanic_extension import SanicExtension
-from core.word_embedding.models.unsupervised import Models, UnsupervisedModel
+
+from core.word_embedding.models.unsupervised import UnsupervisedModel
 
 
 _models = {}
+
+
+class Models(Enum):
+    ONS = os.environ.get("ONS_W2V_MODEL_NAME", "ons_supervised.vec")
+
+    def __str__(self):
+        return self.value
 
 
 def load_model(model: Models) -> UnsupervisedModel:

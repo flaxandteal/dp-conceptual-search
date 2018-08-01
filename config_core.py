@@ -18,9 +18,7 @@ def bool_env(var_name, default=False):
             "False", "false" or "" => False
             Any other non-empty string => True
     """
-    from os import getenv
-
-    test_val = getenv(var_name, default)
+    test_val = os.environ.get(var_name, default)
     # Explicitly check for 'False', 'false', and '0' since all non-empty
     # string are normally coerced to True.
     if test_val in ('False', 'false', '0'):

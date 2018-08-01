@@ -5,11 +5,11 @@ from datetime import datetime
 
 from config_core import COLOURED_LOGGING_ENABLED
 
-log_level = os.getenv("SEARCH_LOG_LEVEL", "INFO")
-
+log_level = os.environ.get("SEARCH_LOG_LEVEL", "INFO")
 
 level_style_dict = {
     'INFO': 'rainbow_dash',
+    'DEBUG': 'default',
     'WARN': 'monokai',
     'ERROR': 'vim'
 }
