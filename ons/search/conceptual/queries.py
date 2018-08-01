@@ -58,6 +58,7 @@ def vector_script_score(
         field: fields.Field,
         vector: ndarray,
         weight: float = 1.0) -> Q.Query:
+
     params = {
         "cosine": True,
         "field": field.name,
@@ -72,7 +73,6 @@ def vector_script_score(
     if weight > 1:
         script_score['weight'] = weight
 
-    # return script_score
     return ScriptScore(**script_score)
 
 
@@ -82,12 +82,14 @@ def date_decay_function(
         scale: str = "365d",
         offset: str = "30d",
         decay: float = 0.5) -> Q.Query:
+
     q = Q.SF(fn, **{fields.releaseDate.name: {
         "origin": origin,
         "scale": scale,
         "offset": offset,
         "decay": decay
     }})
+
     return q
 
 
@@ -253,6 +255,8 @@ def recommended_content_query(
     """
     from collections import OrderedDict
 
+    from core.word_embedding.utils import clean_string
+
     from ons.search.queries import match_by_uri
     from ons.search.fields import embedding_vector
 
@@ -270,8 +274,8 @@ def recommended_content_query(
     unsupervised_model: UnsupervisedModel = load_unsup_model(Models.ONS)
     supervised_model: SupervisedModel = load_sup_model(SupervisedModels.ONS)
 
-    similar_by_vector = [
-        r[0] for r in unsupervised_model.model.similar_by_vector(decoded_doc_vector)]
+    similar_by_vector = unsupervised_model.similar_by_vector(
+        decoded_doc_vector, ret_sim=False)
 
     if user_vector is not None:
         # Build the user query
@@ -282,13 +286,16 @@ def recommended_content_query(
 
         # Get similar words
         similar_by_vector.extend(
-            [r[0] for r in unsupervised_model.model.similar_by_vector(user_vector)])
+            unsupervised_model.similar_by_vector(
+                user_vector, ret_sim=False))
 
     # Remove duplicate terms from similar_by_vector and build sentence
     sentence = " ".join(list(OrderedDict.fromkeys(similar_by_vector)))
+    clean_sentence = clean_string(sentence)
 
     # Build the keywords query from this sentence
-    keywords_query = word_vector_keywords_query(sentence, supervised_model)
+    keywords_query = word_vector_keywords_query(
+        clean_sentence, supervised_model)
 
     # Explicitly exclude current page_uri
     query = Q.Bool(must_not=[match_by_uri(page_uri)], should=[keywords_query])
