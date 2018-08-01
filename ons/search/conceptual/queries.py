@@ -121,8 +121,8 @@ def user_rescore_query(
         user_vector: ndarray,
         score_mode: BoostMode = BoostMode.AVG,
         window_size: int = 100,
-        query_weight: float = 0.5,
-        rescore_query_weight: float = 1.2) -> RescoreQuery:
+        query_weight: float = 1.0,
+        rescore_query_weight: float = 1.0) -> RescoreQuery:
     """
     Generates a rescore query from a users session vector
     :param user_vector:
