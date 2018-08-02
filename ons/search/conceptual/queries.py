@@ -184,18 +184,27 @@ def content_query(
     # Build the original content query
     dis_max_query = ons_content_query(search_term)
 
+    # Prepare a script score to boost the original ONS query clause
+    score_increase = ScriptScore(
+        script="_score * boostFactor",
+        params={
+            "boostFactor": 100.0
+        }
+    )
+
     # Prepare a date decay function
     date_function = date_decay_function(
         fn="exp", scale="365d", offset="30d", decay=0.75)
 
     # Add to the content type function scores
     function_scores = content_function_scores.copy()
-    function_scores.append(date_function.to_dict())
+    function_scores.extend([score_increase.to_dict(), date_function.to_dict()])
 
     # Build the original ONS content query with date decay function
     original_function_score = FunctionScore(
         query=dis_max_query,
-        functions=function_scores
+        functions=function_scores,
+        boost=10.0
     )
 
     # Prepare the search term for keyword generation
@@ -219,6 +228,7 @@ def content_query(
         conceptual_function_score = FunctionScore(
             query=terms_query,
             min_score=min_score,
+            boost=2.0,
             boost_mode=BoostMode.REPLACE.value,  # Replace scores with product of script and date score
             functions=function_scores)
 

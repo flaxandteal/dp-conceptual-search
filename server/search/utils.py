@@ -71,6 +71,9 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
             page_size,
             **params)
 
+        # Explain result?
+        # s: AbstractSearchClient = s.extra(explain=True)
+
         response: ONSResponse = s.execute()
         if isawaitable(response):
             response = await response
