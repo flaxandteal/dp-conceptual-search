@@ -62,18 +62,10 @@ def highlight(highlighted_text: str, val: str, tag: str='strong') -> str:
     :param tag:
     :return:
     """
-    tag_start = '<%s>' % tag
-    tag_end = '</%s>' % tag
-
-    tokens = val.split()
-
-    for i in range(len(tokens)):
-        if not tokens[i].startswith(
-                tag_start) and highlighted_text in tokens[i]:
-            tokens[i] = "{tag_start}{token}{tag_end}".format(
-                tag_start=tag_start, token=tokens[i], tag_end=tag_end)
-
-    return " ".join(tokens)
+    import re
+    pattern = re.compile(re.escape(highlighted_text), re.I)
+    toreplace = "<{tag}>\g<0></{tag}>".format(tag=tag)
+    return re.sub(pattern, toreplace, val)
 
 
 def marshall_hits(hits: List[Hit]) -> list:
@@ -93,6 +85,9 @@ def marshall_hits(hits: List[Hit]) -> list:
             if hasattr(meta, "highlight"):
                 highlight_dict = meta.highlight.to_dict()
                 for highlight_key in highlight_dict:
+                    if highlight_key == fields.keywords_raw.name:
+                        highlight_key = fields.keywords.name
+
                     for fragment in highlight_dict[highlight_key]:
                         fragment = fragment.strip()
                         if "<strong>" in fragment and "</strong>" in fragment:
@@ -102,23 +97,20 @@ def marshall_hits(hits: List[Hit]) -> list:
                             val = get_var(hit_dict, highlight_key)
 
                             if isinstance(val, str):
-                                hit_dict.set_value(
-                                    highlight_key, highlight(
-                                        highlighted_text, val))
+                                val = highlight(highlighted_text, val)
+                                hit_dict.set_value(highlight_key, val)
 
                             elif hasattr(val, "__iter__"):
                                 highlighted_vals = []
                                 for v in val:
                                     highlighted_vals.append(
                                         highlight(highlighted_text, v))
-                                if highlight_key == fields.keywords_raw.name:
-                                    highlight_key = fields.keywords.name
                                 hit_dict.set_value(highlight_key, highlighted_vals)
 
             # set _type field
             hit_dict["_type"] = meta.doc_type
             hit_dict["_score"] = meta.score
-            # hit_dict["_meta"] = meta.to_dict()
+            hit_dict["_meta"] = meta.to_dict()
             hits_list.append(hit_dict)
     return hits_list
 
