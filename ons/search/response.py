@@ -85,9 +85,6 @@ def marshall_hits(hits: List[Hit]) -> list:
             if hasattr(meta, "highlight"):
                 highlight_dict = meta.highlight.to_dict()
                 for highlight_key in highlight_dict:
-                    if highlight_key == fields.keywords_raw.name:
-                        highlight_key = fields.keywords.name
-
                     for fragment in highlight_dict[highlight_key]:
                         fragment = fragment.strip()
                         if "<strong>" in fragment and "</strong>" in fragment:
@@ -97,20 +94,26 @@ def marshall_hits(hits: List[Hit]) -> list:
                             val = get_var(hit_dict, highlight_key)
 
                             if isinstance(val, str):
-                                val = highlight(highlighted_text, val)
-                                hit_dict.set_value(highlight_key, val)
+                                highlighted_val = highlight(
+                                    highlighted_text, val)
 
                             elif hasattr(val, "__iter__"):
-                                highlighted_vals = []
+                                highlighted_val = []
                                 for v in val:
-                                    highlighted_vals.append(
+                                    highlighted_val.append(
                                         highlight(highlighted_text, v))
-                                hit_dict.set_value(highlight_key, highlighted_vals)
+
+                            if highlight_key == fields.keywords_raw.name:
+                                hit_dict.set_value(
+                                    fields.keywords.name, highlighted_val)
+                            else:
+                                hit_dict.set_value(
+                                    highlight_key, highlighted_val)
 
             # set _type field
             hit_dict["_type"] = meta.doc_type
             hit_dict["_score"] = meta.score
-            hit_dict["_meta"] = meta.to_dict()
+            # hit_dict["_meta"] = meta.to_dict()
             hits_list.append(hit_dict)
     return hits_list
 

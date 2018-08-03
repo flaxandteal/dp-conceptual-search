@@ -155,7 +155,6 @@ def user_rescore_query(
 def content_query(
         search_term: str,
         model: SupervisedModel,
-        min_score: float = 0.01,
         **kwargs) -> Q.Query:
     """
     Conceptual search (main) content query.
@@ -169,8 +168,8 @@ def content_query(
     from sanic.log import logger
     from core.word_embedding.utils import clean_string
 
-    from ons.search.filter_functions import content_filter_functions
     from ons.search.queries import content_query as ons_content_query
+    from ons.search.filter_functions import content_filter_functions
 
     # Add content type function scores if specified
     content_function_scores = kwargs.get(
@@ -184,72 +183,49 @@ def content_query(
     # Build the original content query
     dis_max_query = ons_content_query(search_term)
 
-    # Prepare a script score to boost the original ONS query clause
-    score_increase = ScriptScore(
-        script="_score * boostFactor",
-        params={
-            "boostFactor": 100.0
-        }
-    )
-
-    # Prepare a date decay function
-    date_function = date_decay_function(
-        fn="exp", scale="365d", offset="30d", decay=0.75)
-
-    # Add to the content type function scores
-    function_scores = content_function_scores.copy()
-    function_scores.extend([score_increase.to_dict(), date_function.to_dict()])
-
-    # Build the original ONS content query with date decay function
-    original_function_score = FunctionScore(
-        query=dis_max_query,
-        functions=function_scores,
-        boost=10.0
-    )
-
     # Prepare the search term for keyword generation
     clean_search_term = clean_string(search_term)
     search_vector = model.get_sentence_vector(clean_search_term)
-
-    # Build function scores
-    script_score = vector_script_score(fields.embedding_vector, search_vector)
-
-    # Collect the function scores as query dicts
-    function_scores = [script_score.to_dict(), date_function.to_dict()]
 
     try:
         # Try to build additional keywords query
         terms_query = word_vector_keywords_query(
             clean_search_term, model)
-        logger.debug("Generated additional keywords for query '%s': %s" % (
+        logger.info("Generated additional keywords for query '%s': %s" % (
             search_term, terms_query))
 
-        # Build the final function score query
-        conceptual_function_score = FunctionScore(
-            query=terms_query,
-            min_score=min_score,
-            boost=2.0,
-            boost_mode=BoostMode.REPLACE.value,  # Replace scores with product of script and date score
-            functions=function_scores)
-
-        return Q.DisMax(
-            queries=[
-                original_function_score,
-                conceptual_function_score
-            ]
-        )
+        dis_max_query = Q.Bool(must=[terms_query], should=[dis_max_query, terms_query])
 
     except ValueError as e:
         # Log the error but continue with the query (we can still return results, just can't
         # auto generate keywords for matching.
         # Note the script score will still facilitate non-keyword matching.
-        logger.warning(
+        logger.error(
             "Caught exception while generating model keywords: %s",
             str(e),
             exc_info=1)
 
-        # Fall back on original ONS query
-        return original_function_score
+    # Build function scores
+    script_score = vector_script_score(fields.embedding_vector, search_vector)
+
+    date_function = date_decay_function(
+        fn="exp", scale="365d", offset="30d", decay=0.75)
+
+    # Add to the content type function scores
+    function_scores = content_function_scores.copy()
+    function_scores.extend([date_function.to_dict()])
+
+    query = FunctionScore(
+        query=dis_max_query,
+        functions=function_scores,
+        # boost_mode=BoostMode.MULTIPLY.value
+    )
+
+    return FunctionScore(
+        query=query,
+        functions=[script_score.to_dict()],
+        boost_mode=BoostMode.AVG.value
+    )
 
 
 def recommended_content_query(
