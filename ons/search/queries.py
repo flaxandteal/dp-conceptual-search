@@ -1,4 +1,5 @@
 from ons.search import fields
+from ons.search.query_dsl import ScriptScore
 
 from elasticsearch_dsl import query as Q
 from elasticsearch_dsl.aggs import A, Agg
@@ -52,6 +53,15 @@ def multi_match(field_list: List[str], search_term: str, **kwargs) -> Q.Query:
 
     q = Q.MultiMatch(**query_dict)
     return q
+
+
+def boost_score(boost_factor=1.0) -> ScriptScore:
+    return ScriptScore(
+        script="_score * boostFactor",
+        params={
+            "boostFactor": boost_factor
+        }
+    )
 
 
 def departments_query(search_term: str) -> Q.Query:

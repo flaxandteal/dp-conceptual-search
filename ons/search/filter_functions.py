@@ -27,15 +27,7 @@ def content_filter_functions() -> List[dict]:
     Returns filter functions used in a content_query
     :return:
     """
-    types = [
-        bulletin,
-        article,
-        article_download,
-        timeseries,
-        compendium_landing_page,
-        static_foi,
-        static_adhoc,
-        dataset_landing_page]
+    types = [t for t in content_types if t.weight > 1.0]
 
     funcs = []
 
