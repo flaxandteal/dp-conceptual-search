@@ -157,7 +157,7 @@ def content_query(
             boost_mode=BoostMode.REPLACE.value
         )
 
-        logger.info("Generated additional keywords for query '%s': %s" % (
+        logger.debug("Generated additional keywords for query '%s': %s" % (
             search_term, terms_query))
 
         # Build the original content query
