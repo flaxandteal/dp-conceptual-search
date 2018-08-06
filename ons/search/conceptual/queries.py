@@ -133,8 +133,6 @@ def content_query(
     Requires embedding_vectors to be indexed in Elasticsearch.
     :param search_term:
     :param model:
-    :param boost_mode:
-    :param min_score:
     :return:
     """
     from sanic.log import logger

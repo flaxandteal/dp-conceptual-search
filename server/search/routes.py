@@ -20,26 +20,34 @@ async def proxy_elatiscsearch_query(request: Request):
     :param request:
     :return:
     """
-    from json import loads
+    from json import loads, dumps
+
     from sanic.response import json as json_response
 
     from ons.search.indicies import Index
     from ons.search.response import ONSResponse
     from ons.search.search_engine import SearchEngine
 
-    body = request.body
+    body = request.json
 
     if body is not None:
-        query = loads(body)
 
-        if isinstance(query, str):
-            query = loads(query)
+        query = loads(body.get("query"))
+        filters = loads(body.get("filter"))
+
+        type_filters = []
+        for f in filters:
+            if isinstance(f, dict) and "value" in f:
+                type_filters.append(f.get("value"))
 
         current_app = request.app
         es_client = current_app.es_client
 
         s = SearchEngine(using=es_client, index=Index.ONS.value)
         s.update_from_dict(query)
+
+        if len(type_filters) > 0:
+            s: SearchEngine = s.type_filter(type_filters)
 
         response: ONSResponse = await s.execute()
         hits = response.hits_to_json()
