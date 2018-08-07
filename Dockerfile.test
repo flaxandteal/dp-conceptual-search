@@ -3,6 +3,7 @@ FROM sully0190/python-mongo:3.6
 COPY . /dp-conceptual-search
 WORKDIR /dp-conceptual-search
 
+ENV CONCEPTUAL_SEARCH_ENABLED=true
 ENV USER_RECOMMENDATION_ENABLED=true
 
 # Build the app
