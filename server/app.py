@@ -56,11 +56,12 @@ def init_default_app() -> Sanic:
     # Initialise Elasticsearch client
     SanicElasticsearch(app)
 
-    # Initialise word2vec models
+    # Initialise word2vec models - needed for suggest (should be small enough to commit to github repo)
     SanicWord2Vec(app)
 
-    # Initialise fastText models
-    SanicFastText(app)
+    if app.config.get("CONCEPTUAL_SEARCH_ENABLED", False):
+        # Initialise fastText models
+        SanicFastText(app)
 
     return app
 
@@ -77,7 +78,9 @@ def register_blueprints(app: Sanic) -> None:
     app.blueprint(search_blueprint)
     app.blueprint(suggest_blueprint)
     app.blueprint(health_check_blueprint)
-    app.blueprint(conceptual_search_blueprint)
+
+    if app.config.get("CONCEPTUAL_SEARCH_ENABLED", False):
+        app.blueprint(conceptual_search_blueprint)
 
     if USER_RECOMMENDATION_ENABLED:
         from server.users.routes import user_blueprint

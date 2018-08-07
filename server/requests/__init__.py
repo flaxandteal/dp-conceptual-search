@@ -58,15 +58,21 @@ def get_form_param(request: Request, key, required, default=None):
 
 
 def get_json_param(request: Request, key, required, default=None):
+    from json import loads, JSONDecodeError
     from sanic.exceptions import InvalidUsage
 
     try:
-        return _get_param(
+        val = _get_param(
             request,
             key,
             required,
             request.json,
             request.json.get,
             default)
+
+        try:
+            return loads(val)
+        except JSONDecodeError:
+            return val
     except (AttributeError, InvalidUsage):
         return get_form_param(request, key, required, default=default)

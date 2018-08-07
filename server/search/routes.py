@@ -20,7 +20,7 @@ async def proxy_elatiscsearch_query(request: Request):
     :param request:
     :return:
     """
-    from json import loads, dumps
+    from json import loads
 
     from sanic.response import json as json_response
 

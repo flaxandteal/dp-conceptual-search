@@ -41,6 +41,9 @@ MOTOR_URI = "{bind_addr}/{db}".format(
     db=MONGO_SEARCH_DATABASE
 )
 
+# Conceptual search
+CONCEPTUAL_SEARCH_ENABLED = bool_env('CONCEPTUAL_SEARCH_ENABLED', False)
+
 # User recommendation
 USER_RECOMMENDATION_ENABLED = bool_env('USER_RECOMMENDATION_ENABLED', False)
 
