@@ -19,7 +19,7 @@ test: test_requirements
 	python manager.py test
 
 integration-test: test_requirements
-	USER_RECOMMENDATION_ENABLED=true nosetests -s -v tests.integration
+	CONCEPTUAL_SEARCH_ENABLED=true USER_RECOMMENDATION_ENABLED=true nosetests -s -v tests.integration
 
 all-tests: test integration-test
 

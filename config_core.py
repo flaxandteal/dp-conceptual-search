@@ -47,6 +47,9 @@ CONCEPTUAL_SEARCH_ENABLED = bool_env('CONCEPTUAL_SEARCH_ENABLED', False)
 # User recommendation
 USER_RECOMMENDATION_ENABLED = bool_env('USER_RECOMMENDATION_ENABLED', False)
 
+if USER_RECOMMENDATION_ENABLED and not CONCEPTUAL_SEARCH_ENABLED:
+    raise SystemExit("ERROR: User recommendation requires conceptual search")
+
 # Prometheus metrics endpoint
 ENABLE_PROMETHEUS_METRICS = bool_env('ENABLE_PROMETHEUS_METRICS', False)
 
