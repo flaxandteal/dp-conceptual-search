@@ -21,7 +21,7 @@ class Models(Enum):
 def load_model(model: Models) -> UnsupervisedModel:
     if model in _models:
         return _models[model]
-    raise RuntimeError("No model with name %s" % model)
+    raise Exception("No model with name %s" % model)
 
 
 class SanicWord2Vec(SanicExtension):
@@ -36,7 +36,14 @@ class SanicWord2Vec(SanicExtension):
 
         for model_name in Models:
             model_fname = os.path.normpath("%s/%s" % (model_dir, model_name))
-            model = gensim.models.KeyedVectors.load_word2vec_format(
-                model_fname)
 
-            _models[model_name] = UnsupervisedModel(model)
+            if os.path.isfile(model_fname):
+                model = gensim.models.KeyedVectors.load_word2vec_format(
+                    model_fname)
+
+                _models[model_name] = UnsupervisedModel(model)
+            else:
+                from sanic.log import logger
+                message = "Unable to locate word2vec model with filename '%s'" % model_fname
+                logger.error(message)
+                raise FileNotFoundError(message)
