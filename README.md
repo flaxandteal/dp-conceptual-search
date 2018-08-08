@@ -20,11 +20,24 @@ dp-conceptual-search
 | MONGO_BIND_ADDR              | mongodb://localhost:27017 | Default mongoDB bind address (must start with mongodb:// and end with port)
 | ENABLE_PROMETHEUS_METRICS    | False                     | Enable/disable the /metircs endpoint for prometheus.
 
+# Install
+
+To install locally (not recommended), run ```make```. The code requires python3.6, and it is recommended that you setup 
+a [virtual environment](https://docs.python.org/3/library/venv.html).
+Alternatively (preferred approach), you can use the supplied Dockerfile to run in a container. When running with 
+conceptual search and user recommendation enabled, the simplest approach is to use ```docker-compose``` with the
+```docker-compose.yml``` provided to bring up dedicated instances of mongoDB and Elasticsearch. Note that for conceptual
+search, the latter requires a [plugin for vector scoring](https://github.com/sully90/fast-elasticsearch-vector-scoring).  
+
 # Running
 
 There are two options for running the server:
 Use ```python manager.py``` to use the internal Sanic server, or  ```./run_gunicorn.sh``` to initialise as a 
-gunicorn server (supports multi-processing for multiple workers and threads per worker).
+gunicorn server (supports multi-processing for multiple workers and threads per worker). By default, the service 
+provides APIs which only mimic the search functionality of babbage. To enable conceptual search (vector scoring), you
+will need to set the environment variable ```CONCEPTUAL_SEARCH_ENABLED=true``` and have the appropriate models available
+on disk. This repository comes with the [full word2vec embeddings model](word2vec/ons_supervised.vec) and a 
+*placeholder* [supervised model](supervised_models/ons_supervised.bin).
 
 # Testing
 
