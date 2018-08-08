@@ -11,7 +11,6 @@ test_requirements:
 	pip install -r requirements_test.txt
 
 fastText:
-	git submodule init && git submodule update
 	pip install Cython==0.27.3 pybind11==2.2.3
 	cd lib/fastText && python setup.py install
 
