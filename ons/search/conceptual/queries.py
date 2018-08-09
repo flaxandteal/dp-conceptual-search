@@ -78,7 +78,8 @@ def word_vector_keywords_query(
     :param threshold:
     :return:
     """
-    labels, probabilities = word_vector_keywords(search_term, model, k=k, threshold=threshold)
+    labels, probabilities = word_vector_keywords(
+        search_term, model, k=k, threshold=threshold)
 
     match_queries = []
     for label, probability in zip(labels, probabilities):

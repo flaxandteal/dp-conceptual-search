@@ -56,7 +56,8 @@ def init_default_app() -> Sanic:
     # Initialise Elasticsearch client
     SanicElasticsearch(app)
 
-    # Initialise word2vec models - needed for suggest (should be small enough to commit to github repo)
+    # Initialise word2vec models - needed for suggest (should be small enough
+    # to commit to github repo)
     SanicWord2Vec(app)
 
     if app.config.get("CONCEPTUAL_SEARCH_ENABLED", False):

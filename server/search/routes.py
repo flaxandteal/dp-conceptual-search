@@ -95,7 +95,6 @@ async def featured_result_query(request: Request):
     """
     ONS featured result query
     :param request:
-    :param list_type: ons, onsdata or onspublications
     :return:
     """
     from sanic.response import json
@@ -137,8 +136,10 @@ async def departments(request: Request) -> HTTPResponse:
         page_size = int(get_form_param(request, "size", False, 10))
 
         s = SearchEngine(using=client, index=Index.DEPARTMENTS.value)
+
         response: ONSResponse = s.departments_query(
             search_term, page_number, page_size).execute()
+
         if inspect.isawaitable(response):
             response = await response
 
