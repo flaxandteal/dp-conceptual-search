@@ -29,7 +29,7 @@ async def proxy_elatiscsearch_query(request: Request):
 
     body = request.json
 
-    if body is not None:
+    if body is not None and isinstance(body, dict) and "query" in body:
 
         query = loads(body.get("query"))
         type_filters = body.get("filter")
