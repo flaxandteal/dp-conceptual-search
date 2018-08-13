@@ -1,4 +1,4 @@
-def is_number(s):
+def is_number(s) -> bool:
     try:
         float(s)
         return True

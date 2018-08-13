@@ -2,7 +2,9 @@ FROM python:3.6
 
 COPY . /dp-conceptual-search
 WORKDIR /dp-conceptual-search
-RUN pip install -r requirements.txt
+
+# Build the app
+RUN make build clean
 
 ENTRYPOINT ["python"]
 CMD ["manager.py"]
