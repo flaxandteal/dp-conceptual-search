@@ -20,6 +20,13 @@ job "dp-conceptual-search" {
       value     = "web.*"
     }
 
+    restart {
+      attempts = 3
+      delay    = "15s"
+      interval = "1m"
+      mode     = "delay"
+    }
+
     task "dp-conceptual-search" {
       driver = "docker"
 
@@ -48,10 +55,10 @@ job "dp-conceptual-search" {
         tags = ["web"]
 
         check {
-            type     = "http"
-            path     = "/healthcheck"
-            interval = "10s"
-            timeout  = "2s"
+          type     = "http"
+          path     = "/healthcheck"
+          interval = "10s"
+          timeout  = "2s"
         }
       }
 
@@ -84,6 +91,13 @@ job "dp-conceptual-search" {
       value     = "publishing.*"
     }
 
+    restart {
+      attempts = 3
+      delay    = "15s"
+      interval = "1m"
+      mode     = "delay"
+    }
+
     task "dp-conceptual-search" {
       driver = "docker"
 
@@ -112,10 +126,10 @@ job "dp-conceptual-search" {
         tags = ["publishing"]
 
         check {
-            type     = "http"
-            path     = "/healthcheck"
-            interval = "10s"
-            timeout  = "2s"
+          type     = "http"
+          path     = "/healthcheck"
+          interval = "10s"
+          timeout  = "2s"
         }
       }
 

@@ -1,9 +1,12 @@
 .idea/
 .coverage
+.mypy_cache/
 *.log
 **/*.pyc
 **/**/*.pyc
 
 cover/
-tests/server/search/.cache/
+tests/server/**/.cache/
+
+# Temporary
 supervised_models/

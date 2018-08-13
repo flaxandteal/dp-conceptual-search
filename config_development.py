@@ -1,2 +1,3 @@
-ENABLE_PROMETHEUS_METRICS = True
+from config_core import *
+
 TESTING = False

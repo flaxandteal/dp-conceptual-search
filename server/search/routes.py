@@ -1,118 +1,188 @@
 from sanic import Blueprint
 from sanic.request import Request
-from sanic.response import json
-from sanic.exceptions import InvalidUsage
+from sanic.response import HTTPResponse
+from sanic.exceptions import InvalidUsage, NotFound
 
-from . import hits_to_json
-from .sort_by import SortFields
-from .search_engine import SearchEngine, get_index
-from ..requests import get_form_param
+from ons.search.search_engine import SearchEngine
+
+from typing import Callable
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-def execute_type_counts_query(search_term: str, client):
-    # Init SearchEngine
-    index = get_index()
-    s = SearchEngine(using=client, index=index)
-
-    # Define type counts (aggregations) query
-    s = s.type_counts_query(search_term)
-
-    # Execute
-    type_counts_response = s.execute()
-
-    return type_counts_response
+available_list_types = ['ons', 'onsdata', 'onspublications']
 
 
-def execute_content_query(search_term: str, sort_by: SortFields, page_number: int, page_size: int, client, **kwargs):
-    # Init SearchEngine
-    index = get_index()
-    s = SearchEngine(using=client, index=index)
-
-    # Define the query with sort and paginator
-    s = s.content_query(
-        search_term,
-        sort_by=sort_by,
-        current_page=page_number,
-        size=page_size,
-        **kwargs)
-
-    # Execute the query
-    content_response = s.execute()
-
-    return content_response
-
-
-def execute_featured_results_query(search_term: str, client):
-    # Init the SearchEngine
-    index = get_index()
-    s = SearchEngine(using=client, index=index)
-
-    # Define the query
-    s = s.featured_result_query(search_term)
-
-    # Execute the query
-    featured_result_response = s.execute()
-
-    return featured_result_response
-
-
-async def execute_search(request: Request, search_term: str, sort_by: SortFields, **kwargs) -> dict:
+@search_blueprint.route('/', methods=['POST'])
+async def proxy_elatiscsearch_query(request: Request):
     """
-    Simple search API to query Elasticsearch
+    Proxies Elasticsearch queries to support legacy babbage APIs going forwards.
+    :param request:
+    :return:
     """
-    # Get the event loop
-    current_app = request.app
+    from json import loads
+    from sanic.response import json as json_response
 
-    # Get the Elasticsearch client
-    client = current_app.es_client
+    from ons.search.indicies import Index
+    from ons.search.response import ONSResponse
+    from ons.search.search_engine import SearchEngine
 
-    # Perform the search
+    body = request.json
 
-    # Get page_number/size params
-    page_number = int(get_form_param(request, "page", False, 1))
-    page_size = int(get_form_param(request, "size", False, 10))
+    if body is not None and isinstance(body, dict) and "query" in body:
 
-    # Execute type counts query
-    type_counts_response = execute_type_counts_query(search_term, client)
+        query = loads(body.get("query"))
+        type_filters = body.get("filter")
 
-    # Perform the content query to populate the SERP
-    content_response = execute_content_query(
-        search_term, sort_by, page_number, page_size, client, **kwargs)
+        current_app = request.app
+        es_client = current_app.es_client
 
-    featured_result_response = None
-    if page_number == 1:
-        featured_result_response = execute_featured_results_query(search_term, client)
+        s = SearchEngine(using=es_client, index=Index.ONS.value)
+        s.update_from_dict(query)
 
-    # Return the hits as JSON
-    response = await hits_to_json(
-        content_response,
-        type_counts_response,
-        page_number,
-        page_size,
-        sort_by.name,
-        featured_result_response=featured_result_response)
-    
-    return response
+        if len(type_filters) > 0:
+            s: SearchEngine = s.type_filter(type_filters)
+
+        response: ONSResponse = await s.execute()
+        hits = response.hits_to_json()
+        aggs = response.aggs_to_json()
+
+        result = {**hits, **aggs}
+
+        return json_response(result, 200)
+    raise InvalidUsage("Request body not specified")
 
 
-@search_blueprint.route('/ons', methods=["POST"])
-async def search(request: Request):
-    search_term = request.args.get("q", None)
+async def search(request: Request, fn: Callable, list_type: str, **kwargs):
+    from sanic.response import json
+
+    from ons.search.search_engine import SearchEngine
+
+    if list_type in available_list_types:
+        result = await fn(request, SearchEngine, list_type=list_type, **kwargs)
+        return json(result, 200)
+    raise NotFound("No route for list type '%s'" % list_type)
+
+
+@search_blueprint.route('/<list_type>/content', methods=['GET', 'POST'])
+async def ons_content_query(request: Request, list_type: str):
+    """
+    ONS content query
+    :param request:
+    :param list_type: ons, onsdata or onspublications
+    :return:
+    """
+    from server.search.utils import content_query
+
+    return await search(request, content_query, list_type)
+
+
+@search_blueprint.route('/<list_type>/counts', methods=['GET', 'POST'])
+async def type_counts_query(request: Request, list_type: str):
+    """
+    ONS type counts query
+    :param request:
+    :param list_type: ons, onsdata or onspublications
+    :return:
+    """
+    from server.search.utils import type_counts_query
+
+    return await search(request, type_counts_query, list_type)
+
+
+@search_blueprint.route('/ons/featured', methods=['GET', 'POST'])
+async def featured_result_query(request: Request):
+    """
+    ONS featured result query
+    :param request:
+    :return:
+    """
+    from sanic.response import json
+    from ons.search.search_engine import SearchEngine
+    from server.search.utils import featured_result_query
+
+    result = await featured_result_query(request, SearchEngine)
+    return json(result, 200)
+
+
+@search_blueprint.route('/ons/departments', methods=["GET", "POST"])
+async def departments(request: Request) -> HTTPResponse:
+    """
+    Performs the ONS departments query
+    :param request:
+    :return:
+    """
+    from sanic.response import json
+
+    from ons.search.indicies import Index
+    from ons.search.response import ONSResponse
+    from ons.search.sort_fields import SortFields
+
+    from server.requests import get_form_param
+
+    search_term = request.args.get("q")
     if search_term is not None:
-        # Get any content type filters
-        type_filters = get_form_param(request, "filter", False, None)
+        import inspect
+
+        current_app = request.app
+        client = current_app.es_client
 
         # Get sort_by. Default to relevance
         sort_by_str = get_form_param(request, "sort_by", False, "relevance")
         sort_by = SortFields[sort_by_str]
 
-        # Execute the search
-        response = await execute_search(
-            request,
-            search_term,
-            sort_by,
-            type_filters=type_filters)
-        return json(response)
+        # Get page_number/size params
+        page_number = int(get_form_param(request, "page", False, 1))
+        page_size = int(get_form_param(request, "size", False, 10))
+
+        s = SearchEngine(using=client, index=Index.DEPARTMENTS.value)
+
+        response: ONSResponse = s.departments_query(
+            search_term, page_number, page_size).execute()
+
+        if inspect.isawaitable(response):
+            response = await response
+
+        result = response.response_to_json(page_number, page_size, sort_by)
+
+        return json(result, 200)
     raise InvalidUsage("no query provided")
+
+
+@search_blueprint.route('/uri/')
+@search_blueprint.route('/uri/<path:path>')
+async def find_document(request: Request, path: str='') -> HTTPResponse:
+    from sanic.response import json
+
+    response = await find_document_by_uri(request, path)
+    return json(response, 200)
+
+
+async def find_document_by_uri(request: Request, path: str='') -> dict:
+    """
+    Locates a document by its uri.
+    :param request:
+    :param path:
+    :return:
+    """
+    from ons.search.indicies import Index
+    from ons.search.response import ONSResponse
+    from ons.search.search_engine import SearchEngine
+
+    from sanic.exceptions import NotFound
+
+    from inspect import isawaitable
+
+    client = request.app.es_client
+
+    s = SearchEngine(using=client, index=Index.ONS.value)
+    response: ONSResponse = s.search_by_uri(path).execute()
+
+    if isawaitable(response):
+        response = await response
+
+    if response.hits.total > 0:
+        result = response.hits_to_json()
+
+        return result
+    raise NotFound("No document found with uri '%s'" % path)

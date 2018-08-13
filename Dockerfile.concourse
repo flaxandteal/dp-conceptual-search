@@ -2,6 +2,7 @@ FROM python:3.6
 
 COPY . /dp-conceptual-search
 WORKDIR /dp-conceptual-search
-RUN pip install -r requirements.txt
+
+RUN make build clean
 
 CMD python manager.py
