@@ -8,6 +8,7 @@ node {
             checkout scm
             sh 'git clean -dfx'
             sh 'git rev-parse --short HEAD > git-commit'
+            sh 'git submodule update --init --recursive'
             sh 'set +e && (git describe --exact-match HEAD || true) > git-tag'
         }
 
