@@ -35,7 +35,7 @@ class FakeElasticsearch(Elasticsearch):
 
     def __init__(self):
         self.__documents_dict = {
-            "ons*": [
+            "ons": [
                 test_document
             ],
             "departments": [
