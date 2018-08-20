@@ -3,5 +3,5 @@ from enum import Enum
 
 
 class Index(Enum):
-    ONS = os.environ.get('SEARCH_INDEX', 'ons*')
+    ONS = os.environ.get('SEARCH_INDEX', 'ons')
     DEPARTMENTS = 'departments'
