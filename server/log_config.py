@@ -68,13 +68,8 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
 class PrettyCustomJsonFormatter(CustomJsonFormatter):
     def __init__(self, *args, **kwargs):
-        super(
-            PrettyCustomJsonFormatter,
-            self).__init__(
-            *
-            args,
-            json_indent=4,
-            **kwargs)
+        super(PrettyCustomJsonFormatter, self).__init__(
+            *args, json_indent=4, **kwargs)
 
 
 def log_format(x):
