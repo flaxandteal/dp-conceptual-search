@@ -18,11 +18,7 @@ level_style_dict = {
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
     def __init__(self, *args, **kwargs):
-        super(
-            CustomJsonFormatter,
-            self).__init__(
-            *args,
-            **kwargs)
+        super(CustomJsonFormatter, self).__init__(*args, **kwargs)
 
     def add_fields(self, log_record, record, message_dict):
         super(
@@ -72,7 +68,13 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
 class PrettyCustomJsonFormatter(CustomJsonFormatter):
     def __init__(self, *args, **kwargs):
-        super(PrettyCustomJsonFormatter, self).__init__(*args, json_indent=4, **kwargs)
+        super(
+            PrettyCustomJsonFormatter,
+            self).__init__(
+            *
+            args,
+            json_indent=4,
+            **kwargs)
 
 
 def log_format(x):
