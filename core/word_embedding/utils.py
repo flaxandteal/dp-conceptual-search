@@ -1,16 +1,43 @@
 import base64
+import inflect
 import numpy as np
+
 from numpy.linalg import norm
 
 from typing import List
 
+from nltk.corpus import stopwords
+stops = stopwords.words("english")
+
+inflect_engine = inflect.engine()
+
 dbig = np.dtype('>f8')
 
 
-def clean_string(string):
+def clean_string(string: str, remove_nouns: bool=False):
     import re
 
-    return re.sub("[^a-zA-Z ]", "", string).lower()
+    s = re.sub("[^a-zA-Z ]", "", string).lower()
+
+    if remove_nouns:
+        tokens = s.split()
+
+        singulars = []
+        for t in tokens:
+            singular = inflect_engine.singular_noun(t)
+            if singular:
+                singulars.append(singular)
+            else:
+                singulars.append(t)
+
+        s = " ".join(singulars)
+    return s
+
+
+def remove_stop_words(string: str):
+    tokens = [t for t in string.split() if t not in stops]
+
+    return " ".join(tokens)
 
 
 def decode_float_list(base64_string) -> List[float]:

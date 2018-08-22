@@ -1,5 +1,3 @@
-from elasticsearch_dsl import query as Q
-
 from numpy import ndarray
 
 from ons.search import fields
@@ -7,6 +5,7 @@ from ons.search.query_dsl import *
 
 from core.word_embedding.models.supervised import SupervisedModel
 
+from elasticsearch_dsl import query as Q
 
 def vector_script_score(
         field: fields.Field,
@@ -137,69 +136,70 @@ def content_query(
     :return:
     """
     from sanic.log import logger
-    from core.word_embedding.utils import clean_string
+    from core.word_embedding.utils import clean_string, remove_stop_words
 
     from ons.search.queries import boost_score
     from ons.search.queries import content_query as ons_content_query
     from ons.search.filter_functions import content_filter_functions
 
     # Prepare the search term for keyword generation
-    clean_search_term = clean_string(search_term)
-    search_vector = model.get_sentence_vector(clean_search_term)
+    clean_search_term = remove_stop_words(clean_string(search_term, remove_nouns=True))
 
-    # Build function scores
-    script_score = vector_script_score(fields.embedding_vector, search_vector)
+    if len(clean_search_term) > 0:
+        search_vector = model.get_sentence_vector(clean_search_term)
 
-    try:
-        # Try to build additional keywords query
-        terms_query = FunctionScore(
-            query=word_vector_keywords_query(clean_search_term, model),
-            functions=[script_score.to_dict(), boost_score(0.5).to_dict()],
-            boost_mode=BoostMode.REPLACE.value
-        )
+        # Build function scores
+        script_score = vector_script_score(fields.embedding_vector, search_vector)
+        try:
+            # Try to build additional keywords query
+            terms_query = FunctionScore(
+                query=word_vector_keywords_query(clean_search_term, model),
+                functions=[script_score.to_dict(), boost_score(0.5).to_dict()],
+                boost_mode=BoostMode.REPLACE.value
+            )
 
-        logger.debug("Generated additional keywords for query '%s': %s" % (
-            search_term, terms_query))
+            logger.debug("Generated additional keywords for query '%s': %s" % (
+                search_term, terms_query))
 
-        # Build the original content query
-        dis_max_query = ons_content_query(search_term)
+            # Build the original content query
+            dis_max_query = ons_content_query(search_term)
 
-        # Add content type function scores if specified
-        content_function_scores = kwargs.get(
-            "function_scores", content_filter_functions())
+            # Add content type function scores if specified
+            content_function_scores = kwargs.get(
+                "function_scores", content_filter_functions())
 
-        if content_function_scores is None:
-            content_function_scores = content_filter_functions()
-        if hasattr(content_function_scores, "__iter__") is False:
-            content_function_scores = [content_function_scores]
+            if content_function_scores is None:
+                content_function_scores = content_filter_functions()
+            if hasattr(content_function_scores, "__iter__") is False:
+                content_function_scores = [content_function_scores]
 
-        content_function_scores.append(boost_score(100.0).to_dict())
+            content_function_scores.append(boost_score(100.0).to_dict())
 
-        query = FunctionScore(
-            query=dis_max_query,
-            functions=content_function_scores
-        )
+            query = FunctionScore(
+                query=dis_max_query,
+                functions=content_function_scores
+            )
 
-        terms_query = FunctionScore(
-            query=terms_query,
-            functions=[script_score.to_dict()],
-            boost_mode=BoostMode.REPLACE.value
-        )
+            terms_query = FunctionScore(
+                query=terms_query,
+                functions=[script_score.to_dict()],
+                boost_mode=BoostMode.REPLACE.value
+            )
 
-        query = Q.DisMax(
-            queries=[query, terms_query]
-        )
+            query = Q.DisMax(
+                queries=[query, terms_query]
+            )
 
-        return query
+            return query
 
-    except ValueError as e:
-        # Log the error but continue with the query (we can still return results, just can't
-        # auto generate keywords for matching.
-        # Note the script score will still facilitate non-keyword matching.
-        logger.error(
-            "Caught exception while generating model keywords: %s",
-            str(e),
-            exc_info=1)
+        except ValueError as e:
+            # Log the error but continue with the query (we can still return results, just can't
+            # auto generate keywords for matching.
+            # Note the script score will still facilitate non-keyword matching.
+            logger.error(
+                "Caught exception while generating model keywords: %s",
+                str(e),
+                exc_info=1)
 
 
 def recommended_content_query(

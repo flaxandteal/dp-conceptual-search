@@ -17,3 +17,5 @@ elasticsearch_dsl==6.1.0
 python_json_logger==0.1.9
 unicode==2.6
 Pygments==2.2.0
+nltk==3.2.5
+inflect==1.0.0
