@@ -44,7 +44,12 @@ async def proxy_elatiscsearch_query(request: Request):
             s: SearchEngine = s.type_filter(type_filters)
 
         response: ONSResponse = await s.execute()
-        hits = response.hits_to_json()
+
+        # Get page_number/size params
+        page_number = int(request.args.get("page", 1))
+        page_size = int(request.args.get("size", 10))
+
+        hits = response.response_to_json(page_number, page_size)
         aggs = response.aggs_to_json()
 
         result = {**hits, **aggs}
