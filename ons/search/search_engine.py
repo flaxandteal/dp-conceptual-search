@@ -22,7 +22,7 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
     type_filters_key = "type_filters"
 
     def __init__(self, *args, **kwargs):
-        super(AsyncSearch, self).__init__(*args, **kwargs)
+        super(AbstractSearchClient, self).__init__(*args, **kwargs)
 
         self._response_class = ONSResponse
 
