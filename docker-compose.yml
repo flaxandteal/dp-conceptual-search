@@ -21,6 +21,7 @@ services:
 #          - MONGO_SEARCH_DATABASE=local
 #          - MONGO_BIND_ADDR=mongodb://mongo:27017
           - COLOURED_LOGGING_ENABLED=true
+          - PRETTY_LOGGING=true
         ports:
           - '5000:5000'
         links:
