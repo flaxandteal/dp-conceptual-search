@@ -16,7 +16,7 @@ services:
           - GA_SALT=${GA_SALT}
           - GA_SUBSTR_INDEX=${GA_SUBSTR_INDEX}
           - ELASTIC_SEARCH_SERVER=elasticsearch:9200
-          - CONCEPTUAL_SEARCH_ENABLED=false
+          - CONCEPTUAL_SEARCH_ENABLED=true
           - USER_RECOMMENDATION_ENABLED=false
 #          - MONGO_SEARCH_DATABASE=local
 #          - MONGO_BIND_ADDR=mongodb://mongo:27017
