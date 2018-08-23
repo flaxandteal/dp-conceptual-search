@@ -21,7 +21,7 @@ class SpellChecker(object):
             correction = self.correction(term)
             P = self.P(correction)
             if P > 0:
-                result[term] = {"correction": correction, "P": P}
+                result[term] = {"correction": correction, "probability": P}
         return result
 
     def P(self, word):

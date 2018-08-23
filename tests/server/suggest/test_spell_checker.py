@@ -49,15 +49,15 @@ class TestSpellChecker(TestApp):
                 "key 'correction' should be in entry for token '%s'" %
                 token)
 
-            self.assertIn('P', json_result[token],
-                          "key 'P' should be in entry for token '%s'" % token)
+            self.assertIn('probability', json_result[token],
+                          "key 'probability' should be in entry for token '%s'" % token)
 
             self.assertEqual(
                 self.expected[token],
                 json_result[token]['correction'])
 
             self.assertGreater(
-                json_result[token]["P"],
+                json_result[token]["probability"],
                 self.confidence_limit,
                 "confidence should be greater than %f" %
                 self.confidence_limit)
