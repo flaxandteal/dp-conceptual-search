@@ -28,6 +28,8 @@ def bool_env(var_name, default=False):
 
 LOGO = None
 
+RESPONSE_TIMEOUT = 600
+
 MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
 
 MONGO_DEFAULT_HOST = os.environ.get("MONGO_DEFAULT_HOST", "localhost")

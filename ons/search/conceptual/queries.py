@@ -82,8 +82,6 @@ def word_vector_keywords_query(
 
     match_queries = []
     for label, probability in zip(labels, probabilities):
-        # match_queries.append(Q.Match(
-        #     **{fields.keywords.name: {"query": label, "boost": probability}}))
         match_queries.append(Q.Match(
             **{fields.keywords_raw.name: {"query": label}}))
 
@@ -154,7 +152,7 @@ def content_query(
             # Try to build additional keywords query
             terms_query = FunctionScore(
                 query=word_vector_keywords_query(clean_search_term, model),
-                functions=[script_score.to_dict(), boost_score(0.5).to_dict()],
+                functions=[script_score.to_dict()],
                 boost_mode=BoostMode.REPLACE.value
             )
 
@@ -178,12 +176,6 @@ def content_query(
             query = FunctionScore(
                 query=dis_max_query,
                 functions=content_function_scores
-            )
-
-            terms_query = FunctionScore(
-                query=terms_query,
-                functions=[script_score.to_dict()],
-                boost_mode=BoostMode.REPLACE.value
             )
 
             query = Q.DisMax(
