@@ -148,15 +148,6 @@ class ONSResponse(Response):
 
         return {}
 
-    def hits_to_json(self):
-        """
-        Returns search hits only as formatted JSON.
-        :return:
-        """
-        from ons.search.paginator import RESULTS_PER_PAGE
-
-        return self.response_to_json(0, RESULTS_PER_PAGE)
-
     def response_to_json(self, page_number: int, page_size: int,
                          sort_by: SortFields=SortFields.relevance) -> dict:
         """
