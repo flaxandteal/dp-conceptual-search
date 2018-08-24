@@ -30,13 +30,14 @@ def vector_script_score(
 
 
 def date_decay_function(
+        field: fields.Field=fields.releaseDate,
         fn: str = "exp",
         origin: str = "now",
         scale: str = "365d",
         offset: str = "30d",
         decay: float = 0.5) -> Q.Query:
 
-    q = Q.SF(fn, **{fields.releaseDate.name: {
+    q = Q.SF(fn, **{field.name: {
         "origin": origin,
         "scale": scale,
         "offset": offset,
@@ -150,14 +151,17 @@ def content_query(
         script_score = vector_script_score(fields.embedding_vector, search_vector)
         try:
             # Try to build additional keywords query
+            wv_query = word_vector_keywords_query(clean_search_term, model)
+
+            # Use a FunctionScore query to replace keyword scores with a cosine similarity script score
             terms_query = FunctionScore(
-                query=word_vector_keywords_query(clean_search_term, model),
+                query=wv_query,
                 functions=[script_score.to_dict()],
                 boost_mode=BoostMode.REPLACE.value
             )
 
-            logger.debug("Generated additional keywords for query '%s': %s" % (
-                search_term, terms_query))
+            logger.info("Generated additional keywords for query '%s': %s" % (
+                search_term, wv_query))
 
             # Build the original content query
             dis_max_query = ons_content_query(search_term)
@@ -171,13 +175,23 @@ def content_query(
             if hasattr(content_function_scores, "__iter__") is False:
                 content_function_scores = [content_function_scores]
 
+            # Build up date function scores for releaseDate and lastRevised
+            date_fns = [date_decay_function(field=fields.releaseDate).to_dict(),
+                        date_decay_function(field=fields.lastRevised).to_dict()]
+
+            # Add to the function scores to be applied to the content query
+            content_function_scores.extend(date_fns)
+
+            # Add a boost so that the ONS content query always wins over the script score
             content_function_scores.append(boost_score(100.0).to_dict())
 
+            # Build the ONS function score query
             query = FunctionScore(
                 query=dis_max_query,
                 functions=content_function_scores
             )
 
+            # Combine with terms query as DisMax
             query = Q.DisMax(
                 queries=[query, terms_query]
             )
