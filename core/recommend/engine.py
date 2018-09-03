@@ -2,6 +2,8 @@ from core.users.user import User
 from core.users.session import Session
 from core.users.distance_utils import default_move_session_vector
 
+import logging
+
 from server.word_embedding.sanic_supervised_models import load_model, SupervisedModels
 
 from typing import Callable
@@ -71,6 +73,8 @@ class RecommendationEngine(object):
             # Move the user vector towards the term vector
             new_session_vec = update_func(session_vec, term_vector)
             session.set_session_vector(new_session_vec)
+
+        logging.debug("Updating session %s for term vector %s" % (self.session_id, term_vector))
 
         # Write the changes
         return await session.update()

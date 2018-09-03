@@ -22,6 +22,7 @@ dp-conceptual-search
 | USER_RECOMMENDATION_ENABLED  | false                     | Enable/disable mongoDB and user recommendation engine.
 | COLOURED_LOGGING_ENABLED     | false                     | Enable/disable coloured logging.
 | PRETTY_LOGGING               | false                     | Enable/disable JSON formatting for logging.
+| SEARCH_LOG_LEVEL             | INFO                      | Log level (INFO, DEBUG, or ERROR)
 
 # Install
 

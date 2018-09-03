@@ -189,7 +189,7 @@ async def find_document_by_uri(request: Request, path: str='') -> dict:
         response = await response
 
     if response.hits.total > 0:
-        result = response.hits_to_json()
+        result = response.response_to_json(1, 1)
 
         return result
     raise NotFound("No document found with uri '%s'" % path)

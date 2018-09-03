@@ -18,8 +18,6 @@ async def get_user_vector(request: Request):
     :param request:
     :return:
     """
-    from config_core import USER_RECOMMENDATION_ENABLED
-
     from core.utils import service_is_available
 
     current_app: Sanic = request.app
@@ -27,7 +25,7 @@ async def get_user_vector(request: Request):
     host = current_app.config.get('MONGO_DEFAULT_HOST')
     port = int(current_app.config.get('MONGO_DEFAULT_PORT'))
 
-    if USER_RECOMMENDATION_ENABLED and service_is_available(host, port):
+    if current_app.config.get("USER_RECOMMENDATION_ENABLED", False) and service_is_available(host, port):
         user_vector = None
         if User.user_id_key in request.cookies:
             user_id = request.cookies.get(User.user_id_key)
@@ -42,6 +40,14 @@ async def get_user_vector(request: Request):
 
 
 async def search(request: Request, fn: Callable, list_type: str, **kwargs):
+    """
+    Performs search with optional user rescore if url param user_vector_query is set to true
+    :param request:
+    :param fn:
+    :param list_type:
+    :param kwargs:
+    :return:
+    """
     from sanic.response import json
 
     from ons.search.conceptual.search_engine import ConceptualSearchEngine

@@ -62,6 +62,7 @@ async def update_by_document(request: Request, path: str):
 
     from ons.search.fields import embedding_vector
 
+    from sanic.log import logger
     from sanic.exceptions import NotFound
 
     # Query for a page with this uri
@@ -70,6 +71,7 @@ async def update_by_document(request: Request, path: str):
     # Document exists - get the embedding_vector
     documents: list = response.get('results', [])
 
+    logger.debug("Found %d pages for uri %s" % (len(documents), path))
     if len(documents) > 0:
         document = documents[0]
 
@@ -190,7 +192,7 @@ async def content_query(request: Request, path: str):
     from ons.search.response import ONSResponse
     from ons.search.conceptual.search_engine import ConceptualSearchEngine
 
-    from server.requests import get_form_param
+    from server.requests import extract_page, extract_page_size
 
     # Execute the query
     app = request.app
@@ -203,8 +205,8 @@ async def content_query(request: Request, path: str):
     s: ConceptualSearchEngine = await s.recommend_query(path, user_id=user_id)
 
     # Paginate
-    page_number = int(get_form_param(request, "page", False, 1))
-    page_size = int(get_form_param(request, "size", False, 10))
+    page_number: int = extract_page(request)
+    page_size: int = extract_page_size(request)
     s: ConceptualSearchEngine = s.paginate(page_number, page_size)
 
     # Execute
