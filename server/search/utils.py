@@ -45,6 +45,8 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
     """
     from ons.search.sort_fields import SortFields
 
+    from server.requests import extract_page, extract_page_size
+
     search_term = request.args.get("q")
     if search_term is not None:
         app = request.app
@@ -58,8 +60,8 @@ async def content_query(request: Request, search_engine_cls: ClassVar[AbstractSe
         sort_by = SortFields[sort_by_str]
 
         # Get page_number/size params
-        page_number = int(request.args.get("page", 1))
-        page_size = int(request.args.get("size", 10))
+        page_number: int = extract_page(request)
+        page_size: int = extract_page_size(request)
 
         params = {**{'type_filters': type_filters, 'sort_by': sort_by}, **kwargs}
 

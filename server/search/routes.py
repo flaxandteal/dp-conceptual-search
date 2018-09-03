@@ -27,6 +27,8 @@ async def proxy_elatiscsearch_query(request: Request):
     from ons.search.response import ONSResponse
     from ons.search.search_engine import SearchEngine
 
+    from server.requests import extract_page, extract_page_size
+
     body = request.json
 
     if body is not None and isinstance(body, dict) and "query" in body:
@@ -46,8 +48,8 @@ async def proxy_elatiscsearch_query(request: Request):
         response: ONSResponse = await s.execute()
 
         # Get page_number/size params
-        page_number = int(request.args.get("page", 1))
-        page_size = int(request.args.get("size", 10))
+        page_number: int = extract_page(request)
+        page_size: int = extract_page_size(request)
 
         hits = response.response_to_json(page_number, page_size)
         aggs = response.aggs_to_json()
@@ -123,7 +125,7 @@ async def departments(request: Request) -> HTTPResponse:
     from ons.search.response import ONSResponse
     from ons.search.sort_fields import SortFields
 
-    from server.requests import get_form_param
+    from server.requests import extract_page, extract_page_size, get_form_param
 
     search_term = request.args.get("q")
     if search_term is not None:
@@ -137,8 +139,8 @@ async def departments(request: Request) -> HTTPResponse:
         sort_by = SortFields[sort_by_str]
 
         # Get page_number/size params
-        page_number = int(get_form_param(request, "page", False, 1))
-        page_size = int(get_form_param(request, "size", False, 10))
+        page_number: int = extract_page(request)
+        page_size: int = extract_page_size(request)
 
         s = SearchEngine(using=client, index=Index.DEPARTMENTS.value)
 

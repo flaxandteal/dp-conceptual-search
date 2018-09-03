@@ -76,3 +76,18 @@ def get_json_param(request: Request, key, required, default=None):
             return val
     except (AttributeError, InvalidUsage):
         return get_form_param(request, key, required, default=default)
+
+
+def extract_page(request: Request) -> int:
+    """
+    Extract page number from request
+    """
+    return int(request.args.get("page", 1))
+
+
+def extract_page_size(request: Request) -> int:
+    """
+    Extract page size from request
+    Maximum page size is set to 10000
+    """
+    return min(int(request.args.get("size", 10)), 10000)
