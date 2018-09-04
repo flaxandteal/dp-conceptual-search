@@ -1,7 +1,9 @@
 from sanic.request import Request
 
+from server.search.list_type import ListType
 
-def get_type_filters(request: Request, list_type: str):
+
+def get_type_filters(request: Request, list_type: ListType):
     """
 
     :param request:
@@ -15,7 +17,7 @@ def get_type_filters(request: Request, list_type: str):
     from ons.search.type_filter import filters_for_type, available_filters
 
     type_filters_key = get_json_param(
-        request, "filter", False, list_type)
+        request, "filter", False, list_type.value)
 
     if isinstance(type_filters_key, list):
         return type_filters_key

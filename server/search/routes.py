@@ -3,6 +3,11 @@ from sanic.request import Request
 
 from sanic_openapi import doc
 
+from ons.search.search_engine import SearchEngine
+
+from server.search import search_with_client
+from server.search.list_type import ListType
+
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
@@ -58,20 +63,23 @@ async def proxy_elatiscsearch_query(request: Request):
 
 @doc.summary("Default ONS search API for population the Search Engine Results Page (SERP)")
 @doc.consumes({"q": str})
-@search_blueprint.route('/<list_type>/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
-async def search(request: Request, list_type: str, endpoint: str):
-    """
-    Single route for all ONS list types and possible endpoints. Responsible for populating the SERP.
-    :param request:
-    :param list_type:
-    :param endpoint:
-    :return:
-    """
-    from ons.search.search_engine import SearchEngine
+@search_blueprint.route('/ons/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons(request: Request, endpoint: str):
+    return await search_with_client(request, ListType.ONS, endpoint, SearchEngine)
 
-    from server.search import search_with_client
 
-    return await search_with_client(request, list_type, endpoint, SearchEngine)
+@doc.summary("Default ONS search API for population the SERP, using the data filter")
+@doc.consumes({"q": str})
+@search_blueprint.route('/onsdata/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons_data(request: Request, endpoint: str):
+    return await search_with_client(request, ListType.ONS_DATA, endpoint, SearchEngine)
+
+
+@doc.summary("Default ONS search API for population the SERP, using the publications filter")
+@doc.consumes({"q": str})
+@search_blueprint.route('/onspublications/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons_publications(request: Request, endpoint: str):
+    return await search_with_client(request, ListType.ONS_PUBLICATIONS, endpoint, SearchEngine)
 
 
 @doc.summary("Route for finding pages by their URI")

@@ -96,7 +96,7 @@ class ConceptualSearchEngine(SearchEngine):
             size=1)
         return s
 
-    async def recommend_query(self, page_uri: str, user_id: str=None):
+    async def recommend_query(self, page_uri: str, page_number: int, page_size: int, user_id: str=None):
         """
         Executes a query which returns documents similar to the given page uri.
         If user_is is specified, and the user exists, then the users session vector
@@ -111,6 +111,7 @@ class ConceptualSearchEngine(SearchEngine):
 
         from core.word_embedding.utils import decode_float_list
 
+        from ons.search.sort_fields import SortFields
         from ons.search.response import ONSResponse
         from ons.search.fields import embedding_vector
         from ons.search.conceptual.queries import recommended_content_query
@@ -118,10 +119,12 @@ class ConceptualSearchEngine(SearchEngine):
         # First, execute the page_uri query
         s: ConceptualSearchEngine = self._clone()
         s: ConceptualSearchEngine = s.search_by_uri(page_uri)
+        s: ConceptualSearchEngine = s.paginate(page_number, page_size)
+
         response: ONSResponse = await s.execute()
 
         if response.hits.total > 0:
-            json_data = response.hits_to_json()
+            json_data = response.response_to_json(page_number, page_size, SortFields.relevance)
             documents: list = json_data.get('results', [])
             document = documents[0]
 

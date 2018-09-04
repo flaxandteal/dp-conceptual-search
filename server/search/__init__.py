@@ -5,6 +5,8 @@ from ons.search.response import ONSResponse
 from ons.search.sort_fields import SortFields
 from ons.search.search_engine import AbstractSearchClient
 
+from server.search.list_type import ListType
+
 from typing import ClassVar
 
 available_list_types = ['ons', 'onsdata', 'onspublications']
@@ -24,7 +26,7 @@ async def _await_response(response) -> ONSResponse:
     return response
 
 
-async def search_with_client(request: Request, list_type: str, endpoint: str,
+async def search_with_client(request: Request, list_type: ListType, endpoint: str,
                              search_engine_cls: ClassVar[AbstractSearchClient], **kwargs: dict):
     """
     Builds the search engine client from the specified class
@@ -41,7 +43,7 @@ async def search_with_client(request: Request, list_type: str, endpoint: str,
     from server.search.endpoint import available_endpoints, Endpoint
 
     if issubclass(search_engine_cls, AbstractSearchClient):
-        if list_type in available_list_types and endpoint in available_endpoints:
+        if endpoint in available_endpoints:
             app: Sanic = request.app
             es_client = app.es_client
 
@@ -64,7 +66,7 @@ async def search_with_client(request: Request, list_type: str, endpoint: str,
         raise InvalidUsage("Class '%s' is not a subclass of AbstractSearchClient" % search_engine_cls)
 
 
-async def execute(request: Request, search_engine: AbstractSearchClient, list_type: str, endpoint: str,
+async def execute(request: Request, search_engine: AbstractSearchClient, list_type: ListType, endpoint: str,
                   **kwargs: dict) -> HTTPResponse:
     """
     Executes an ONS search query using the provided client for the given list type (ons, onsdata or onspublications)
@@ -81,7 +83,7 @@ async def execute(request: Request, search_engine: AbstractSearchClient, list_ty
     from server.search.endpoint import available_endpoints, Endpoint
     from server.requests import get_json_param, extract_page, extract_page_size
 
-    if list_type not in available_list_types or endpoint not in available_endpoints:
+    if endpoint not in available_endpoints:
         from sanic.exceptions import NotFound
         raise NotFound("No route for list_type/endpoint: '%s/%s'" % (list_type, endpoint))
 
