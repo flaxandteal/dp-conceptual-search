@@ -160,9 +160,8 @@ async def similarity(request: Request, user_id: str, term: str):
     user = await get_user(user_id)
 
     if user is not None:
-        from server.word_embedding.sanic_supervised_models import load_model
+        from server.word_embedding.sanic_supervised_models import load_model, SupervisedModels
 
-        from core.word_embedding.models.supervised import SupervisedModels
         from core.word_embedding.utils import cosine_sim
 
         model = load_model(SupervisedModels.ONS)
