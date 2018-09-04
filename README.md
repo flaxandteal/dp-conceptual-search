@@ -43,6 +43,10 @@ will need to set the environment variable ```CONCEPTUAL_SEARCH_ENABLED=true``` a
 on disk. This repository comes with the [full word2vec embeddings model](word2vec/ons_supervised.vec) and a 
 *placeholder* [supervised model](supervised_models/ons_supervised.bin).
 
+# Swagger
+
+The swagger spec can be found by running the app and navigating to the ```/swagger``` endpoint.
+
 # Testing
 
 To run the unit tests, use: ```make test```.

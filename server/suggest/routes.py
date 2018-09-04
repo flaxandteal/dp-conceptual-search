@@ -2,10 +2,14 @@ from sanic import Blueprint
 from sanic.request import Request
 from sanic.response import json, HTTPResponse
 
+from sanic_openapi import doc
+
 suggest_blueprint = Blueprint('suggest', url_prefix='/suggest')
 
 
-@suggest_blueprint.route('/spelling', methods=["GET"])
+@doc.summary("Route for suggesting spelling corrections")
+@doc.consumes({"q": str})
+@suggest_blueprint.route('/spelling', methods=["GET"], strict_slashes=True)
 def spell_checker(request: Request) -> HTTPResponse:
     """
     Spell checks each token in query

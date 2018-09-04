@@ -3,10 +3,13 @@ from sanic.request import Request
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
+from sanic_openapi import doc
+
 sessions_blueprint = Blueprint('sessions', url_prefix='/sessions')
 
 
-@sessions_blueprint.route('/create/<user_id>', methods=['PUT'])
+@doc.summary("Create a user sessions for the desired user")
+@sessions_blueprint.route('/create/<user_id>', methods=['PUT'], strict_slashes=True)
 async def create(request: Request, user_id: str):
     from core.users.user import User
     from core.users.session import Session

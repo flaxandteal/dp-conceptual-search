@@ -1,12 +1,15 @@
 from sanic import Blueprint
 from sanic.request import Request
 
+from sanic_openapi import doc
+
 conceptual_search_blueprint = Blueprint(
     'conceptual_search',
     url_prefix='/search/conceptual')
 
 
-@conceptual_search_blueprint.route('/<list_type>/<endpoint>')
+@doc.summary("ONS conceptual search API for population the Search Engine Results Page (SERP)")
+@conceptual_search_blueprint.route('/<list_type>/<endpoint>', strict_slashes=True)
 async def search(request: Request, list_type: str, endpoint: str):
     """
     Single route for all ONS list types and possible endpoints. Responsible for populating the SERP.

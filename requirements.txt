@@ -5,6 +5,7 @@ elasticsearch_async==6.1.0
 typing==3.6.2
 sanic==0.7.0
 sanic_prometheus==0.1.5
+sanic_openapi==0.4.0
 uvloop==0.11.0
 #pymongo==3.6.1
 #sanic_motor==0.2.8

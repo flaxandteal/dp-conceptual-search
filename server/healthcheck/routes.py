@@ -2,6 +2,8 @@ from sanic import Sanic, Blueprint
 from sanic.request import Request
 from sanic.response import json
 
+from sanic_openapi import doc
+
 health_check_blueprint = Blueprint('healthcheck', url_prefix='/healthcheck')
 
 
@@ -60,7 +62,8 @@ async def elastic_search_health(request: Request) -> (dict, int):
 
 
 # Define healthcheck API
-@health_check_blueprint.route("/")
+@doc.summary("Health checking API")
+@health_check_blueprint.route("/", strict_slashes=True)
 async def health_check(request: Request):
     from config_core import USER_RECOMMENDATION_ENABLED
 

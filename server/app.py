@@ -75,6 +75,11 @@ def register_blueprints(app: Sanic) -> None:
     from server.healthcheck.routes import health_check_blueprint
     from server.search.conceptual_search.routes import conceptual_search_blueprint
 
+    from sanic_openapi import swagger_blueprint, openapi_blueprint
+
+    app.blueprint(openapi_blueprint)
+    app.blueprint(swagger_blueprint)
+
     app.blueprint(search_blueprint)
     app.blueprint(suggest_blueprint)
     app.blueprint(health_check_blueprint)

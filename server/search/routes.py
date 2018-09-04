@@ -1,10 +1,13 @@
 from sanic import Blueprint
 from sanic.request import Request
 
+from sanic_openapi import doc
+
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-@search_blueprint.route('/', methods=['POST'])
+@doc.summary("Proxies an Elasticsearch query as JSON over HTTP")
+@search_blueprint.route('/', methods=['POST'], strict_slashes=True)
 async def proxy_elatiscsearch_query(request: Request):
     """
     Proxies Elasticsearch queries to support legacy babbage APIs going forwards.
@@ -53,7 +56,9 @@ async def proxy_elatiscsearch_query(request: Request):
     raise InvalidUsage("Request body not specified")
 
 
-@search_blueprint.route('/<list_type>/<endpoint>')
+@doc.summary("Default ONS search API for population the Search Engine Results Page (SERP)")
+@doc.consumes({"q": str})
+@search_blueprint.route('/<list_type>/<endpoint>', strict_slashes=True)
 async def search(request: Request, list_type: str, endpoint: str):
     """
     Single route for all ONS list types and possible endpoints. Responsible for populating the SERP.
@@ -69,8 +74,9 @@ async def search(request: Request, list_type: str, endpoint: str):
     return await search_with_client(request, list_type, endpoint, SearchEngine)
 
 
-@search_blueprint.route('/uri/')
-@search_blueprint.route('/uri/<path:path>')
+@doc.summary("Route for finding pages by their URI")
+@search_blueprint.route('/uri/', strict_slashes=True)
+@search_blueprint.route('/uri/<path:path>', strict_slashes=True)
 async def find_document(request: Request, path: str=''):
     from sanic.response import json
 
