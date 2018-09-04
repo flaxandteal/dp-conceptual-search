@@ -45,7 +45,7 @@ async def update_by_term(request: Request, term: str, update_func: Callable) -> 
     return json(session.to_json(), 200)
 
 
-@doc.summary("Update a user vector using the given pages embedding vector")
+@doc.summary("Update a user vector using the given page's embedding vector")
 @recommend_blueprint.route('/update/page/', methods=['POST'], strict_slashes=True)
 @recommend_blueprint.route('/update/page/<path:path>', methods=['POST'], strict_slashes=True)
 async def update_by_document(request: Request, path: str):
@@ -182,7 +182,7 @@ async def similarity(request: Request, user_id: str, term: str):
     return json("User '%s' not found" % user_id, 404)
 
 
-@doc.summary("Searches for similar content to the given page. If a users ID is given, this will also be used")
+@doc.summary("Searches for similar content to the given page. If a user ID is given, this will also be used")
 @recommend_blueprint.route('/content/', methods=['GET', 'POST'], strict_slashes=True)
 @recommend_blueprint.route('/content/<path:path>', methods=['GET', 'POST'], strict_slashes=True)
 async def content_query(request: Request, path: str):
