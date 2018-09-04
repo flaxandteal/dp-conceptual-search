@@ -133,6 +133,21 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
         return s
 
     @abc.abstractmethod
+    def departments_query(
+            self,
+            search_term: str,
+            current_page: int,
+            size: int):
+        """
+        ONS departments query
+        :param search_term:
+        :param current_page:
+        :param size:
+        :return:
+        """
+        pass
+
+    @abc.abstractmethod
     def content_query(
             self,
             search_term: str,
