@@ -8,8 +8,6 @@ def init_default_app() -> Sanic:
     import asyncio
     import uvloop
 
-    from config_core import USER_RECOMMENDATION_ENABLED
-
     from server.log_config import default_log_config
     from server.error_handlers import CustomHandler
     from server.sanic_es import SanicElasticsearch
@@ -27,18 +25,20 @@ def init_default_app() -> Sanic:
     logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)
 
-    if USER_RECOMMENDATION_ENABLED:
+    if app.config.get("USER_RECOMMENDATION_ENABLED", False):
         # Use mongoDB to track user interests
         from core.utils import service_is_available
 
         host = app.config.get('MONGO_DEFAULT_HOST')
         port = int(app.config.get('MONGO_DEFAULT_PORT'))
-        if service_is_available(host, port):
+        motor_uri = app.config.get('MOTOR_URI', None)
+
+        if motor_uri is not None and service_is_available(host, port):
             from core.mongo import BaseModel
             # Init MongoEngine
             logger.info(
                 "Initialising motor engine on uri '%s'" %
-                app.config.get('MOTOR_URI'))
+                motor_uri)
             BaseModel.init_app(app)
         else:
             logger.error(
@@ -68,8 +68,7 @@ def init_default_app() -> Sanic:
 
 
 def register_blueprints(app: Sanic) -> None:
-    # Register blueprint(s)
-    from config_core import USER_RECOMMENDATION_ENABLED
+    # Register API route blueprint(s)
 
     from server.search.routes import search_blueprint
     from server.suggest.routes import suggest_blueprint
@@ -83,7 +82,7 @@ def register_blueprints(app: Sanic) -> None:
     if app.config.get("CONCEPTUAL_SEARCH_ENABLED", False):
         app.blueprint(conceptual_search_blueprint)
 
-    if USER_RECOMMENDATION_ENABLED:
+    if app.config.get("USER_RECOMMENDATION_ENABLED", False):
         from server.users.routes import user_blueprint
         from server.users.routes_sessions import sessions_blueprint
         from server.recommend.routes import recommend_blueprint

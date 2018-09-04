@@ -28,6 +28,8 @@ def bool_env(var_name, default=False):
 
 LOGO = None
 
+RESPONSE_TIMEOUT = 600
+
 MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
 
 MONGO_DEFAULT_HOST = os.environ.get("MONGO_DEFAULT_HOST", "localhost")
@@ -48,6 +50,7 @@ CONCEPTUAL_SEARCH_ENABLED = bool_env('CONCEPTUAL_SEARCH_ENABLED', False)
 USER_RECOMMENDATION_ENABLED = bool_env('USER_RECOMMENDATION_ENABLED', False)
 
 if USER_RECOMMENDATION_ENABLED and not CONCEPTUAL_SEARCH_ENABLED:
+    # Can't have user recommendation without conceptual search
     raise SystemExit("ERROR: User recommendation requires conceptual search")
 
 # Prometheus metrics endpoint

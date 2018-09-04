@@ -29,6 +29,7 @@ title_no_synonym_no_stem = Field(
 edition = Field("description.edition", highlight=True)
 summary = Field("description.summary", highlight=True)
 releaseDate = Field("description.releaseDate")
+lastRevised = Field("description.lastRevised")
 metaDescription = Field("description.metaDescription", highlight=True)
 keywords = Field("description.keywords", highlight=True)
 keywords_raw = Field("description.keywords.keywords_raw", highlight=True)
