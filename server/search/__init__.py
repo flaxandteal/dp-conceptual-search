@@ -12,7 +12,7 @@ available_list_types = ['ons', 'onsdata', 'onspublications']
 
 async def _await_response(response) -> ONSResponse:
     """
-
+    Util method for checking if an Elasticsearch response is awaitable (and await if true)
     :param response:
     :return:
     """
@@ -27,7 +27,7 @@ async def _await_response(response) -> ONSResponse:
 async def search_with_client(request: Request, list_type: str, endpoint: str,
                              search_engine_cls: ClassVar[AbstractSearchClient], **kwargs: dict):
     """
-
+    Builds the search engine client from the specified class
     :param request:
     :param list_type:
     :param endpoint:
@@ -40,28 +40,35 @@ async def search_with_client(request: Request, list_type: str, endpoint: str,
 
     from server.search.endpoint import available_endpoints, Endpoint
 
-    if list_type in available_list_types and endpoint in available_endpoints:
-        app: Sanic = request.app
-        es_client = app.es_client
+    if issubclass(search_engine_cls, AbstractSearchClient):
+        if list_type in available_list_types and endpoint in available_endpoints:
+            app: Sanic = request.app
+            es_client = app.es_client
 
-        # Departments or ONS index?
-        index: Index = Index.DEPARTMENTS if endpoint == Endpoint.DEPARTMENTS.value else Index.ONS
+            # Departments or ONS index?
+            index: Index = Index.DEPARTMENTS if endpoint == Endpoint.DEPARTMENTS.value else Index.ONS
 
-        s: AbstractSearchClient = search_engine_cls(
-            using=es_client,
-            index=index.value
-        )
+            # Build the search engine client
+            s: AbstractSearchClient = search_engine_cls(
+                using=es_client,
+                index=index.value
+            )
 
-        return await execute(request, s, list_type, endpoint, **kwargs)
+            # Execute the query
+            return await execute(request, s, list_type, endpoint, **kwargs)
+        else:
+            from sanic.exceptions import NotFound
+            raise NotFound("No route for list_type/endpoint: '%s/%s'" % (list_type, endpoint))
     else:
-        from sanic.exceptions import NotFound
-        raise NotFound("No route for list_type/endpoint: '%s/%s'" % (list_type, endpoint))
+        from sanic.exceptions import InvalidUsage
+        raise InvalidUsage("Class '%s' is not a subclass of AbstractSearchClient" % search_engine_cls)
 
 
 async def execute(request: Request, search_engine: AbstractSearchClient, list_type: str, endpoint: str,
                   **kwargs: dict) -> HTTPResponse:
     """
-
+    Executes an ONS search query using the provided client for the given list type (ons, onsdata or onspublications)
+    and endpoint (content, type counts, featured or departments).
     :param request:
     :param search_engine:
     :param list_type:
