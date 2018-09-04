@@ -137,3 +137,7 @@ async def execute(request: Request, search_engine: AbstractSearchClient, list_ty
             result = response.response_to_json(page_number, page_size, sort_by)
 
         return json_response(result, 200)
+
+    else:
+        from sanic.exceptions import InvalidUsage
+        raise InvalidUsage("No query specified for list_type/endpoint: '%s/%s'" % (list_type, endpoint))
