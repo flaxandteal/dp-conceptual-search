@@ -58,7 +58,7 @@ async def proxy_elatiscsearch_query(request: Request):
 
 @doc.summary("Default ONS search API for population the Search Engine Results Page (SERP)")
 @doc.consumes({"q": str})
-@search_blueprint.route('/<list_type>/<endpoint>', strict_slashes=True)
+@search_blueprint.route('/<list_type>/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
 async def search(request: Request, list_type: str, endpoint: str):
     """
     Single route for all ONS list types and possible endpoints. Responsible for populating the SERP.

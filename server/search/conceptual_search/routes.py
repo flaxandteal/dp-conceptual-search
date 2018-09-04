@@ -10,7 +10,7 @@ conceptual_search_blueprint = Blueprint(
 
 @doc.summary("ONS conceptual search API for population the Search Engine Results Page (SERP)")
 @doc.consumes({"q": str})
-@conceptual_search_blueprint.route('/<list_type>/<endpoint>', strict_slashes=True)
+@conceptual_search_blueprint.route('/<list_type>/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
 async def search(request: Request, list_type: str, endpoint: str):
     """
     Single route for all ONS list types and possible endpoints. Responsible for populating the SERP.
