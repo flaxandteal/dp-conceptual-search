@@ -55,7 +55,7 @@ async def search(request: Request, list_type: ListType, endpoint: str):
 
         return redirect(
             '/search/%s/featured?q=%s' %
-            (list_type, search_term_encoded))
+            (list_type.value, search_term_encoded))
 
     user_vector = await get_user_vector(request)
 
