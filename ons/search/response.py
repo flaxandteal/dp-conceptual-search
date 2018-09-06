@@ -121,56 +121,6 @@ def highlight(highlighted_text: str, val: str, tag: str='strong') -> str:
     return re.sub(pattern, toreplace, val)
 
 
-# def marshall_hits(hits: List[Hit]) -> list:
-#     """
-#     Converts Elasticsearch hits into a valid JSON response.
-#     :param hits:
-#     :return:
-#     """
-#     import re
-#     from ons.search import fields
-#
-#     hits_list = []
-#     for hit in hits:
-#         hit_dict = SimpleHit(hit.to_dict())
-#         if hasattr(hit, "meta"):
-#             meta: HitMeta = hit.meta
-#             if hasattr(meta, "highlight"):
-#                 highlight_dict = meta.highlight.to_dict()
-#                 for highlight_key in highlight_dict:
-#                     for fragment in highlight_dict[highlight_key]:
-#                         fragment = fragment.strip()
-#                         if "<strong>" in fragment and "</strong>" in fragment:
-#                             highlighted_text = " ".join(re.findall(
-#                                 "<strong>(.*?)</strong>", fragment))
-#
-#                             val = get_var(hit_dict, highlight_key)
-#
-#                             if isinstance(val, str):
-#                                 highlighted_val = highlight(
-#                                     highlighted_text, val)
-#
-#                             elif hasattr(val, "__iter__"):
-#                                 highlighted_val = []
-#                                 for v in val:
-#                                     highlighted_val.append(
-#                                         highlight(highlighted_text, v))
-#
-#                             if highlight_key == fields.keywords_raw.name:
-#                                 hit_dict.set_value(
-#                                     fields.keywords.name, highlighted_val)
-#                             else:
-#                                 hit_dict.set_value(
-#                                     highlight_key, highlighted_val)
-#
-#             # set _type field
-#             hit_dict["_type"] = meta.doc_type
-#             hit_dict["_score"] = meta.score
-#             # hit_dict["_meta"] = meta.to_dict()
-#             hits_list.append(hit_dict)
-#     return hits_list
-
-
 class ONSResponse(Response):
     """
     Class for marshalling Elasticsearch results to JSON expected by babbage
