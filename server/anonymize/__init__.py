@@ -18,9 +18,6 @@ def get_substr_index(default: int=0) -> int:
         return default
 
 
-def hash_value(value: str) -> str:
-    salt = get_salt()
-    substr_index = get_substr_index()
-
+def hash_value(value: str, salt: str = get_salt(), substr_index: int = get_substr_index()) -> str:
     s = "%s%s%s" % (value[substr_index:], salt, value[:substr_index])
     return str(hashlib.sha512(s.encode(sys.getdefaultencoding())).hexdigest())
