@@ -7,8 +7,6 @@ from core.recommend.engine import RecommendationEngine
 
 from typing import Callable
 
-from sanic_openapi import doc
-
 recommend_blueprint = Blueprint('recommend', url_prefix='/recommend')
 
 
@@ -45,7 +43,6 @@ async def update_by_term(request: Request, term: str, update_func: Callable) -> 
     return json(session.to_json(), 200)
 
 
-@doc.summary("Update a user vector using the given page's embedding vector")
 @recommend_blueprint.route('/update/page/', methods=['POST'], strict_slashes=True)
 @recommend_blueprint.route('/update/page/<path:path>', methods=['POST'], strict_slashes=True)
 async def update_by_document(request: Request, path: str):
@@ -100,7 +97,6 @@ async def update_by_document(request: Request, path: str):
     raise NotFound("Unable to find page with uri '%s'" % path)
 
 
-@doc.summary("Make a positive update of the users vector using the given search term")
 @recommend_blueprint.route('/update/positive/<term>', methods=['POST'], strict_slashes=True)
 async def positive_update(request: Request, term: str):
     """
@@ -113,7 +109,6 @@ async def positive_update(request: Request, term: str):
     return await update_by_term(request, term, default_move_session_vector)
 
 
-@doc.summary("Make a negative update of the users vector using the given search term")
 @recommend_blueprint.route('/update/negative/<term>', methods=['POST'], strict_slashes=True)
 async def negative_update(request: Request, term: str):
     """
@@ -126,7 +121,6 @@ async def negative_update(request: Request, term: str):
     return await update_by_term(request, term, negative_move_session_vector)
 
 
-@doc.summary("Return the similarity between the current user (using the _ga ID as the users ID) and the desired term")
 @recommend_blueprint.route('/similarity/<term>', methods=['GET'], strict_slashes=True)
 async def similarity(request: Request, term: str):
     """
@@ -144,7 +138,6 @@ async def similarity(request: Request, term: str):
     raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
 
 
-@doc.summary("Return the similarity between the desired user and the desired term")
 @recommend_blueprint.route('/similarity/<user_id>/<term>', methods=['GET'], strict_slashes=True)
 async def similarity(request: Request, user_id: str, term: str):
     """
@@ -181,7 +174,6 @@ async def similarity(request: Request, user_id: str, term: str):
     return json("User '%s' not found" % user_id, 404)
 
 
-@doc.summary("Searches for similar content to the given page. If a user ID is given, this will also be used")
 @recommend_blueprint.route('/content/', methods=['GET', 'POST'], strict_slashes=True)
 @recommend_blueprint.route('/content/<path:path>', methods=['GET', 'POST'], strict_slashes=True)
 async def content_query(request: Request, path: str):

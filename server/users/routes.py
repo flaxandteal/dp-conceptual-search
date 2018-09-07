@@ -3,15 +3,12 @@ from sanic.request import Request
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
 
-from sanic_openapi import doc
-
 from server.users import get_user, get_user_id
 from core.users.user import User
 
 user_blueprint = Blueprint('users', url_prefix='/users')
 
 
-@doc.summary("Creare a user, using the _ga cookie to set the users ID")
 @user_blueprint.route('/create', methods=['PUT'], strict_slashes=True)
 async def create(request: Request):
     """
@@ -30,7 +27,6 @@ async def create(request: Request):
         User.user_id_key)
 
 
-@doc.summary("Find a user by their ID (uses _ga cookie)")
 @user_blueprint.route('/find', methods=['GET'], strict_slashes=True)
 async def find(request: Request):
     """
@@ -44,7 +40,6 @@ async def find(request: Request):
     raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
 
 
-@doc.summary("Find a user by their ID")
 @user_blueprint.route('/find/<user_id>', methods=['GET'], strict_slashes=True)
 async def find(request: Request, user_id: str):
     """
@@ -61,7 +56,6 @@ async def find(request: Request, user_id: str):
     return json("User '%s' not found" % user_id, 404)
 
 
-@doc.summary("Delete a user by their ID")
 @user_blueprint.route('/delete/<user_id>', methods=['DELETE'], strict_slashes=True)
 async def delete(request: Request, user_id: str):
     """

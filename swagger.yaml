@@ -1,0 +1,168 @@
+swagger: "2.0"
+info:
+  description: "Dedicated search API"
+  version: "1.0.1"
+  title: "dp-conceptual-search"
+  license:
+    name: "Open Government Licence v3.0"
+    url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+schemes:
+  - "http"
+tags:
+  - name: "search"
+  - name: "suggest"
+  - name: "healthcheck"
+  - name: "conceptual_search"
+  - name: "users"
+  - name: "sessions"
+  - name: "recommend"
+
+paths:
+  /search:
+    post:
+      tags:
+        - search
+      summary: "Proxy an Elasticsearch query over HTTP"
+      description: "Proxy an Elasticsearch query over HTTP"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          description: The Elasticsearch query to be executed.
+          schema:
+            type: object
+            example: {match_all: {}}
+      responses:
+        200:
+          description: OK
+        400:
+          description: request body not specified
+  /search/{list_type}/{endpoint}:
+    get:
+      tags:
+        - search
+      summary: "Default ONS content query API"
+      description: "Default ONS content query API"
+      parameters:
+        - in: path
+          name: list_type
+          required: true
+          type: string
+          enum:
+            - ons
+            - onsdata
+            - onspublications
+        - in: path
+          name: endpoint
+          required: true
+          type: string
+          enum:
+            - content
+            - counts
+            - featured
+            - departments
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: Query term not specified
+        404:
+          description: Unknown endpoint
+    post:
+      tags:
+        - search
+      summary: "Default ONS content query API"
+      description: "Default ONS content query API"
+      parameters:
+        - in: path
+          name: list_type
+          required: true
+          type: string
+          enum:
+            - ons
+            - onsdata
+            - onspublications
+        - in: path
+          name: endpoint
+          required: true
+          type: string
+          enum:
+            - content
+            - counts
+            - featured
+            - departments
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: Query term not specified
+        404:
+          description: Unknown endpoint
+  /search/uri/{path}:
+    get:
+      tags:
+        - search
+      summary: "Search for a document by it's URI"
+      description: "Search for a document by it's URI"
+      parameters:
+        - in: path
+          name: path
+          required: true
+          description: URI of the desired document
+          type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: No document with the given URI found
+  /suggest/spelling:
+    get:
+      tags:
+        - suggest
+      summary: "Query the spell checker API"
+      description: "Query the spell checker API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query term"
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SuggestResponse'
+definitions:
+  SuggestResponse:
+    type: object
+    properties:
+      input:
+        type: string
+        description: "The input token"
+        example: "rpo"
+      correction:
+        type: string
+        description: "The corrected token"
+        example: "rpi"
+      probability:
+        type: number
+        description: "Confidence of the result"
+        example: 0.85
+
+    
