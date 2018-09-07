@@ -1,3 +1,5 @@
+from sanic.log import logger
+
 from elasticsearch_dsl.response import Response
 from elasticsearch_dsl.response.hit import Hit, HitMeta
 
@@ -56,7 +58,7 @@ def get_var(input_dict: dict, accessor_string: str):
 
 def highlight_all(hits: List[Hit], tag: str="strong", min_token_size: int=2) -> List[SimpleHit]:
     """
-
+    Marshalls a list of Elasticsearch hits to JSON with highlighting
     :param hits:
     :param tag:
     :param min_token_size:
@@ -107,6 +109,7 @@ def highlight_all(hits: List[Hit], tag: str="strong", min_token_size: int=2) -> 
 
                                 else:
                                     # Unknown field type, continue
+                                    logger.debug("Unknown field type for highlighting: '%s'" % type(field_value))
                                     continue
 
                                 if field_value == fields.keywords_raw.name:
