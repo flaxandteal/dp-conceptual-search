@@ -10,9 +10,9 @@ schemes:
   - "http"
 tags:
   - name: "search"
+  - name: "conceptual_search"
   - name: "suggest"
   - name: "healthcheck"
-  - name: "conceptual_search"
   - name: "users"
   - name: "sessions"
   - name: "recommend"
@@ -45,8 +45,8 @@ paths:
     get:
       tags:
         - search
-      summary: "Default ONS content query API"
-      description: "Default ONS content query API"
+      summary: "Default ONS query API"
+      description: "Default ONS query API"
       parameters:
         - in: path
           name: list_type
@@ -70,6 +70,16 @@ paths:
           description: "Query search term"
           type: string
           required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
       responses:
         200:
           description: OK
@@ -80,8 +90,8 @@ paths:
     post:
       tags:
         - search
-      summary: "Default ONS content query API"
-      description: "Default ONS content query API"
+      summary: "Default ONS query API"
+      description: "Default ONS query API"
       parameters:
         - in: path
           name: list_type
@@ -105,9 +115,21 @@ paths:
           description: "Query search term"
           type: string
           required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
       responses:
         200:
           description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
         400:
           description: Query term not specified
         404:
@@ -129,6 +151,50 @@ paths:
           description: OK
         404:
           description: No document with the given URI found
+  /search/conceptual/{list_type}/{endpoint}:
+    post:
+      tags:
+        - conceptual_search
+      summary: "ONS conceptual search API"
+      description: "ONS API for performing conceptual search (i.e non-keyword matching with ML)"
+      parameters:
+        - in: path
+          name: list_type
+          required: true
+          type: string
+          enum:
+            - ons
+            - onsdata
+            - onspublications
+        - in: path
+          name: endpoint
+          required: true
+          type: string
+          enum:
+            - content
+            - counts
+            - featured
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+
   /suggest/spelling:
     get:
       tags:
@@ -148,7 +214,74 @@ paths:
             type: array
             items:
               $ref: '#/definitions/SuggestResponse'
+  /healthcheck:
+    get:
+      tags:
+        - healthcheck
+      summary: "Healthcheck API"
+      description: "API to query the APP for current health status"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/HealthCheck'
+
 definitions:
+  SearchResponse:
+    type: object
+    properties:
+      numberOfResults:
+        type: number
+        description: "Number of search results which match query"
+        example: 80
+      took:
+        type: number
+        description: "Time taken to execute query in mili-seconds"
+        example: 530
+      results:
+        type: array
+        description: "List of matching documents for the current page"
+        items:
+          type: object
+      suggestions:
+        type: array
+        description: "Suggested corrections to the search term (i.e spelling)"
+        items:
+          type: string
+      docCounts:
+        $ref: '#/definitions/DocCounts'
+      paginator:
+        $ref: '#/definitions/Paginator'
+      sortBy:
+        type: string
+        description: "The chosen sort option"
+        example: "relevance"
+  DocCounts:
+    type: object
+    description: "Dictionary containing doc counts by content type"
+  Paginator:
+    type: object
+    description: "Object containing pagination information"
+    properties:
+      numberOfPages:
+        type: integer
+        description: "Total number of available pages"
+      currentPage:
+        type: integer
+        description: "Current page number"
+      start:
+        type: integer
+        description: "The first page"
+      end:
+        type: integer
+        description: "The last page"
+      pages:
+        type: array
+        description: "List of all available pages"
+        items:
+          type: integer
   SuggestResponse:
     type: object
     properties:
@@ -164,5 +297,18 @@ definitions:
         type: number
         description: "Confidence of the result"
         example: 0.85
+  HealthCheck:
+    type: object
+    properties:
+      service:
+        type: string
+        description: "Service for which healthcheck was carried out"
+        example: "elasticsearch"
+      health:
+        type: string
+        description: "Availability of service"
+        enum:
+          - "available"
+          - "unavailable"
 
     

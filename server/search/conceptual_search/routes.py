@@ -1,8 +1,6 @@
 from sanic import Blueprint
 from sanic.request import Request
 
-from sanic_openapi import doc
-
 from server.search.list_type import ListType
 
 conceptual_search_blueprint = Blueprint(
@@ -10,22 +8,16 @@ conceptual_search_blueprint = Blueprint(
     url_prefix='/search/conceptual')
 
 
-@doc.summary("ONS conceptual search API for population the Search Engine Results Page (SERP)")
-@doc.consumes({"q": str})
 @conceptual_search_blueprint.route('/ons/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
 async def search_ons(request: Request, endpoint: str):
     return await search(request, ListType.ONS, endpoint)
 
 
-@doc.summary("ONS conceptual search API for population the SERP, using the data filter")
-@doc.consumes({"q": str})
 @conceptual_search_blueprint.route('/onsdata/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
 async def search_ons_data(request: Request, endpoint: str):
     return await search(request, ListType.ONS_DATA, endpoint)
 
 
-@doc.summary("ONS conceptual search API for population the SERP, using the publications filter")
-@doc.consumes({"q": str})
 @conceptual_search_blueprint.route('/onspublications/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
 async def search_ons_publications(request: Request, endpoint: str):
     return await search(request, ListType.ONS_PUBLICATIONS, endpoint)
