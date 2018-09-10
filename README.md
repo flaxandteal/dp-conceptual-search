@@ -45,7 +45,7 @@ on disk. This repository comes with the [full word2vec embeddings model](word2ve
 
 # Swagger
 
-The swagger spec can be found by running the app and navigating to the ```/swagger``` endpoint.
+The swagger spec can be found in ```swagger.yaml```
 
 # Testing
 
