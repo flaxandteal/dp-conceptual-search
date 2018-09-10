@@ -64,12 +64,7 @@ def highlight_all(hits: List[Hit], tag: str="strong", min_token_size: int=2) -> 
     :param min_token_size:
     :return:
     """
-    from ons.search import fields
-
     simple_hits = []
-
-    start_tag = "<{tag}>".format(tag=tag)
-    end_tag = "</{tag}>".format(tag=tag)
 
     for hit in hits:
         # Convert to a SimpleHit which supports value setting using dot notation
@@ -83,41 +78,17 @@ def highlight_all(hits: List[Hit], tag: str="strong", min_token_size: int=2) -> 
 
                 # Iterate over highlighted fields
                 for highlight_field in highlight_dict:
-                    # Iterate over highlight fragments
-                    for fragment in highlight_dict[highlight_field]:
-                        if start_tag in fragment and end_tag in fragment:
-                            # <strong> tags exist, extract the token
-                            idx_start = fragment.index(start_tag) + len(start_tag)
-                            idx_end = fragment.index(end_tag)
+                    # Replace the _source field with the highlighted fragment, provided there is only one
+                    if len(highlight_dict[highlight_field]) == 1:
+                        highlighted_field = highlight_dict[highlight_field][0]
 
-                            highlighted_token = fragment[idx_start:idx_end]
-                            # Make sure token is above minimum size
-                            if len(highlighted_token) > min_token_size:
-
-                                # Get the raw value of the field from the Elasticsearch JSON response
-                                field_value = get_var(simple_hit, highlight_field)
-
-                                if isinstance(field_value, str):
-                                    # Simply surround the token in strong tags
-                                    highlighted_val = highlight(highlighted_token, field_value)
-
-                                elif isinstance(field_value, list):
-                                    # Highlight elements in a list
-                                    highlighted_val = []
-                                    for val in field_value:
-                                        highlighted_val.append(highlight(highlighted_token, val))
-
-                                else:
-                                    # Unknown field type, continue
-                                    logger.debug("Unknown field type for highlighting: '%s'" % type(field_value))
-                                    continue
-
-                                if field_value == fields.keywords_raw.name:
-                                    # We highlight on keywords_raw but set the keywords field
-                                    simple_hit.set_value(fields.keywords.name, highlighted_val)
-                                else:
-                                    # Simply override the field
-                                    simple_hit.set_value(highlight_field, highlighted_val)
+                        # Overwrite the _source field
+                        simple_hit.set_value(highlight_field, highlighted_field)
+                    else:
+                        from sanic.log import logger
+                        message = "Got multiple highlighted fragments, cowardly refusing to overwrite _source for " \
+                                  "field '%s', fragments: %s" % (highlight_field, highlight_dict[highlight_field])
+                        logger.debug(message)
         # Append to the list
         simple_hits.append(simple_hit)
     return simple_hits
