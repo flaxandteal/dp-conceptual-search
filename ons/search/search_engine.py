@@ -45,7 +45,7 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
 
         return s[from_start:end]
 
-    def add_highlight_fields(self, fragment_size: int=0):
+    def add_highlight_fields(self):
         """
         Adds highlight options to the search query
         :return:
@@ -56,7 +56,7 @@ class AbstractSearchClient(AsyncSearch, abc.ABC):
 
         return self.highlight(
             *field_names,
-            fragment_size=fragment_size,
+            number_of_fragments=0,  # return whole field with highlighting
             pre_tags=["<strong>"],
             post_tags=["</strong>"])
 
