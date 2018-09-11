@@ -2,6 +2,20 @@ from server.word_embedding.sanic_word2vec import load_model, Models
 from core.word_embedding.models.unsupervised import UnsupervisedModel
 
 
+class SpeckCheckSuggestion(object):
+    def __init__(self, input_token, correction, probability):
+        self.input_token = input_token
+        self.correction = correction
+        self.probability = probability
+
+    def to_dict(self) -> dict:
+        return {
+            "input": self.input_token,
+            "correction": self.correction,
+            "probability": self.probability
+        }
+
+
 class SpellChecker(object):
     """
     Uses word embedding models to check the spelling of words and suggest corrections.
@@ -16,12 +30,12 @@ class SpellChecker(object):
         return self.model.words
 
     def correct_terms(self, terms):
-        result = {}
+        result = []
         for term in terms:
             correction = self.correction(term)
             P = self.P(correction)
             if P > 0:
-                result[term] = {"correction": correction, "probability": P}
+                result.append(SpeckCheckSuggestion(term, correction, P))
         return result
 
     def P(self, word):

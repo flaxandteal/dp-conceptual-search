@@ -5,12 +5,14 @@ from ons.search.response import ONSResponse
 from ons.search.sort_fields import SortFields
 from ons.search.search_engine import AbstractSearchClient
 
+from server.search.list_type import ListType
+
 from typing import ClassVar
 
 available_list_types = ['ons', 'onsdata', 'onspublications']
 
 
-async def _await_response(response) -> ONSResponse:
+async def _await_response(s: AbstractSearchClient, **kwargs) -> ONSResponse:
     """
     Util method for checking if an Elasticsearch response is awaitable (and await if true)
     :param response:
@@ -18,13 +20,15 @@ async def _await_response(response) -> ONSResponse:
     """
     from inspect import isawaitable
 
+    response: ONSResponse = s.execute(**kwargs)
+
     if isawaitable(response):
         response = await response
 
     return response
 
 
-async def search_with_client(request: Request, list_type: str, endpoint: str,
+async def search_with_client(request: Request, list_type: ListType, endpoint: str,
                              search_engine_cls: ClassVar[AbstractSearchClient], **kwargs: dict):
     """
     Builds the search engine client from the specified class
@@ -41,7 +45,7 @@ async def search_with_client(request: Request, list_type: str, endpoint: str,
     from server.search.endpoint import available_endpoints, Endpoint
 
     if issubclass(search_engine_cls, AbstractSearchClient):
-        if list_type in available_list_types and endpoint in available_endpoints:
+        if endpoint in available_endpoints:
             app: Sanic = request.app
             es_client = app.es_client
 
@@ -58,13 +62,13 @@ async def search_with_client(request: Request, list_type: str, endpoint: str,
             return await execute(request, s, list_type, endpoint, **kwargs)
         else:
             from sanic.exceptions import NotFound
-            raise NotFound("No route for list_type/endpoint: '%s/%s'" % (list_type, endpoint))
+            raise NotFound("No route for list_type/endpoint: '%s/%s'" % (list_type.value, endpoint))
     else:
         from sanic.exceptions import InvalidUsage
         raise InvalidUsage("Class '%s' is not a subclass of AbstractSearchClient" % search_engine_cls)
 
 
-async def execute(request: Request, search_engine: AbstractSearchClient, list_type: str, endpoint: str,
+async def execute(request: Request, search_engine: AbstractSearchClient, list_type: ListType, endpoint: str,
                   **kwargs: dict) -> HTTPResponse:
     """
     Executes an ONS search query using the provided client for the given list type (ons, onsdata or onspublications)
@@ -81,7 +85,7 @@ async def execute(request: Request, search_engine: AbstractSearchClient, list_ty
     from server.search.endpoint import available_endpoints, Endpoint
     from server.requests import get_json_param, extract_page, extract_page_size
 
-    if list_type not in available_list_types or endpoint not in available_endpoints:
+    if endpoint not in available_endpoints:
         from sanic.exceptions import NotFound
         raise NotFound("No route for list_type/endpoint: '%s/%s'" % (list_type, endpoint))
 
@@ -112,7 +116,7 @@ async def execute(request: Request, search_engine: AbstractSearchClient, list_ty
                 **params
             )
 
-            response: ONSResponse = await _await_response(search_engine.execute())
+            response: ONSResponse = await _await_response(search_engine)
             result = response.response_to_json(page_number, page_size, sort_by)
 
         elif endpoint == Endpoint.TYPE_COUNTS.value:
@@ -124,13 +128,13 @@ async def execute(request: Request, search_engine: AbstractSearchClient, list_ty
                 **kwargs
             )
 
-            response: ONSResponse = await _await_response(search_engine.execute())
+            response: ONSResponse = await _await_response(search_engine)
             result = response.aggs_to_json()
 
         elif endpoint == Endpoint.FEATURED.value:
             search_engine: AbstractSearchClient = search_engine.featured_result_query(search_term)
 
-            response: ONSResponse = await _await_response(search_engine.execute())
+            response: ONSResponse = await _await_response(search_engine)
             result = response.featured_result_to_json()
 
         elif endpoint == Endpoint.DEPARTMENTS.value:
@@ -140,7 +144,7 @@ async def execute(request: Request, search_engine: AbstractSearchClient, list_ty
                 page_size
             )
 
-            response: ONSResponse = await _await_response(search_engine.execute())
+            response: ONSResponse = await _await_response(search_engine)
             result = response.response_to_json(page_number, page_size, sort_by)
 
         return json_response(result, 200)

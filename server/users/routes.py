@@ -9,7 +9,7 @@ from core.users.user import User
 user_blueprint = Blueprint('users', url_prefix='/users')
 
 
-@user_blueprint.route('/create', methods=['PUT'])
+@user_blueprint.route('/create', methods=['PUT'], strict_slashes=True)
 async def create(request: Request):
     """
     Creates a new user and inserts it into the database.
@@ -27,7 +27,7 @@ async def create(request: Request):
         User.user_id_key)
 
 
-@user_blueprint.route('/find', methods=['GET'])
+@user_blueprint.route('/find', methods=['GET'], strict_slashes=True)
 async def find(request: Request):
     """
     Queries mongoDB for a user with given id (retrieved from request cookies).
@@ -40,7 +40,7 @@ async def find(request: Request):
     raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
 
 
-@user_blueprint.route('/find/<user_id>', methods=['GET'])
+@user_blueprint.route('/find/<user_id>', methods=['GET'], strict_slashes=True)
 async def find(request: Request, user_id: str):
     """
     Queries mongoDB for a user with given id.
@@ -56,7 +56,7 @@ async def find(request: Request, user_id: str):
     return json("User '%s' not found" % user_id, 404)
 
 
-@user_blueprint.route('/delete/<user_id>', methods=['DELETE'])
+@user_blueprint.route('/delete/<user_id>', methods=['DELETE'], strict_slashes=True)
 async def delete(request: Request, user_id: str):
     """
     Deletes the user (and all connected sessions) with the given id.

@@ -1,10 +1,15 @@
 from sanic import Blueprint
 from sanic.request import Request
 
+from ons.search.search_engine import SearchEngine
+
+from server.search import search_with_client
+from server.search.list_type import ListType
+
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-@search_blueprint.route('/', methods=['POST'])
+@search_blueprint.route('/', methods=['POST'], strict_slashes=True)
 async def proxy_elatiscsearch_query(request: Request):
     """
     Proxies Elasticsearch queries to support legacy babbage APIs going forwards.
@@ -53,24 +58,23 @@ async def proxy_elatiscsearch_query(request: Request):
     raise InvalidUsage("Request body not specified")
 
 
-@search_blueprint.route('/<list_type>/<endpoint>')
-async def search(request: Request, list_type: str, endpoint: str):
-    """
-    Single route for all ONS list types and possible endpoints. Responsible for populating the SERP.
-    :param request:
-    :param list_type:
-    :param endpoint:
-    :return:
-    """
-    from ons.search.search_engine import SearchEngine
-
-    from server.search import search_with_client
-
-    return await search_with_client(request, list_type, endpoint, SearchEngine)
+@search_blueprint.route('/ons/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons(request: Request, endpoint: str):
+    return await search_with_client(request, ListType.ONS, endpoint, SearchEngine)
 
 
-@search_blueprint.route('/uri/')
-@search_blueprint.route('/uri/<path:path>')
+@search_blueprint.route('/onsdata/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons_data(request: Request, endpoint: str):
+    return await search_with_client(request, ListType.ONS_DATA, endpoint, SearchEngine)
+
+
+@search_blueprint.route('/onspublications/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons_publications(request: Request, endpoint: str):
+    return await search_with_client(request, ListType.ONS_PUBLICATIONS, endpoint, SearchEngine)
+
+
+@search_blueprint.route('/uri/', strict_slashes=True)
+@search_blueprint.route('/uri/<path:path>', strict_slashes=True)
 async def find_document(request: Request, path: str=''):
     from sanic.response import json
 

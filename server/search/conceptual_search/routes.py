@@ -1,13 +1,29 @@
 from sanic import Blueprint
 from sanic.request import Request
 
+from server.search.list_type import ListType
+
 conceptual_search_blueprint = Blueprint(
     'conceptual_search',
     url_prefix='/search/conceptual')
 
 
-@conceptual_search_blueprint.route('/<list_type>/<endpoint>')
-async def search(request: Request, list_type: str, endpoint: str):
+@conceptual_search_blueprint.route('/ons/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons(request: Request, endpoint: str):
+    return await search(request, ListType.ONS, endpoint)
+
+
+@conceptual_search_blueprint.route('/onsdata/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons_data(request: Request, endpoint: str):
+    return await search(request, ListType.ONS_DATA, endpoint)
+
+
+@conceptual_search_blueprint.route('/onspublications/<endpoint>', methods=['GET', 'POST'], strict_slashes=True)
+async def search_ons_publications(request: Request, endpoint: str):
+    return await search(request, ListType.ONS_PUBLICATIONS, endpoint)
+
+
+async def search(request: Request, list_type: ListType, endpoint: str):
     """
     Single route for all ONS list types and possible endpoints. Responsible for populating the SERP.
     :param request:
@@ -31,7 +47,7 @@ async def search(request: Request, list_type: str, endpoint: str):
 
         return redirect(
             '/search/%s/featured?q=%s' %
-            (list_type, search_term_encoded))
+            (list_type.value, search_term_encoded))
 
     user_vector = await get_user_vector(request)
 

@@ -30,6 +30,10 @@ LOGO = None
 
 RESPONSE_TIMEOUT = 600
 
+API_VERSION = '1.0.1'
+API_TITLE = 'dp-conceptual-search'
+API_DESCRIPTION = 'Dedicated search API for digital publishing.'
+
 MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
 
 MONGO_DEFAULT_HOST = os.environ.get("MONGO_DEFAULT_HOST", "localhost")

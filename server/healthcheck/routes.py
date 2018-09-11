@@ -64,26 +64,29 @@ async def elastic_search_health(request: Request) -> (dict, int):
 async def health_check(request: Request):
     from config_core import USER_RECOMMENDATION_ENABLED
 
-    health = {}
+    health = []
     code = 200
 
     es_health, es_code = await elastic_search_health(request)
 
     if es_code == 200:
-        health['elasticsearch'] = 'available'
+        es_health_status = {"elasticsearch", "available"}
     else:
-        health['elasticsearch'] = 'unavailable'
+        es_health_status = {"elasticsearch", "unavailable"}
         code = 500
+    health.append(es_health_status)
 
     if USER_RECOMMENDATION_ENABLED:
         mdb_health, mdb_code = mongo_health(request)
 
         if mdb_code == 200:
-            health['mongoDB'] = 'available'
+            mongo_health_status = {"mongoDB", "available"}
         else:
-            health['mongoDB'] = 'unavailable'
+            mongo_health_status = {"mongoDB", "unavailable"}
             # Return a 202 ACCEPTED (certain parts of the app will continue to
             # work as normal)
             code = 202
+
+        health.append(mongo_health_status)
 
     return json(health, code)

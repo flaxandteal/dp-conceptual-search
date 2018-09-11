@@ -5,6 +5,8 @@ class TestSpellChecker(TestApp):
 
     confidence_limit = 0.5
 
+    expected_keys = ['input_token', 'correction', 'probability']
+
     expected = {
         "rpj": "rpi",
         "cph": "cpi",
@@ -31,33 +33,19 @@ class TestSpellChecker(TestApp):
         self.assertIsNotNone(json_result, "json result should not be None")
         self.assertIsInstance(
             json_result,
-            dict,
-            "json result should be instance of dict")
+            list,
+            "json result should be instance of list")
 
-        tokens = self.query.split()
+        input_tokens = self.query.split()
 
-        for token in tokens:
-            self.assertIn(
-                token,
-                json_result,
-                "token '%s' should be in json response" %
-                token)
+        for entry in json_result:
+            # Assert entry has correct keys
+            for key in entry.keys():
+                self.assertIn(key, self.expected_keys)
+            # Assert input token is in list
+            input_token = entry['input_token']
 
-            self.assertIn(
-                'correction',
-                json_result[token],
-                "key 'correction' should be in entry for token '%s'" %
-                token)
+            self.assertIn(input_token, input_tokens)
 
-            self.assertIn('probability', json_result[token],
-                          "key 'probability' should be in entry for token '%s'" % token)
-
-            self.assertEqual(
-                self.expected[token],
-                json_result[token]['correction'])
-
-            self.assertGreater(
-                json_result[token]["probability"],
-                self.confidence_limit,
-                "confidence should be greater than %f" %
-                self.confidence_limit)
+            # Assert suggested correction is correct
+            self.assertEqual(entry['correction'], self.expected[input_token])

@@ -5,7 +5,7 @@ from sanic.response import json, HTTPResponse
 suggest_blueprint = Blueprint('suggest', url_prefix='/suggest')
 
 
-@suggest_blueprint.route('/spelling', methods=["GET"])
+@suggest_blueprint.route('/spelling', methods=["GET"], strict_slashes=True)
 def spell_checker(request: Request) -> HTTPResponse:
     """
     Spell checks each token in query

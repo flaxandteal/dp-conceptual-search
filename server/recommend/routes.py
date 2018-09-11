@@ -43,8 +43,8 @@ async def update_by_term(request: Request, term: str, update_func: Callable) -> 
     return json(session.to_json(), 200)
 
 
-@recommend_blueprint.route('/update/page/', methods=['POST'])
-@recommend_blueprint.route('/update/page/<path:path>', methods=['POST'])
+@recommend_blueprint.route('/update/page/', methods=['POST'], strict_slashes=True)
+@recommend_blueprint.route('/update/page/<path:path>', methods=['POST'], strict_slashes=True)
 async def update_by_document(request: Request, path: str):
     """
     Performs a generic reinforcement of the users vector, using the given term
@@ -97,7 +97,7 @@ async def update_by_document(request: Request, path: str):
     raise NotFound("Unable to find page with uri '%s'" % path)
 
 
-@recommend_blueprint.route('/update/positive/<term>', methods=['POST'])
+@recommend_blueprint.route('/update/positive/<term>', methods=['POST'], strict_slashes=True)
 async def positive_update(request: Request, term: str):
     """
     Performs a positive reinforcement of the users vector, using the given term
@@ -109,7 +109,7 @@ async def positive_update(request: Request, term: str):
     return await update_by_term(request, term, default_move_session_vector)
 
 
-@recommend_blueprint.route('/update/negative/<term>', methods=['POST'])
+@recommend_blueprint.route('/update/negative/<term>', methods=['POST'], strict_slashes=True)
 async def negative_update(request: Request, term: str):
     """
     Performs a negative reinforcement of the users vector, using the given term
@@ -121,7 +121,7 @@ async def negative_update(request: Request, term: str):
     return await update_by_term(request, term, negative_move_session_vector)
 
 
-@recommend_blueprint.route('/similarity/<term>', methods=['GET'])
+@recommend_blueprint.route('/similarity/<term>', methods=['GET'], strict_slashes=True)
 async def similarity(request: Request, term: str):
     """
     Measure how likely the current user is to be interested in the specified term.
@@ -138,7 +138,7 @@ async def similarity(request: Request, term: str):
     raise InvalidUsage("Must supply '%s' cookie" % User.user_id_key)
 
 
-@recommend_blueprint.route('/similarity/<user_id>/<term>', methods=['GET'])
+@recommend_blueprint.route('/similarity/<user_id>/<term>', methods=['GET'], strict_slashes=True)
 async def similarity(request: Request, user_id: str, term: str):
     """
     Measure how likely this user is to be interested in the specified term
@@ -153,9 +153,8 @@ async def similarity(request: Request, user_id: str, term: str):
     user = await get_user(user_id)
 
     if user is not None:
-        from server.word_embedding.sanic_supervised_models import load_model
+        from server.word_embedding.sanic_supervised_models import load_model, SupervisedModels
 
-        from core.word_embedding.models.supervised import SupervisedModels
         from core.word_embedding.utils import cosine_sim
 
         model = load_model(SupervisedModels.ONS)
@@ -175,8 +174,8 @@ async def similarity(request: Request, user_id: str, term: str):
     return json("User '%s' not found" % user_id, 404)
 
 
-@recommend_blueprint.route('/content/', methods=['GET', 'POST'])
-@recommend_blueprint.route('/content/<path:path>', methods=['GET', 'POST'])
+@recommend_blueprint.route('/content/', methods=['GET', 'POST'], strict_slashes=True)
+@recommend_blueprint.route('/content/<path:path>', methods=['GET', 'POST'], strict_slashes=True)
 async def content_query(request: Request, path: str):
     """
     Request for recommended content.
