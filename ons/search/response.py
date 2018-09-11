@@ -1,3 +1,5 @@
+from sanic.log import logger
+
 from elasticsearch_dsl.response import Response
 from elasticsearch_dsl.response.hit import Hit, HitMeta
 
@@ -54,6 +56,44 @@ def get_var(input_dict: dict, accessor_string: str):
     return current_data
 
 
+def highlight_all(hits: List[Hit], tag: str="strong", min_token_size: int=2) -> List[SimpleHit]:
+    """
+    Marshalls a list of Elasticsearch hits to JSON with highlighting
+    :param hits:
+    :param tag:
+    :param min_token_size:
+    :return:
+    """
+    simple_hits = []
+
+    for hit in hits:
+        # Convert to a SimpleHit which supports value setting using dot notation
+        simple_hit: SimpleHit = SimpleHit(hit.to_dict())
+        # Check if meta info available
+        if hasattr(hit, "meta"):
+            meta: HitMeta = hit.meta
+            # Check if highlighting results in the hit meta
+            if hasattr(meta, "highlight"):
+                highlight_dict = meta.highlight.to_dict()
+
+                # Iterate over highlighted fields
+                for highlight_field in highlight_dict:
+                    # Replace the _source field with the highlighted fragment, provided there is only one
+                    if len(highlight_dict[highlight_field]) == 1:
+                        highlighted_field = highlight_dict[highlight_field][0]
+
+                        # Overwrite the _source field
+                        simple_hit.set_value(highlight_field, highlighted_field)
+                    else:
+                        from sanic.log import logger
+                        message = "Got multiple highlighted fragments, cowardly refusing to overwrite _source for " \
+                                  "field '%s', fragments: %s" % (highlight_field, highlight_dict[highlight_field])
+                        logger.debug(message)
+        # Append to the list
+        simple_hits.append(simple_hit)
+    return simple_hits
+
+
 def highlight(highlighted_text: str, val: str, tag: str='strong') -> str:
     """
     Wraps the desired text snippet in :param tag html tags.
@@ -66,56 +106,6 @@ def highlight(highlighted_text: str, val: str, tag: str='strong') -> str:
     pattern = re.compile(re.escape(highlighted_text), re.I)
     toreplace = "<{tag}>\g<0></{tag}>".format(tag=tag)
     return re.sub(pattern, toreplace, val)
-
-
-def marshall_hits(hits: List[Hit]) -> list:
-    """
-    Converts Elasticsearch hits into a valid JSON response.
-    :param hits:
-    :return:
-    """
-    import re
-    from ons.search import fields
-
-    hits_list = []
-    for hit in hits:
-        hit_dict = SimpleHit(hit.to_dict())
-        if hasattr(hit, "meta"):
-            meta: HitMeta = hit.meta
-            if hasattr(meta, "highlight"):
-                highlight_dict = meta.highlight.to_dict()
-                for highlight_key in highlight_dict:
-                    for fragment in highlight_dict[highlight_key]:
-                        fragment = fragment.strip()
-                        if "<strong>" in fragment and "</strong>" in fragment:
-                            highlighted_text = " ".join(re.findall(
-                                "<strong>(.*?)</strong>", fragment))
-
-                            val = get_var(hit_dict, highlight_key)
-
-                            if isinstance(val, str):
-                                highlighted_val = highlight(
-                                    highlighted_text, val)
-
-                            elif hasattr(val, "__iter__"):
-                                highlighted_val = []
-                                for v in val:
-                                    highlighted_val.append(
-                                        highlight(highlighted_text, v))
-
-                            if highlight_key == fields.keywords_raw.name:
-                                hit_dict.set_value(
-                                    fields.keywords.name, highlighted_val)
-                            else:
-                                hit_dict.set_value(
-                                    highlight_key, highlighted_val)
-
-            # set _type field
-            hit_dict["_type"] = meta.doc_type
-            hit_dict["_score"] = meta.score
-            # hit_dict["_meta"] = meta.to_dict()
-            hits_list.append(hit_dict)
-    return hits_list
 
 
 class ONSResponse(Response):
@@ -162,10 +152,12 @@ class ONSResponse(Response):
             page_number,
             page_size)
 
+        highlighted_hits = highlight_all(self.hits)
+
         json = {
             "numberOfResults": self.hits.total,
             "took": self.took,
-            "results": marshall_hits(self.hits),
+            "results": highlighted_hits,
             "docCounts": {},
             "paginator": paginator.to_dict(),
             "sortBy": sort_by.name
