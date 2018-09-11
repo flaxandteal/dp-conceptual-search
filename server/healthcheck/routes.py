@@ -5,12 +5,6 @@ from sanic.response import json
 health_check_blueprint = Blueprint('healthcheck', url_prefix='/healthcheck')
 
 
-class ServiceHealthReport(dict):
-    def __init__(self, service, health):
-        self['service'] = service
-        self['health'] = health
-
-
 def mongo_health(request: Request) -> (dict, int):
     from core.utils import check_for_connection_error
 
@@ -76,9 +70,9 @@ async def health_check(request: Request):
     es_health, es_code = await elastic_search_health(request)
 
     if es_code == 200:
-        es_health_status = ServiceHealthReport("elasticsearch", "available")
+        es_health_status = {"elasticsearch", "available"}
     else:
-        es_health_status = ServiceHealthReport("elasticsearch", "unavailable")
+        es_health_status = {"elasticsearch", "unavailable"}
         code = 500
     health.append(es_health_status)
 
@@ -86,9 +80,9 @@ async def health_check(request: Request):
         mdb_health, mdb_code = mongo_health(request)
 
         if mdb_code == 200:
-            mongo_health_status = ServiceHealthReport("mongoDB", "available")
+            mongo_health_status = {"mongoDB", "available"}
         else:
-            mongo_health_status = ServiceHealthReport("mongoDB", "unavailable")
+            mongo_health_status = {"mongoDB", "unavailable"}
             # Return a 202 ACCEPTED (certain parts of the app will continue to
             # work as normal)
             code = 202
