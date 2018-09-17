@@ -47,7 +47,7 @@ class SearchClientTestCase(ElasticsearchTestCase):
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
 
-        async def run_test():
+        async def run_async():
             client: SearchClient = self.get_client()
 
             # Call search and check arguments match those provided
@@ -58,7 +58,7 @@ class SearchClientTestCase(ElasticsearchTestCase):
             self.mock_client.search.assert_called_with(index=[self.index], doc_type=[], body=self.get_body)
 
         # Run the async test
-        coro = asyncio.coroutine(run_test)
+        coro = asyncio.coroutine(run_async)
         event_loop.run_until_complete(coro())
         event_loop.close()
 
