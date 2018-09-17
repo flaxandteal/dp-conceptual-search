@@ -1,20 +1,26 @@
 from elasticsearch_dsl import Search
+from elasticsearch_dsl.response import Response
+
+
+from core.search.search_type import SearchType
 
 
 class SearchClient(Search):
     """
     Class to re-work the execute method to allow better inheritance
     """
-    def __init__(self, *args, **kwargs):
-        super(SearchClient, self).__init__(*args, **kwargs)
-        from elasticsearch_dsl.response import Response
-
+    def __init__(self, response_class=Response, **kwargs):
+        """
+        Initialise the SearchClient responsible for sending requests to Elasticsearch
+        :param response_class: Class to wrap Elasticsearch response
+        :param kwargs: Additional arguments for elasticsearch_dsl.Search client
+        """
+        super(SearchClient, self).__init__(**kwargs)
         # Define response object
         self._response = None
 
         # Define response class object
-        response_cls = kwargs.get("response_class", Response)
-        self._response_class = response_cls
+        self._response_class = response_class
 
     def _get_elasticsearch_client(self):
         """
@@ -46,6 +52,15 @@ class SearchClient(Search):
         if isawaitable(response):
             response = await response
         return response
+
+    def search_type(self, search_type: SearchType):
+        """
+        Adds search_type param to Elasticsearch query
+        :param search_type:
+        :return:
+        """
+
+        return self.params(search_type=search_type.value)
 
     async def execute(self, ignore_cache=False):
         """
