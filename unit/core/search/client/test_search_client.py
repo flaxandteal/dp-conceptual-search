@@ -1,29 +1,14 @@
 import asyncio
-import unittest
-from unittest.mock import MagicMock
 
 from core.search.client import SearchClient
 
+from unit.utils.elasticsearch_test_case import ElasticsearchTestCase
 
-class SearchClientTestCase(unittest.TestCase):
 
-    def setUp(self):
-        from unit.core.search.client.mock_es_client import MockElasticsearchClient
-
-        hit = {
-            "_id": "test_hit",
-            "_source": {
-                "name": "Randy Marsh",
-                "occupation": "Receptionist at Tom's Rhinoplasty"
-            }
-        }
-
-        # Mock the search client
-        self.mock_client = MockElasticsearchClient()
-        self.mock_client.search = MagicMock(return_value=hit)
+class SearchClientTestCase(ElasticsearchTestCase):
 
     @property
-    def test_body(self):
+    def get_body(self):
         """
         Test query body
         :return:
@@ -66,11 +51,11 @@ class SearchClientTestCase(unittest.TestCase):
             client: SearchClient = self.get_client()
 
             # Call search and check arguments match those provided
-            client.update_from_dict(self.test_body)
+            client.update_from_dict(self.get_body)
 
             response = await client.execute(ignore_cache=True)
 
-            self.mock_client.search.assert_called_with(index=[self.index], doc_type=[], body=self.test_body,)
+            self.mock_client.search.assert_called_with(index=[self.index], doc_type=[], body=self.get_body)
 
         # Run the async test
         coro = asyncio.coroutine(run_test)
