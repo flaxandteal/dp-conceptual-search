@@ -18,23 +18,59 @@ class ElasticsearchClientService(object):
         self._client = None
         self._init_client()
 
+    def _mock_client(self):
+        """
+        Mocks an Elasticsearch client for testing
+        :return:
+        """
+        from unittest.mock import MagicMock
+        from unit.mocks.mock_es_client import MockElasticsearchClient
+        from unit.utils.elasticsearch_test_utils import ElasticsearchTestUtils
+
+        test_utils = ElasticsearchTestUtils()
+
+        hits = test_utils.mock_hits()
+
+        response = {
+            "_shards": test_utils.mock_shards_json,
+            "hits": {
+                "hits": hits,
+                "max_score": 1.0,
+                "total": len(hits)
+            },
+            "timed_out": test_utils.mock_timed_out,
+            "took": test_utils.mock_took
+        }
+
+        # Mock the search client
+        self._client = MockElasticsearchClient()
+        self._client.search = MagicMock(return_value=response)
+
     def _init_client(self):
-        es_host = self.get_search_url()
-
-        if self.async_enabled():
-            from elasticsearch_async import AsyncElasticsearch
-
-            logging.info("Initialising asynchronous Elasticsearch client with host {0}".format(es_host))
-            client = AsyncElasticsearch(
-                es_host, loop=self.loop, timeout=self.get_search_timeout()
-            )
+        """
+        Initialises the correct Elasticsearch client for the Sanic app
+        :return:
+        """
+        if self.app.config.get("TESTING", False):
+            logging.warning("Test environment active, using MockElasticSearch client")
+            self._mock_client()
         else:
-            logging.info("Initialising synchronous Elasticsearch client with host {0}".format(es_host))
-            client = Elasticsearch(
-                es_host, timeout=self.get_search_timeout()
-            )
+            es_host = self.get_search_url()
 
-        self._client = client
+            if self.async_enabled():
+                from elasticsearch_async import AsyncElasticsearch
+
+                logging.info("Initialising asynchronous Elasticsearch client with host {0}".format(es_host))
+                client = AsyncElasticsearch(
+                    es_host, loop=self.loop, timeout=self.get_search_timeout()
+                )
+            else:
+                logging.info("Initialising synchronous Elasticsearch client with host {0}".format(es_host))
+                client = Elasticsearch(
+                    es_host, timeout=self.get_search_timeout()
+                )
+
+            self._client = client
 
     @staticmethod
     def get_search_url() -> str:
