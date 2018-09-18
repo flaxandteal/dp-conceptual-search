@@ -34,7 +34,7 @@ async def ons_content_query(request: ONSRequest) -> HTTPResponse:
     sort_by: SortFields = request.get_sort_by()
 
     response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by).execute()
-    
+
     search_result: SearchResult = response.to_search_result(page, page_size, sort_by, doc_counts={})
 
     return json(search_result.to_dict(), 200)
