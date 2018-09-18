@@ -10,6 +10,8 @@ class SearchEngine(AbstractSearchEngine):
     """
     Implementation of the ONS search engine
     """
+    default_page_number = 1
+    agg_bucket = "docCounts"
 
     def departments_query(self, search_term: str, current_page: int, size: int):
         """
@@ -70,7 +72,25 @@ class SearchEngine(AbstractSearchEngine):
         return s
 
     def type_counts_query(self, search_term, **kwargs):
-        pass
+        """
+        Builds the ONS type counts query, responsible providing counts by content type
+        :param search_term:
+        :param kwargs:
+        :return:
+        """
+        from ons.search.queries import type_counts_query
+        from ons.search.paginator import RESULTS_PER_PAGE
+
+        # Build the content query with no type filters, function scores or sorting
+        s: SearchEngine = self.content_query(search_term, self.default_page_number, RESULTS_PER_PAGE)
+
+        # Build the aggregations
+        aggregations = type_counts_query()
+
+        # Setup the aggregations bucket
+        s.aggs.bucket(self.agg_bucket, aggregations)
+
+        return s
 
     def featured_result_query(self, search_term):
         pass
