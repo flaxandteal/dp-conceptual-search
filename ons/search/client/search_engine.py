@@ -93,4 +93,19 @@ class SearchEngine(AbstractSearchEngine):
         return s
 
     def featured_result_query(self, search_term):
-        pass
+        """
+        Builds the ONS featured result query (content query with specific type filters)
+        :param search_term:
+        :return:
+        """
+        type_filters: List[TypeFilters] = [
+            TypeFilters.FEATURED
+        ]
+
+        page_size = 1  # Only want one hit
+
+        return self.content_query(search_term,
+                                  self.default_page_number,
+                                  page_size,
+                                  filter_functions=None,
+                                  type_filters=type_filters)

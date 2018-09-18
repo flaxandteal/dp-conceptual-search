@@ -107,7 +107,7 @@ class SearchEngineTestCase(ElasticsearchTestCase):
 
         return from_start, current_page, size
 
-    def expected_content_query_for_search_term(self, from_start: int, size: int, query_dict: dict) -> dict:
+    def expected_content_query(self, from_start: int, size: int, query_dict: dict) -> dict:
         """
         Returns the expected query body for the given query dictionary
         :param from_start:
@@ -127,6 +127,49 @@ class SearchEngineTestCase(ElasticsearchTestCase):
                         {
                             "terms": {
                                 "type": [content_type.name for content_type in self.content_types]
+                            }
+                        }
+                    ],
+                    "must": [
+                        query_dict
+                    ]
+                }
+            },
+            "size": size,
+            "sort": query_sort(self.sort_by)
+        }
+
+        return expected
+
+    def expected_featured_result_query(self, query_dict: dict) -> dict:
+        """
+        Returns the expected query body for the given query dictionary
+        :param from_start:
+        :param size:
+        :param query_dict:
+        :param sort_by:
+        :param content_types:
+        :return:
+        """
+        from ons.search.sort_fields import query_sort
+        from ons.search.type_filter import TypeFilters
+
+        # Setup expected content types filter
+        type_filter: TypeFilter = TypeFilters.FEATURED.value
+        content_types: List[ContentType] = type_filter.get_content_types()
+
+        # Expected from_start and page size params
+        from_start = 0
+        size = 1
+
+        expected = {
+            "from": from_start,
+            "query": {
+                "bool": {
+                    "filter": [
+                        {
+                            "terms": {
+                                "type": [content_type.name for content_type in content_types]
                             }
                         }
                     ],
@@ -165,7 +208,7 @@ class SearchEngineTestCase(ElasticsearchTestCase):
         query_dict = query.to_dict()
 
         # Build the expected query dict - note this should not change
-        expected = self.expected_content_query_for_search_term(from_start, size, query_dict)
+        expected = self.expected_content_query(from_start, size, query_dict)
 
         # Call content_query
         engine: SearchEngine = engine.content_query(self.search_term,
@@ -390,9 +433,7 @@ class SearchEngineTestCase(ElasticsearchTestCase):
         query_dict = query.to_dict()
 
         from_start = SearchEngine.default_page_number - 1
-        expected = self.expected_content_query_for_search_term(from_start,
-                                                               RESULTS_PER_PAGE,
-                                                               query_dict)
+        expected = self.expected_content_query(from_start, RESULTS_PER_PAGE, query_dict)
 
         # Add aggregations body
         expected["aggs"] = {
@@ -405,6 +446,44 @@ class SearchEngineTestCase(ElasticsearchTestCase):
 
         # Call type_counts_query
         engine: SearchEngine = engine.type_counts_query(self.search_term)
+
+        # Call execute asynchronously and test method calls
+        event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(event_loop)
+
+        async def run_async():
+            from core.search.search_type import SearchType
+            # Ensure search method on SearchClient is called correctly on execute
+            response = await engine.execute(ignore_cache=True)
+
+            self.mock_client.search.assert_called_with(index=[self.index], doc_type=[], body=expected,
+                                                       search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+
+        # Run the async test
+        coro = asyncio.coroutine(run_async)
+        event_loop.run_until_complete(coro())
+        event_loop.close()
+
+    def test_featured_results_query(self):
+        """
+        Test that the featured results query calls search on SearchClient correctly
+        :return:
+        """
+        import asyncio
+
+        from ons.search.queries import content_query
+
+        # Create instance of SearchEngine
+        engine = self.get_search_engine()
+
+        # Build expected query body
+        query = content_query(self.search_term)
+        query_dict = query.to_dict()
+
+        expected = self.expected_featured_result_query(query_dict)
+
+        # Call featured_result_query
+        engine: SearchEngine = engine.featured_result_query(self.search_term)
 
         # Call execute asynchronously and test method calls
         event_loop = asyncio.new_event_loop()
