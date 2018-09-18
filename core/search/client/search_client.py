@@ -68,7 +68,7 @@ class SearchClient(Search):
         :param ignore_cache:
         :return:
         """
-        if ignore_cache or not hasattr(self, '_response'):
+        if ignore_cache or not hasattr(self, '_response') or self._response is None:
             search_response = await self._search()
 
             self._response = self._response_class(self, search_response)
