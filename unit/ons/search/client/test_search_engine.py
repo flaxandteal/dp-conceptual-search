@@ -113,8 +113,6 @@ class SearchEngineTestCase(ElasticsearchTestCase):
         :param from_start:
         :param size:
         :param query_dict:
-        :param sort_by:
-        :param content_types:
         :return:
         """
         from ons.search.sort_fields import query_sort
@@ -144,11 +142,7 @@ class SearchEngineTestCase(ElasticsearchTestCase):
     def expected_featured_result_query(self, query_dict: dict) -> dict:
         """
         Returns the expected query body for the given query dictionary
-        :param from_start:
-        :param size:
         :param query_dict:
-        :param sort_by:
-        :param content_types:
         :return:
         """
         from ons.search.sort_fields import query_sort
@@ -229,7 +223,6 @@ class SearchEngineTestCase(ElasticsearchTestCase):
         Asserts two dics are equal without requiring same ordering
         :param first:
         :param second:
-        :param msg:
         :return:
         """
         for key in first:
