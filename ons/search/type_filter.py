@@ -30,3 +30,5 @@ class TypeFilters(Enum):
     METHODOLOGY_ARTICLE = TypeFilter([ContentTypes.STATIC_METHODOLOGY, ContentTypes.STATIC_METHODOLOGY_DOWNLOAD])
     CORPORATE_INFO = TypeFilter([ContentTypes.STATIC_FOI, ContentTypes.STATIC_PAGE, ContentTypes.STATIC_LANDING_PAGE,
                                  ContentTypes.STATIC_ARTICLE])
+    # Type filter for featured results queries
+    FEATURED = TypeFilter([ContentTypes.PRODUCT_PAGE, ContentTypes.HOME_PAGE_CENSUS])
