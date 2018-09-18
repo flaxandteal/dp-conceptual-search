@@ -15,7 +15,6 @@ def init_app() -> SanicElasticsearch:
 
     from sanic.log import logger
 
-    from server.request import ONSRequest
     from server.log_config import default_log_config
 
     # First, set the ioloop event policy to use uvloop
@@ -23,7 +22,7 @@ def init_app() -> SanicElasticsearch:
 
     # Now initialise the APP config, logger and ONSRequest handler
     config_name = os.environ.get('SEARCH_CONFIG', 'development')
-    app = SanicElasticsearch(log_config=default_log_config, request_class=ONSRequest)
+    app = SanicElasticsearch(log_config=default_log_config)
 
     logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)

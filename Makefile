@@ -16,7 +16,7 @@ fastText:
 	cd lib/fastText && python setup.py install
 
 test: test_requirements
-	# python manager.py test
+	python manager.py test
 
 integration-test: test_requirements
 	# CONCEPTUAL_SEARCH_ENABLED=true USER_RECOMMENDATION_ENABLED=true nosetests -s -v tests.integration

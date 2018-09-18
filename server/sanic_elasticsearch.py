@@ -7,8 +7,10 @@ from elasticsearch import Elasticsearch
 
 class SanicElasticsearch(Sanic):
     def __init__(self, *args, **kwargs):
+        from server.request.ons_request import ONSRequest
         from server.elasticsearch_client import ElasticsearchClientService
-        super(SanicElasticsearch, self).__init__(*args, **kwargs)
+        # Initialise APP with custom ONSRequest class
+        super(SanicElasticsearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
         self._es_client_service = None
