@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 from core.search.sort_by import SortOrder
-from ons.search import fields
+from ons.search.fields import Fields
 
 
 class SortFields(Enum):
@@ -15,25 +15,25 @@ class SortFields(Enum):
 
 _sort_by = {
     SortFields.first_letter: [
-        (fields.title_first_letter, SortOrder.ASC),
-        (fields.title_raw, SortOrder.ASC),
-        (fields.releaseDate, SortOrder.ASC)
+        (Fields.TITLE_FIRST_LETTER.value, SortOrder.ASC),
+        (Fields.TITLE_RAW.value, SortOrder.ASC),
+        (Fields.RELEASE_DATE.value, SortOrder.ASC)
     ],
     SortFields.title: [
-        (fields.title_raw, SortOrder.ASC),
-        (fields.releaseDate, SortOrder.DESC)
+        (Fields.TITLE_RAW.value, SortOrder.ASC),
+        (Fields.RELEASE_DATE.value, SortOrder.DESC)
     ],
     SortFields.relevance: [
-        (fields._score, SortOrder.DESC),
-        (fields.releaseDate, SortOrder.DESC)
+        (Fields.SCORE.value, SortOrder.DESC),
+        (Fields.RELEASE_DATE.value, SortOrder.DESC)
     ],
     SortFields.release_date: [
-        (fields.releaseDate, SortOrder.DESC),
-        (fields._score, SortOrder.DESC)
+        (Fields.RELEASE_DATE.value, SortOrder.DESC),
+        (Fields.SCORE.value, SortOrder.DESC)
     ],
     SortFields.release_date_asc: [
-        (fields.releaseDate, SortOrder.ASC),
-        (fields._score, SortOrder.DESC)
+        (Fields.RELEASE_DATE.value, SortOrder.ASC),
+        (Fields.SCORE.value, SortOrder.DESC)
     ]
 }
 
