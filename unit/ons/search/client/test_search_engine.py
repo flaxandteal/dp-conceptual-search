@@ -238,11 +238,101 @@ class SearchEngineTestCase(ElasticsearchTestCase):
             "sort": query_sort(sort_by)
         }
 
-        # Call departments_query
+        # Call content_query
         engine: SearchEngine = engine.content_query(search_term,
                                                     current_page,
                                                     size,
                                                     sort_by=sort_by,
+                                                    type_filters=type_filters)
+
+        # Assert correct dict structure
+        engine_dict = engine.to_dict()
+        self.assertEqualDicts(expected, engine_dict)
+
+        # Call execute asynchronously and test method calls
+        event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(event_loop)
+
+        async def run_async():
+            from core.search.search_type import SearchType
+            # Ensure search method on SearchClient is called correctly on execute
+            response = await engine.execute(ignore_cache=True)
+
+            self.mock_client.search.assert_called_with(index=[self.index], doc_type=[], body=expected,
+                                                       search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+
+        # Run the async test
+        coro = asyncio.coroutine(run_async)
+        event_loop.run_until_complete(coro())
+        event_loop.close()
+
+    def test_content_query_with_filter_functions(self):
+        """
+        Test that the content query calls search on SearchClient correctly with filter functions
+        :return:
+        """
+        import asyncio
+        from ons.search.queries import content_query, function_score_content_query
+        from ons.search.type_filter import TypeFilters
+        from ons.search.content_type import ContentTypes
+        from ons.search.sort_fields import query_sort, SortFields
+
+        # Create instance of SearchEngine
+        engine = self.get_search_engine()
+
+        # Calculate correct start page number
+        from_start, current_page, size = self.paginate()
+
+        # Generate expected query
+        search_term = "Who ya gonna call?"
+        sort_by = SortFields.relevance
+        type_filters = list(TypeFilters)
+
+        # Build up the list of content types for filtering
+        content_types = []
+        for type_filter in type_filters:
+            type_filter_content_types = type_filter.value.get_content_types()
+            content_type_names = [c.name for c in type_filter_content_types]
+            content_types.extend(content_type_names)
+
+        # Add filter functions
+        filter_by_content_types = [
+            ContentTypes.BULLETIN.value,
+            ContentTypes.ARTICLE.value
+        ]
+
+        # Build the content query and convert to dict
+        query = content_query(search_term)
+        function_score_query = function_score_content_query(query, filter_by_content_types)
+        query_dict = function_score_query.to_dict()
+
+        # Build the expected query dict - note this should not change
+        expected = {
+            "from": from_start,
+            "query": {
+                "bool": {
+                    "filter": [
+                        {
+                            "terms": {
+                                "type": content_types
+                            }
+                        }
+                    ],
+                    "must": [
+                        query_dict
+                    ]
+                }
+            },
+            "size": size,
+            "sort": query_sort(sort_by)
+        }
+
+        # Call content_query
+        engine: SearchEngine = engine.content_query(search_term,
+                                                    current_page,
+                                                    size,
+                                                    sort_by=sort_by,
+                                                    filter_functions=filter_by_content_types,
                                                     type_filters=type_filters)
 
         # Assert correct dict structure
