@@ -9,7 +9,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     Abstract search engine client defining common methods for ONS search engine
     """
     def __init__(self, **kwargs):
-        from ons.search.response import ONSResponse
+        from ons.search.response.ons_response import ONSResponse
 
         super(AbstractSearchEngine, self).__init__(response_class=ONSResponse, **kwargs)
 

@@ -1,10 +1,10 @@
 """
 Code for creating HTTP server app
 """
-from sanic import Sanic
+from server.sanic_elasticsearch import SanicElasticsearch
 
 
-def init_app() -> Sanic:
+def init_app() -> SanicElasticsearch:
     """
     Initialises the default state for the Sanic APP
     :return:
@@ -23,7 +23,7 @@ def init_app() -> Sanic:
 
     # Now initialise the APP config, logger and ONSRequest handler
     config_name = os.environ.get('SEARCH_CONFIG', 'development')
-    app = Sanic(log_config=default_log_config, request_class=ONSRequest)
+    app = SanicElasticsearch(log_config=default_log_config, request_class=ONSRequest)
 
     logger.info("Using config '%s'" % config_name)
     app.config.from_pyfile('config_%s.py' % config_name)
@@ -31,20 +31,23 @@ def init_app() -> Sanic:
     return app
 
 
-def register_blueprints(app: Sanic):
+def register_blueprints(app: SanicElasticsearch):
     """
     Registers blueprints against a Sanic APP
     :param app:
     :return:
     """
+    from server.search.routes import search_blueprint
+
+    app.blueprint(search_blueprint)
 
 
-def create_app() -> Sanic:
+def create_app() -> SanicElasticsearch:
     """
     Creates the Sanic APP and registers all blueprints
     :return:
     """
-    app: Sanic = init_app()
+    app: SanicElasticsearch = init_app()
     register_blueprints(app)
 
     return app
