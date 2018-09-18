@@ -9,6 +9,7 @@ class ContentTypeWeights(Enum):
     """
     Enum containing content type weight constants
     """
+    DEFAULT = 1.0
     BULLETIN = 1.55
     ARTICLE = 1.30
     TIMESERIES = 1.20
@@ -17,15 +18,15 @@ class ContentTypeWeights(Enum):
 
 
 class ContentType(object):
-    def __init__(self, name, weight=1.0):
+    def __init__(self, name, weight: ContentTypeWeights=ContentTypeWeights.DEFAULT):
         self.name = name
         self.weight = weight
 
     def __str__(self):
-        return "ContentType: {0}(weight={1})".format(self.name, self.weight)
+        return "ContentType: {0}(weight={1})".format(self.name, self.weight.value)
 
     def __repr__(self):
-        return "ContentType: {0}(weight={1})".format(self.name, self.weight)
+        return "ContentType: {0}(weight={1})".format(self.name, self.weight.value)
 
     def filter_function(self) -> dict:
         """
@@ -38,7 +39,7 @@ class ContentType(object):
                     "_type": self.name
                 }
             },
-            "weight": self.weight
+            "weight": self.weight.value
         }
 
 
@@ -50,12 +51,12 @@ class ContentTypes(Enum):
     HOME_PAGE_CENSUS = ContentType("home_page_census")
     TAXONOMY_LANDING_PAGE = ContentType("taxonomy_landing_page")
     PRODUCT_PAGE = ContentType("product_page")
-    BULLETIN = ContentType("bulletin", ContentTypeWeights.BULLETIN.value)
-    ARTICLE = ContentType("article", ContentTypeWeights.ARTICLE.value)
-    ARTICLE_DOWNLOAD = ContentType("article_download", ContentTypeWeights.ARTICLE.value)
-    TIMESERIES = ContentType("timeseries", ContentTypeWeights.TIMESERIES.value)
+    BULLETIN = ContentType("bulletin", ContentTypeWeights.BULLETIN)
+    ARTICLE = ContentType("article", ContentTypeWeights.ARTICLE)
+    ARTICLE_DOWNLOAD = ContentType("article_download", ContentTypeWeights.ARTICLE)
+    TIMESERIES = ContentType("timeseries", ContentTypeWeights.TIMESERIES)
     DATA_SLICE = ContentType("data_slice")
-    COMPENDIUM_LANDING_PAGE = ContentType("compendium_landing_page", ContentTypeWeights.ARTICLE.value)
+    COMPENDIUM_LANDING_PAGE = ContentType("compendium_landing_page", ContentTypeWeights.ARTICLE)
     COMPENDIUM_CHAPTER = ContentType("compendium_chapter")
     COMPENDIUM_DATA = ContentType("compendium_data")
     STATIC_LANDING_PAGE = ContentType("static_landing_page")
@@ -63,11 +64,11 @@ class ContentTypes(Enum):
     STATIC_METHODOLOGY = ContentType("static_methodology")
     STATIC_METHODOLOGY_DOWNLOAD = ContentType("static_methodology_download")
     STATIC_PAGE = ContentType("static_page")
-    STATIC_QMI = ContentType("static_qmi", ContentTypeWeights.BULLETIN.value)
+    STATIC_QMI = ContentType("static_qmi", ContentTypeWeights.BULLETIN)
     STATIC_FOI = ContentType("static_foi")
-    STATIC_ADHOC = ContentType("static_adhoc", ContentTypeWeights.STATIC_ADHOC.value)
+    STATIC_ADHOC = ContentType("static_adhoc", ContentTypeWeights.STATIC_ADHOC)
     DATASET = ContentType("dataset")
-    DATASET_LANDING_PAGE = ContentType("dataset_landing_page", ContentTypeWeights.DATASET_LANDING_PAGE.value)
+    DATASET_LANDING_PAGE = ContentType("dataset_landing_page", ContentTypeWeights.DATASET_LANDING_PAGE)
     TIMESERIES_DATASET = ContentType("timeseries_dataset")
     RELEASE = ContentType("release")
     REFERENCE_TABLES = ContentType("reference_tables")
