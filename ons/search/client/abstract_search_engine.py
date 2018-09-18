@@ -1,7 +1,9 @@
 import abc
+from typing import List
 
 from core.search.client import SearchClient
 from ons.search.sort_fields import SortFields
+from ons.search.type_filter import TypeFilters
 
 
 class AbstractSearchEngine(SearchClient, abc.ABC):
@@ -24,6 +26,19 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         return self.sort(
             *query_sort(sort_by)
         )
+
+    def type_filter(self, type_filters: List[TypeFilters]):
+        """
+        Add type filter options to the query
+        :param type_filters:
+        :return:
+        """
+        type_filter_list = []
+        for type_filter in type_filters:
+            for content_type in type_filter.value.get_content_types():
+                type_filter_list.append(content_type.name)
+
+        return self.filter("terms", type=type_filter_list)
 
     def paginate(self, current_page: int, size: int):
         """
@@ -59,8 +74,8 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     def content_query(
             self,
             search_term: str,
-            current_page: int = 1,
-            size: int = 10,
+            current_page: int,
+            size: int,
             **kwargs):
         """
         ONS search query to populate the SERP
