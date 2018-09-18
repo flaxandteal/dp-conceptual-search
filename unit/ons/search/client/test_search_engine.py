@@ -1,7 +1,7 @@
 from ons.search.client.search_engine import SearchEngine
 
 from unit.ons.search.test_utils import SearchTestUtils
-from unit.utils.elasticsearch_test_case import ElasticsearchTestCase
+from unit.mocks.elasticsearch_test_case import ElasticsearchTestCase
 
 
 class SearchEngineTestCase(ElasticsearchTestCase, SearchTestUtils):

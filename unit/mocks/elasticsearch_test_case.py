@@ -72,7 +72,7 @@ class ElasticsearchTestCase(unittest.TestCase, abc.ABC):
         return hits
 
     def setUp(self):
-        from unit.utils.mock_es_client import MockElasticsearchClient
+        from unit.mocks.mock_es_client import MockElasticsearchClient
 
         hits = self.mock_hits()
 
