@@ -1,10 +1,13 @@
 """
 Defines a series of useful Elasticsearch queries for the ONS
 """
+from typing import List
+
 from elasticsearch_dsl import query as Q
 from elasticsearch_dsl.aggs import A as Aggregation
 
 from core.search.query_helper import match, multi_match
+from ons.search.content_type import ContentType
 
 
 def type_counts_query() -> Aggregation:
@@ -57,5 +60,16 @@ def content_query(search_term: str, **kwargs) -> Q.DisMax:
     return q
 
 
-def function_score_content_query(query: Q.Query, function_scores: list, boost: float=1.0) -> Q.Query:
+def function_score_content_query(query: Q.Query, content_types: List[ContentType], boost: float=1.0) -> Q.Query:
+    """
+    Generate a function score query using ContentType weights
+    :param query:
+    :param content_types:
+    :param boost:
+    :return:
+    """
+    function_scores = []
+    for content_type in content_types:
+        function_scores.append(content_type.filter_function())
+
     return Q.FunctionScore(query=query, functions=function_scores, boost=boost)
