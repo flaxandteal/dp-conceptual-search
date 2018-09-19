@@ -2,7 +2,10 @@
 This file contains all routes for the /search API
 """
 from sanic import Blueprint
+from sanic.log import logger
 from sanic.response import json, HTTPResponse
+
+from elasticsearch.exceptions import ConnectionError
 
 from server.request import ONSRequest
 from server.search.util import SanicSearchEngine
@@ -33,7 +36,12 @@ async def ons_content_query(request: ONSRequest) -> HTTPResponse:
     page_size = request.get_page_size()
     sort_by: SortFields = request.get_sort_by()
 
-    response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by).execute()
+    try:
+        response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by).execute()
+    except ConnectionError as e:
+        message = "Unable to connect to Elasticsearch cluster to perform content query request"
+        logger.error(message, exc_info=e)
+        return json(message, 500)
 
     search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
 
@@ -54,7 +62,12 @@ async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     # Perform the query
     search_term = request.get_search_term()
 
-    response: ONSResponse = await engine.type_counts_query(search_term).execute()
+    try:
+        response: ONSResponse = await engine.type_counts_query(search_term).execute()
+    except ConnectionError as e:
+        message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
+        logger.error(message, exc_info=e)
+        return json(message, 500)
 
     search_result: SearchResult = response.to_type_counts_query_search_result()
 

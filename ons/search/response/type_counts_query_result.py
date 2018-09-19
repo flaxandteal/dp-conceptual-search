@@ -48,7 +48,7 @@ class TypeCountsQueryResult(SearchResult):
 
     def to_dict(self)-> dict:
         """
-        Converts the search results to a properly formatted JSON response
+        Converts the type counts results to a properly formatted JSON response
         :return:
         """
         return self._data
