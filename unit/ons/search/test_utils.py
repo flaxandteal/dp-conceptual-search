@@ -5,7 +5,10 @@ from ons.search.content_type import ContentType
 from ons.search.type_filter import TypeFilter
 from ons.search.client.search_engine import SearchEngine
 
-class SearchTestUtils(object):
+from unittest import TestCase
+
+
+class SearchTestUtils(TestCase):
     """
     Contain common (useful) methods for testing search
     """
@@ -138,8 +141,6 @@ class SearchTestUtils(object):
     def expected_type_counts_query(self, query_dict: dict) -> dict:
         """
         Returns the expected query body for the given query dictionary
-        :param from_start:
-        :param size:
         :param query_dict:
         :return:
         """
