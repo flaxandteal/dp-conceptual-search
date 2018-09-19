@@ -72,36 +72,26 @@ class ElasticsearchClientService(object):
 
             self._client = client
 
-    @staticmethod
-    def get_search_url() -> str:
+    def get_search_url(self) -> str:
         """
         Parse env var to determine Elasticsearch host address
         :return:
         """
-        search_url = os.environ.get(
-            'ELASTIC_SEARCH_SERVER',
-            'http://localhost:9200')
-        return search_url
+        return self.app.config.get("ELASTIC_SEARCH_SERVER")
 
-    @staticmethod
-    def get_search_timeout() -> int:
+    def get_search_timeout(self) -> int:
         """
         Parse env var to determine Elasticsearch Timeout value in ms
         :return:
         """
-        search_timeout = int(os.environ.get('ELASTIC_SEARCH_TIMEOUT', 1000))
-        return search_timeout
+        return self.app.config.get("ELASTIC_SEARCH_TIMEOUT")
 
-    @staticmethod
-    def async_enabled() -> bool:
+    def async_enabled(self) -> bool:
         """
         Parse env var to determine if the async client is enabled
         :return:
         """
-        async_client_enabled = os.getenv(
-            "ELASTIC_SEARCH_ASYNC_ENABLED",
-            "true").lower() == "true"
-        return async_client_enabled
+        return self.app.config.get("ELASTIC_SEARCH_ASYNC_ENABLED")
 
     @property
     def client(self) -> Elasticsearch:

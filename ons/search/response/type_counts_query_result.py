@@ -10,8 +10,22 @@ class TypeCountsQueryResult(SearchResult):
     def __init__(self, aggregations: AggResponse):
 
         self.aggregations = aggregations
+        self._aggs_json = None
 
-    def aggs_to_json(self) -> (int, dict):
+        # Build JSON
+        total, result = self.aggs_to_json()
+
+        self._data = {
+            self.number_of_results_key: total,
+            self.doc_counts_key: result
+        }
+
+    def aggs_to_json(self):
+        if self._aggs_json is None:
+            self._aggs_json = self._aggs_to_json()
+        return self._aggs_json
+
+    def _aggs_to_json(self) -> (int, dict):
         """
         Converts aggregations response to JSON
         :return:
@@ -37,9 +51,4 @@ class TypeCountsQueryResult(SearchResult):
         Converts the search results to a properly formatted JSON response
         :return:
         """
-
-        total, result = self.aggs_to_json()
-        return {
-            self.number_of_results_key: total,
-            self.doc_counts_key: result
-        }
+        return self._data

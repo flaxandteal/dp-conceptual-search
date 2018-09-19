@@ -16,15 +16,17 @@ class ContentQueryResult(SearchResult):
         self.paginator = paginator
         self.sort_by = sort_by
 
-    def to_dict(self) -> dict:
-        """
-        Converts the search results to a properly formatted JSON response
-        :return:
-        """
-        return {
+        self._data = {
             self.number_of_results_key: self.number_of_results,
             self.took_key: self.took,
             self.results_key: self.results,
             self.paginator_key: self.paginator.to_dict(),
             self.sort_by_key: self.sort_by.name
         }
+
+    def to_dict(self) -> dict:
+        """
+        Converts the search results to a properly formatted JSON response
+        :return:
+        """
+        return self._data
