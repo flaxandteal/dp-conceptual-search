@@ -5,7 +5,7 @@ from unit.ons.search.test_utils import SearchTestUtils
 from unit.mocks.elasticsearch_test_case import ElasticsearchTestCase
 
 from ons.search.response.search_result import SearchResult
-from ons.search.response.ons_response import ONSResponse
+from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.search_engine import SearchEngine
 
 

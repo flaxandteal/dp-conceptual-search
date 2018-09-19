@@ -5,18 +5,17 @@ import logging
 
 from sanic import Sanic
 
-from elasticsearch import Elasticsearch
+from server.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SanicElasticsearch(Sanic):
     def __init__(self, *args, **kwargs):
         from server.request.ons_request import ONSRequest
-        from server.elasticsearch_client_service import ElasticsearchClientService
         # Initialise APP with custom ONSRequest class
         super(SanicElasticsearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
-        self.elasticsearch = None
+        self._elasticsearch = None
 
         @self.listener("after_server_start")
         async def init(app: SanicElasticsearch, loop):
@@ -26,7 +25,7 @@ class SanicElasticsearch(Sanic):
             :param loop:
             :return:
             """
-            app.elasticsearch: ElasticsearchClientService = ElasticsearchClientService(app, loop)
+            app._elasticsearch: ElasticsearchClientService = ElasticsearchClientService(app, loop)
 
             elasticsearch_log_data = {
                 "data": {
@@ -49,9 +48,5 @@ class SanicElasticsearch(Sanic):
             await app.elasticsearch.shutdown()
 
     @property
-    def elasticsearch_client(self) -> Elasticsearch:
-        """
-        Return the correct client instance
-        :return:
-        """
-        return self.elasticsearch.client
+    def elasticsearch(self) -> ElasticsearchClientService:
+        return self._elasticsearch

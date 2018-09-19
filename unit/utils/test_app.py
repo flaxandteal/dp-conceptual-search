@@ -21,7 +21,7 @@ class TestApp(unittest.TestCase):
         Returns a handle on the mock Elasticsearch client
         :return:
         """
-        return self._app.elasticsearch_client
+        return self._app.elasticsearch.client
 
 
     @staticmethod
