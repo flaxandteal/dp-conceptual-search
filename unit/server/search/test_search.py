@@ -52,9 +52,7 @@ class SearchTestCase(TestApp, SearchTestUtils):
         from core.search.search_type import SearchType
 
         from ons.search.index import Index
-        from ons.search.queries import content_query, type_counts_query
-        from ons.search.paginator import RESULTS_PER_PAGE
-        from ons.search.client.search_engine import SearchEngine
+        from ons.search.queries import content_query
 
         # Make the request
         params = {
@@ -73,18 +71,8 @@ class SearchTestCase(TestApp, SearchTestUtils):
         # Get the resulting query dict
         query_dict = query.to_dict()
 
-        # Calculate correct start page number
-        current_page = SearchEngine.default_page_number
-        size = RESULTS_PER_PAGE
-        from_start = 0 if current_page <= 1 else (current_page - 1) * size
-
         # Build the expected query dict - note this should not change
-        expected = self.expected_content_query(from_start, size, query_dict)
-
-        # Add expected aggregations
-        expected["aggs"] = {
-            SearchEngine.agg_bucket: type_counts_query().to_dict()
-        }
+        expected = self.expected_type_counts_query(query_dict)
 
         # Assert search was called with correct arguments
         self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
