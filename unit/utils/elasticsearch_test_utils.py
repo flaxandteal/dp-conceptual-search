@@ -44,6 +44,7 @@ class ElasticsearchTestUtils(object):
         hits = [
             {
                 "_id": "test 1",
+                "_type": "ghostbuster",
                 "_source": {
                     "name": "Egon Spengler",
                     "occupation": "Ghostbuster",
@@ -52,6 +53,7 @@ class ElasticsearchTestUtils(object):
             },
             {
                 "_id": "test 2",
+                "_type": "ghostbuster",
                 "_source": {
                     "name": "Peter Venkman",
                     "occupation": "Ghostbuster",
@@ -60,6 +62,7 @@ class ElasticsearchTestUtils(object):
             },
             {
                 "_id": "test 3",
+                "_type": "not_a_ghostbuster",
                 "_source": {
                     "name": "Zuul",
                     "occupation": "Not a Ghostbuster",

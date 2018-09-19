@@ -14,15 +14,26 @@ class ONSResponse(Response):
         """
         return [hit.to_dict() for hit in self.hits]
 
-    def to_search_result(self, page_number: int, page_size: int, sort_by: SortFields, doc_counts: dict={}) -> SearchResult:
+    def to_type_counts_query_search_result(self) -> SearchResult:
         """
-        Converts an Elasticsearch response into a SearchResult
-        :param page_number:
-        :param page_size:
-        :param sort_by:
+        Converts an Elasticsearch response into a TypeCountsQueryResult
         :param doc_counts:
         :return:
         """
+        from ons.search.response.type_counts_query_result import TypeCountsQueryResult
+
+        result: TypeCountsQueryResult = TypeCountsQueryResult(self.aggregations)
+        return result
+
+    def to_content_query_search_result(self, page_number: int, page_size: int, sort_by: SortFields) -> SearchResult:
+        """
+        Converts an Elasticsearch response into a ContentQueryResult
+        :param page_number:
+        :param page_size:
+        :param sort_by:
+        :return:
+        """
+        from ons.search.response.content_query_result import ContentQueryResult
 
         hits = self.hits_to_json()
 
@@ -32,11 +43,10 @@ class ONSResponse(Response):
             page_number,
             page_size)
 
-        result: SearchResult = SearchResult(
+        result: ContentQueryResult = ContentQueryResult(
             self.hits.total,
             self.took,
             hits,
-            doc_counts,
             paginator,
             sort_by
         )

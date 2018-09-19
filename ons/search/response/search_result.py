@@ -1,26 +1,22 @@
 """
-Class to define the structure of an ONS search result
+Defines the base ONS search result
 """
-from ons.search.paginator import Paginator
-from ons.search.sort_fields import SortFields
+import abc
 
 
-class SearchResult(object):
-    def __init__(self, number_of_results: int, took: int, results: list, doc_counts: dict,
-                 paginator: Paginator, sort_by: SortFields):
-        self.number_of_results = number_of_results
-        self.took = took
-        self.results = results
-        self.doc_counts = doc_counts
-        self.paginator = paginator
-        self.sort_by = sort_by
+class SearchResult(abc.ABC):
 
+    number_of_results_key = "numberOfResults"
+    took_key = "took"
+    results_key = "results"
+    paginator_key = "paginator"
+    sort_by_key = "sortBy"
+    doc_counts_key = "docCounts"
+
+    @abc.abstractmethod
     def to_dict(self) -> dict:
-        return {
-            "numberOfResults": self.number_of_results,
-            "took": self.took,
-            "results": self.results,
-            "docCounts": self.doc_counts,
-            "paginator": self.paginator.to_dict(),
-            "sortBy": self.sort_by.name
-        }
+        """
+        Converts the search results to a properly formatted JSON response
+        :return:
+        """
+        pass
