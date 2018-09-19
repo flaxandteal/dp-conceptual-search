@@ -5,7 +5,7 @@ from sanic import Blueprint
 from sanic.response import json, HTTPResponse
 
 from server.request import ONSRequest
-from server.search.util import SanicSearchEngine
+from server.search.sanic_search_engine import SanicSearchEngine
 from ons.search.sort_fields import SortFields
 from ons.search.response.search_result import SearchResult
 
