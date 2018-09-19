@@ -26,7 +26,7 @@ class ContentQueryResult(SearchResult):
 
     def to_dict(self) -> dict:
         """
-        Converts the search results to a properly formatted JSON response
+        Converts the content query results to a properly formatted JSON response
         :return:
         """
         return self._data

@@ -1,7 +1,10 @@
 """
 This file defines our custom Sanic app class
 """
+import logging
+
 from sanic import Sanic
+
 from elasticsearch import Elasticsearch
 
 
@@ -24,6 +27,16 @@ class SanicElasticsearch(Sanic):
             :return:
             """
             app.elasticsearch: ElasticsearchClientService = ElasticsearchClientService(app, loop)
+
+            elasticsearch_log_data = {
+                "data": {
+                    "elasticsearch.host": self.elasticsearch.elasticsearch_host,
+                    "elasticsearch.async": self.elasticsearch.elasticsearch_async_enabled,
+                    "elasticsearch.timeout": self.elasticsearch.elasticsearch_timeout
+                }
+            }
+
+            logging.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
         @self.listener("after_server_stop")
         async def shutdown(app: SanicElasticsearch, loop):
