@@ -34,6 +34,14 @@ API_VERSION = '1.0.1'
 API_TITLE = 'dp-conceptual-search'
 API_DESCRIPTION = 'Dedicated search API for digital publishing.'
 
+# Elasticsearch
+
+ELASTIC_SEARCH_SERVER = os.environ.get("ELASTIC_SEARCH_SERVER", "http://localhost:9200")
+ELASTIC_SEARCH_ASYNC_ENABLED = bool_env("ELASTIC_SEARCH_ASYNC_ENABLED", True)
+ELASTIC_SEARCH_TIMEOUT = int(os.environ.get("ELASTIC_SEARCH_TIMEOUT", 1000))
+
+# mongoDB
+
 MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
 
 MONGO_DEFAULT_HOST = os.environ.get("MONGO_DEFAULT_HOST", "localhost")

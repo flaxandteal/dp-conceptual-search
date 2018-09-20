@@ -1,19 +1,22 @@
 """
 This file defines our custom Sanic app class
 """
+import logging
+
 from sanic import Sanic
+
 from elasticsearch import Elasticsearch
 
 
 class SanicElasticsearch(Sanic):
     def __init__(self, *args, **kwargs):
         from server.request.ons_request import ONSRequest
-        from server.elasticsearch_client import ElasticsearchClientService
+        from server.elasticsearch_client_service import ElasticsearchClientService
         # Initialise APP with custom ONSRequest class
         super(SanicElasticsearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
-        self._es_client_service = None
+        self.elasticsearch = None
 
         @self.listener("after_server_start")
         async def init(app: SanicElasticsearch, loop):
@@ -23,7 +26,17 @@ class SanicElasticsearch(Sanic):
             :param loop:
             :return:
             """
-            app._es_client_service: ElasticsearchClientService = ElasticsearchClientService(app, loop)
+            app.elasticsearch: ElasticsearchClientService = ElasticsearchClientService(app, loop)
+
+            elasticsearch_log_data = {
+                "data": {
+                    "elasticsearch.host": self.elasticsearch.elasticsearch_host,
+                    "elasticsearch.async": self.elasticsearch.elasticsearch_async_enabled,
+                    "elasticsearch.timeout": self.elasticsearch.elasticsearch_timeout
+                }
+            }
+
+            logging.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
         @self.listener("after_server_stop")
         async def shutdown(app: SanicElasticsearch, loop):
@@ -33,7 +46,7 @@ class SanicElasticsearch(Sanic):
             :param loop:
             :return:
             """
-            await app._es_client_service.shutdown()
+            await app.elasticsearch.shutdown()
 
     @property
     def elasticsearch_client(self) -> Elasticsearch:
@@ -41,4 +54,4 @@ class SanicElasticsearch(Sanic):
         Return the correct client instance
         :return:
         """
-        return self._es_client_service.client
+        return self.elasticsearch.client

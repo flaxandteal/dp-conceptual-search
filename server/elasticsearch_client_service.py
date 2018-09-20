@@ -1,8 +1,6 @@
 """
 Parses config options and sets up Elasticsearch client
 """
-import os
-
 import logging
 
 from sanic import Sanic
@@ -55,53 +53,44 @@ class ElasticsearchClientService(object):
             logging.warning("Test environment active, using MockElasticSearch client")
             self._mock_client()
         else:
-            es_host = self.get_search_url()
+            es_host = self.elasticsearch_host
 
-            if self.async_enabled():
+            if self.elasticsearch_async_enabled:
                 from elasticsearch_async import AsyncElasticsearch
 
-                logging.info("Initialising asynchronous Elasticsearch client with host {0}".format(es_host))
                 client = AsyncElasticsearch(
-                    es_host, loop=self.loop, timeout=self.get_search_timeout()
+                    es_host, loop=self.loop, timeout=self.elasticsearch_timeout
                 )
             else:
-                logging.info("Initialising synchronous Elasticsearch client with host {0}".format(es_host))
                 client = Elasticsearch(
-                    es_host, timeout=self.get_search_timeout()
+                    es_host, timeout=self.elasticsearch_timeout
                 )
 
             self._client = client
 
-    @staticmethod
-    def get_search_url() -> str:
+    @property
+    def elasticsearch_host(self) -> str:
         """
-        Parse env var to determine Elasticsearch host address
+        Returns the Elasticsearch hostname as set in the config
         :return:
         """
-        search_url = os.environ.get(
-            'ELASTIC_SEARCH_SERVER',
-            'http://localhost:9200')
-        return search_url
+        return self.app.config.get("ELASTIC_SEARCH_SERVER")
 
-    @staticmethod
-    def get_search_timeout() -> int:
+    @property
+    def elasticsearch_async_enabled(self) -> bool:
         """
-        Parse env var to determine Elasticsearch Timeout value in ms
+        Returns whether the async Elasticsearch client is enabled
         :return:
         """
-        search_timeout = int(os.environ.get('ELASTIC_SEARCH_TIMEOUT', 1000))
-        return search_timeout
+        return self.app.config.get("ELASTIC_SEARCH_ASYNC_ENABLED")
 
-    @staticmethod
-    def async_enabled() -> bool:
+    @property
+    def elasticsearch_timeout(self) -> int:
         """
-        Parse env var to determine if the async client is enabled
+        Returns the configured timeout value for the Elasticsearch HTTP client
         :return:
         """
-        async_client_enabled = os.getenv(
-            "ELASTIC_SEARCH_ASYNC_ENABLED",
-            "true").lower() == "true"
-        return async_client_enabled
+        return int(self.app.config.get("ELASTIC_SEARCH_TIMEOUT"))
 
     @property
     def client(self) -> Elasticsearch:

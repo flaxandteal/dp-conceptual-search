@@ -5,7 +5,10 @@ from ons.search.content_type import ContentType
 from ons.search.type_filter import TypeFilter
 from ons.search.client.search_engine import SearchEngine
 
-class SearchTestUtils(object):
+from unittest import TestCase
+
+
+class SearchTestUtils(TestCase):
     """
     Contain common (useful) methods for testing search
     """
@@ -131,6 +134,30 @@ class SearchTestUtils(object):
             },
             "size": size,
             "sort": query_sort(self.sort_by)
+        }
+
+        return expected
+
+    def expected_type_counts_query(self, query_dict: dict) -> dict:
+        """
+        Returns the expected query body for the given query dictionary
+        :param query_dict:
+        :return:
+        """
+        from ons.search.queries import type_counts_query
+        from ons.search.paginator import RESULTS_PER_PAGE
+
+        # Calculate correct start page number
+        current_page = SearchEngine.default_page_number
+        size = RESULTS_PER_PAGE
+        from_start = 0 if current_page <= 1 else (current_page - 1) * size
+
+        # Build the expected query dict - note this should not change
+        expected = self.expected_content_query(from_start, size, query_dict)
+
+        # Add expected aggregations
+        expected["aggs"] = {
+            SearchEngine.agg_bucket: type_counts_query().to_dict()
         }
 
         return expected
