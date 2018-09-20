@@ -20,7 +20,7 @@ class Field(object):
                           ) if self.boost is not None else self.name
 
 
-class Fields(Enum):
+class AvailableFields(Enum):
     URI = Field("uri")
     SCORE = Field("_score")
     TITLE_NO_DATES = Field("description.title.title_no_dates", 10)
@@ -52,5 +52,5 @@ def get_all_fields() -> List[Field]:
     Returns a list of all available fields
     :return:
     """
-    fields = [field.value for field in list(Fields)]
+    fields = [field.value for field in list(AvailableFields)]
     return fields

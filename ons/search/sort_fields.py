@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 from core.search.sort_by import SortOrder
-from ons.search.fields import Fields, Field
+from ons.search.fields import AvailableFields, Field
 
 
 class SortOption(object):
@@ -19,25 +19,25 @@ class SortField(Enum):
     Enum of all available sort options by key
     """
     first_letter: List[SortOption] = [
-        SortOption(Fields.TITLE_FIRST_LETTER.value, SortOrder.ASC),
-        SortOption(Fields.TITLE_RAW.value, SortOrder.ASC),
-        SortOption(Fields.RELEASE_DATE.value, SortOrder.ASC)
+        SortOption(AvailableFields.TITLE_FIRST_LETTER.value, SortOrder.ASC),
+        SortOption(AvailableFields.TITLE_RAW.value, SortOrder.ASC),
+        SortOption(AvailableFields.RELEASE_DATE.value, SortOrder.ASC)
     ]
     title: List[SortOption] = [
-        SortOption(Fields.TITLE_RAW.value, SortOrder.ASC),
-        SortOption(Fields.RELEASE_DATE.value, SortOrder.DESC)
+        SortOption(AvailableFields.TITLE_RAW.value, SortOrder.ASC),
+        SortOption(AvailableFields.RELEASE_DATE.value, SortOrder.DESC)
     ]
     relevance: List[SortOption] = [
-        SortOption(Fields.SCORE.value, SortOrder.DESC),
-        SortOption(Fields.RELEASE_DATE.value, SortOrder.DESC)
+        SortOption(AvailableFields.SCORE.value, SortOrder.DESC),
+        SortOption(AvailableFields.RELEASE_DATE.value, SortOrder.DESC)
     ]
     release_date: List[SortOption] = [
-        SortOption(Fields.RELEASE_DATE.value, SortOrder.DESC),
-        SortOption(Fields.SCORE.value, SortOrder.DESC)
+        SortOption(AvailableFields.RELEASE_DATE.value, SortOrder.DESC),
+        SortOption(AvailableFields.SCORE.value, SortOrder.DESC)
     ]
     release_date_asc: List[SortOption] = [
-        SortOption(Fields.RELEASE_DATE.value, SortOrder.ASC),
-        SortOption(Fields.SCORE.value, SortOrder.DESC)
+        SortOption(AvailableFields.RELEASE_DATE.value, SortOrder.ASC),
+        SortOption(AvailableFields.SCORE.value, SortOrder.DESC)
     ]
 
     @staticmethod
