@@ -6,6 +6,7 @@ import unittest
 from urllib import parse as urllib_parse
 
 from server.app import create_app
+from server.request.ons_request import ONSRequest
 from server.sanic_elasticsearch import SanicElasticsearch
 
 
@@ -21,7 +22,6 @@ class TestApp(unittest.TestCase):
         :return:
         """
         return self._app.elasticsearch.client
-
 
     @staticmethod
     def url_encode(params: dict):
@@ -50,8 +50,17 @@ class TestApp(unittest.TestCase):
             expected_code: int,
             **kwargs):
         fn = getattr(self._client, method)
+
         request, response = fn(uri, **kwargs)
+
+        # Assert correct response code
         self.assert_response_code(request, response, expected_code)
+
+        # Assert request object has a request ID
+        self.assertIsInstance(request, ONSRequest, "request should be instance of ONSRequest")
+        self.assertTrue(hasattr(request, "request_id"), "request should have request_id attribute")
+        self.assertIsNotNone(request.request_id, "request_id should not be none")
+        self.assertIsInstance(request.request_id, str, "request_id should be instance of string")
 
         return request, response
 
