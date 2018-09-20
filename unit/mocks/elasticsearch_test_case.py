@@ -22,6 +22,22 @@ class ElasticsearchTestCase(unittest.TestCase, ElasticsearchTestUtils, abc.ABC):
                 "max_score": 1.0,
                 "total": len(hits)
             },
+            "aggregations": {
+                "docCounts": {
+                    "doc_count_error_upper_bound": 0,
+                    "sum_other_doc_count": 0,
+                    "buckets": [
+                        {
+                            "key": "ghostbuster",
+                            "doc_count": 2
+                        },
+                        {
+                            "key": "not_a_ghostbuster",
+                            "doc_count": 1
+                        }
+                    ]
+                }
+            },
             "timed_out": self.mock_timed_out,
             "took": self.mock_took
         }

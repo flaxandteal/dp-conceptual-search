@@ -52,6 +52,7 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
         async def run_async():
             from core.search.search_type import SearchType
             from ons.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
+            from ons.search.response.content_query_result import ContentQueryResult
 
             # Ensure search method on SearchClient is called correctly on execute
             response: ONSResponse = await engine.execute(ignore_cache=True)
@@ -65,7 +66,7 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
 
             # Attempt to build SearchResult
             sort_by = SortFields.relevance
-            result: SearchResult = response.to_search_result(current_page, size, sort_by)
+            result: SearchResult = response.to_content_query_search_result(current_page, size, sort_by)
 
             self.assertIsNotNone(result, "result should not be none")
             self.assertIsInstance(result, SearchResult,
@@ -75,7 +76,6 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
             hits = [hit["_source"] for hit in self.mock_hits()]
             num_hits = len(hits)
             took = self.mock_took
-            doc_counts = {}
             paginator = Paginator(
                 num_hits,
                 MAX_VISIBLE_PAGINATOR_LINK,
@@ -83,11 +83,10 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
                 size
             )
 
-            expected_result: SearchResult = SearchResult(
+            expected_result: ContentQueryResult = ContentQueryResult(
                 num_hits,
                 took,
                 hits,
-                doc_counts,
                 paginator,
                 sort_by
             )
