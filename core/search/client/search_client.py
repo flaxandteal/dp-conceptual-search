@@ -1,6 +1,8 @@
+from inspect import isawaitable
+
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.response import Response
-
+from elasticsearch_dsl.connections import connections
 
 from core.search.search_type import SearchType
 
@@ -27,7 +29,6 @@ class SearchClient(Search):
         Return a living connection to the underlying Elasticsearch client
         :return:
         """
-        from elasticsearch_dsl.connections import connections
         es = connections.get_connection(self._using)
 
         return es
@@ -38,8 +39,6 @@ class SearchClient(Search):
         If the response is a co-routine, then await it
         :return:
         """
-        from inspect import isawaitable
-
         es = self._get_elasticsearch_client()
 
         response = es.search(
@@ -59,7 +58,6 @@ class SearchClient(Search):
         :param search_type:
         :return:
         """
-
         return self.params(search_type=search_type.value)
 
     async def execute(self, ignore_cache=False):

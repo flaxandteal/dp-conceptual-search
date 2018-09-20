@@ -2,7 +2,7 @@
 Class to define the structure of an ONS type counts query search result
 """
 from elasticsearch_dsl.response import AggResponse
-from ons.search.response.search_result import SearchResult
+from ons.search.response import SearchResult
 
 
 class TypeCountsQueryResult(SearchResult):

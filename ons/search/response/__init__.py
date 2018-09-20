@@ -1,0 +1,3 @@
+from ons.search.response.search_result import SearchResult
+from ons.search.response.content_query_result import ContentQueryResult
+from ons.search.response.type_counts_query_result import TypeCountsQueryResult

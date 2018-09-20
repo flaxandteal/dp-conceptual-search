@@ -5,7 +5,7 @@ from unit.ons.search.test_utils import SearchTestUtils
 from unit.mocks.elasticsearch_test_case import ElasticsearchTestCase
 
 from ons.search.response.search_result import SearchResult
-from ons.search.response.ons_response import ONSResponse
+from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.search_engine import SearchEngine
 
 
@@ -50,8 +50,8 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
         asyncio.set_event_loop(event_loop)
 
         async def run_async():
+            from ons.search.paginator import Paginator
             from core.search.search_type import SearchType
-            from ons.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
             from ons.search.response.content_query_result import ContentQueryResult
 
             # Ensure search method on SearchClient is called correctly on execute
@@ -76,11 +76,11 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
             hits = [hit["_source"] for hit in self.mock_hits()]
             num_hits = len(hits)
             took = self.mock_took
+
             paginator = Paginator(
                 num_hits,
-                MAX_VISIBLE_PAGINATOR_LINK,
                 current_page,
-                size
+                result_per_page=size
             )
 
             expected_result: ContentQueryResult = ContentQueryResult(

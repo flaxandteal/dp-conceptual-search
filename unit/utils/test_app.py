@@ -1,13 +1,12 @@
 """
 Test class for Sanic app
 """
-import os
 import unittest
+
+from urllib import parse as urllib_parse
 
 from server.app import create_app
 from server.sanic_elasticsearch import SanicElasticsearch
-
-os.environ['SEARCH_CONFIG'] = 'testing'
 
 
 class TestApp(unittest.TestCase):
@@ -21,7 +20,7 @@ class TestApp(unittest.TestCase):
         Returns a handle on the mock Elasticsearch client
         :return:
         """
-        return self._app.elasticsearch_client
+        return self._app.elasticsearch.client
 
 
     @staticmethod
@@ -31,9 +30,7 @@ class TestApp(unittest.TestCase):
         :param params:
         :return:
         """
-        import urllib
-
-        return urllib.parse.urlencode(params)
+        return urllib_parse.urlencode(params)
 
     def assert_response_code(self, request, response, code: int):
         self.assertIsNotNone(request, msg="request should not be none")
