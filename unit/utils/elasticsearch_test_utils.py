@@ -1,6 +1,8 @@
 """
 Helper class for testing with Elasticsearch
 """
+
+
 class ElasticsearchTestUtils(object):
     """
     A test class for working with Elasticsearch

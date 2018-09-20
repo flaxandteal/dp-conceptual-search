@@ -1,7 +1,7 @@
 from elasticsearch_dsl.response import Response
 
 from ons.search.sort_fields import SortFields
-from ons.search.response.search_result import SearchResult
+from ons.search.response import SearchResult, ContentQueryResult, TypeCountsQueryResult
 from ons.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
 
 
@@ -20,8 +20,6 @@ class ONSResponse(Response):
         :param doc_counts:
         :return:
         """
-        from ons.search.response.type_counts_query_result import TypeCountsQueryResult
-
         result: TypeCountsQueryResult = TypeCountsQueryResult(self.aggregations)
         return result
 
@@ -33,15 +31,12 @@ class ONSResponse(Response):
         :param sort_by:
         :return:
         """
-        from ons.search.response.content_query_result import ContentQueryResult
-
         hits = self.hits_to_json()
 
         paginator = Paginator(
             self.hits.total,
-            MAX_VISIBLE_PAGINATOR_LINK,
             page_number,
-            page_size)
+            result_per_page=page_size)
 
         result: ContentQueryResult = ContentQueryResult(
             self.hits.total,

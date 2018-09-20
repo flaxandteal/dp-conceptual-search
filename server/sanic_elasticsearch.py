@@ -5,12 +5,12 @@ import logging
 
 from sanic import Sanic
 
+from server.request.ons_request import ONSRequest
 from server.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SanicElasticsearch(Sanic):
     def __init__(self, *args, **kwargs):
-        from server.request.ons_request import ONSRequest
         # Initialise APP with custom ONSRequest class
         super(SanicElasticsearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
 

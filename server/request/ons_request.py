@@ -1,9 +1,10 @@
 from sanic.request import Request
 from sanic.exceptions import InvalidUsage
 
-from server.sanic_elasticsearch import SanicElasticsearch
-
 from ons.search.sort_fields import SortFields
+from ons.search.paginator import RESULTS_PER_PAGE
+
+from server.sanic_elasticsearch import SanicElasticsearch
 
 
 class ONSRequest(Request):
@@ -34,8 +35,6 @@ class ONSRequest(Request):
         Returns the requested page size. Defaults to the value set by the paginator.
         :return:
         """
-        from ons.search.paginator import RESULTS_PER_PAGE
-
         page_size = self.args.get("size", RESULTS_PER_PAGE)
         return int(page_size)
 

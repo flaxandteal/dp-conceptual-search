@@ -1,7 +1,17 @@
 """
 Code for creating HTTP server app
 """
+import asyncio
+import uvloop
+
+from sanic.log import logger
+
+from config_core import SEARCH_CONFIG
+
+from server.log_config import default_log_config
 from server.sanic_elasticsearch import SanicElasticsearch
+
+from server.search.routes import search_blueprint
 
 
 def init_app() -> SanicElasticsearch:
@@ -9,36 +19,16 @@ def init_app() -> SanicElasticsearch:
     Initialises the default state for the Sanic APP
     :return:
     """
-    import os
-    import asyncio
-    import uvloop
-
-    from sanic.log import logger
-
-    from server.log_config import default_log_config
-
     # First, set the ioloop event policy to use uvloop
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     # Now initialise the APP config, logger and ONSRequest handler
-    config_name = os.environ.get('SEARCH_CONFIG', 'development')
     app = SanicElasticsearch(log_config=default_log_config)
 
-    logger.info("Using config '%s'" % config_name)
-    app.config.from_pyfile('config_%s.py' % config_name)
+    logger.info("Using config '%s'" % SEARCH_CONFIG)
+    app.config.from_pyfile('config_%s.py' % SEARCH_CONFIG)
 
     return app
-
-
-def register_blueprints(app: SanicElasticsearch):
-    """
-    Registers blueprints against a Sanic APP
-    :param app:
-    :return:
-    """
-    from server.search.routes import search_blueprint
-
-    app.blueprint(search_blueprint)
 
 
 def create_app() -> SanicElasticsearch:
@@ -47,6 +37,8 @@ def create_app() -> SanicElasticsearch:
     :return:
     """
     app: SanicElasticsearch = init_app()
-    register_blueprints(app)
+
+    # Register blueprints
+    app.blueprint(search_blueprint)
 
     return app

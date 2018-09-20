@@ -2,8 +2,10 @@ import abc
 from typing import List
 
 from core.search.client import SearchClient
+
 from ons.search.sort_fields import SortFields
 from ons.search.type_filter import TypeFilters
+from ons.search.response.client.ons_response import ONSResponse
 
 
 class AbstractSearchEngine(SearchClient, abc.ABC):
@@ -11,8 +13,6 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     Abstract search engine client defining common methods for ONS search engine
     """
     def __init__(self, **kwargs):
-        from ons.search.response.client.ons_response import ONSResponse
-
         super(AbstractSearchEngine, self).__init__(response_class=ONSResponse, **kwargs)
 
     def sort_by(self, sort_by: SortFields):
@@ -95,7 +95,6 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         """
         ONS aggregations query to compute _type counts
         :param search_term:
-        :param type_filters:
         :param kwargs:
         :return:
         """

@@ -4,6 +4,8 @@ Test class for Sanic app
 import os
 import unittest
 
+from urllib import parse as urllib_parse
+
 from server.app import create_app
 from server.sanic_elasticsearch import SanicElasticsearch
 
@@ -31,9 +33,7 @@ class TestApp(unittest.TestCase):
         :param params:
         :return:
         """
-        import urllib
-
-        return urllib.parse.urlencode(params)
+        return urllib_parse.urlencode(params)
 
     def assert_response_code(self, request, response, code: int):
         self.assertIsNotNone(request, msg="request should not be none")
