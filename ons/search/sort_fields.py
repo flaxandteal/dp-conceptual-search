@@ -2,14 +2,14 @@ from enum import Enum
 from typing import List
 
 from core.search.sort_by import SortOrder
-from ons.search.fields import Fields
+from ons.search.fields import Fields, Field
 
 
 class SortOption(object):
     """
     Simple object to store store options
     """
-    def __init__(self, field: Fields, sort_order: SortOrder):
+    def __init__(self, field: Field, sort_order: SortOrder):
         self.field = field
         self.sort_order = sort_order
 
@@ -19,25 +19,25 @@ class SortField(Enum):
     Enum of all available sort options by key
     """
     first_letter: List[SortOption] = [
-        SortOption(Fields.TITLE_FIRST_LETTER, SortOrder.ASC),
-        SortOption(Fields.TITLE_RAW, SortOrder.ASC),
-        SortOption(Fields.RELEASE_DATE, SortOrder.ASC)
+        SortOption(Fields.TITLE_FIRST_LETTER.value, SortOrder.ASC),
+        SortOption(Fields.TITLE_RAW.value, SortOrder.ASC),
+        SortOption(Fields.RELEASE_DATE.value, SortOrder.ASC)
     ]
     title: List[SortOption] = [
-        SortOption(Fields.TITLE_RAW, SortOrder.ASC),
-        SortOption(Fields.RELEASE_DATE, SortOrder.DESC)
+        SortOption(Fields.TITLE_RAW.value, SortOrder.ASC),
+        SortOption(Fields.RELEASE_DATE.value, SortOrder.DESC)
     ]
     relevance: List[SortOption] = [
-        SortOption(Fields.SCORE, SortOrder.DESC),
-        SortOption(Fields.RELEASE_DATE, SortOrder.DESC)
+        SortOption(Fields.SCORE.value, SortOrder.DESC),
+        SortOption(Fields.RELEASE_DATE.value, SortOrder.DESC)
     ]
     release_date: List[SortOption] = [
-        SortOption(Fields.RELEASE_DATE, SortOrder.DESC),
-        SortOption(Fields.SCORE, SortOrder.DESC)
+        SortOption(Fields.RELEASE_DATE.value, SortOrder.DESC),
+        SortOption(Fields.SCORE.value, SortOrder.DESC)
     ]
     release_date_asc: List[SortOption] = [
-        SortOption(Fields.RELEASE_DATE, SortOrder.ASC),
-        SortOption(Fields.SCORE, SortOrder.DESC)
+        SortOption(Fields.RELEASE_DATE.value, SortOrder.ASC),
+        SortOption(Fields.SCORE.value, SortOrder.DESC)
     ]
 
     @staticmethod
@@ -72,12 +72,14 @@ class SortField(Enum):
 
 
 def query_sort(sort_field: SortField) -> List[dict]:
-    from collections import OrderedDict
     s = []
 
     option: SortOption
     for option in sort_field.value:
-        d = OrderedDict()
-        d[option.field.value] = {"order": option.sort_order.value}
+        d = {
+            option.field.name: {
+                "order": option.sort_order.value
+            }
+        }
         s.append(d)
     return s
