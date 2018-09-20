@@ -1,1 +1,1 @@
-from .search_client import SearchClient
+from core.search.client.search_client import SearchClient
