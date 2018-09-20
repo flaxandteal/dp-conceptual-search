@@ -35,7 +35,6 @@ def content_query(search_term: str, **kwargs) -> Q.DisMax:
     :param search_term:
     :return:
     """
-    from ons.search import fields
     q = Q.DisMax(
         queries=[
             Q.Bool(

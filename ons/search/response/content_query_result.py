@@ -1,9 +1,9 @@
 """
 Class to define the structure of an ONS content query search result
 """
+from ons.search import SortFields
 from ons.search.paginator import Paginator
-from ons.search.sort_fields import SortFields
-from ons.search.response.search_result import SearchResult
+from ons.search.response import SearchResult
 
 
 class ContentQueryResult(SearchResult):
