@@ -73,7 +73,7 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
                                   "result should be instance of ons.search.response.search_result.SearchResult")
 
             # Build the expected SearchResult
-            hits = [hit["_source"] for hit in self.mock_hits()]
+            hits = [hit["_source"] for hit in self.mock_hits]
             num_hits = len(hits)
             took = self.mock_took
 

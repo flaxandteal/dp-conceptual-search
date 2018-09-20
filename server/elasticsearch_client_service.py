@@ -27,18 +27,7 @@ class ElasticsearchClientService(object):
 
         test_utils = ElasticsearchTestUtils()
 
-        hits = test_utils.mock_hits()
-
-        response = {
-            "_shards": test_utils.mock_shards_json,
-            "hits": {
-                "hits": hits,
-                "max_score": 1.0,
-                "total": len(hits)
-            },
-            "timed_out": test_utils.mock_timed_out,
-            "took": test_utils.mock_took
-        }
+        response = test_utils.mock_response
 
         # Mock the search client
         self._client = MockElasticsearchClient()
