@@ -6,7 +6,6 @@ build: requirements fastText
 
 requirements:
 	pip install -r requirements.txt
-	./download_nltk_stopwords.py
 
 test_requirements:
 	pip install -r requirements_test.txt
@@ -17,11 +16,6 @@ fastText:
 
 test: test_requirements
 	SEARCH_CONFIG=testing python manager.py test
-
-integration-test: test_requirements
-	# CONCEPTUAL_SEARCH_ENABLED=true USER_RECOMMENDATION_ENABLED=true nosetests -s -v tests.integration
-
-all-tests: test integration-test
 
 pep8:
 	autopep8 --in-place --aggressive --aggressive -r ./
