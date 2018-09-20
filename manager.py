@@ -4,6 +4,7 @@ def test():
         check_output(['nosetests',
                       '-v',
                       '-s',
+                      'unit/',
                       '--exclude-dir=./unit/integration',
                       '--exclude-dir=./unit/regression'])
     )

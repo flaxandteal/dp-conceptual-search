@@ -21,4 +21,4 @@ class MockElasticsearchClient(Elasticsearch):
         :param params:
         :return:
         """
-        pass
+        raise NotImplementedError("search not implemented, must be mocked!")

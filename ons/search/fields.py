@@ -1,3 +1,7 @@
+from enum import Enum
+from typing import List
+
+
 class Field(object):
     def __init__(self, name, boost=None, highlight=False):
         self.name = name
@@ -16,57 +20,37 @@ class Field(object):
                           ) if self.boost is not None else self.name
 
 
-uri = Field("uri")
-# elastic search internal search score field in results
-_score = Field("_score")
-title_no_dates = Field("description.title.title_no_dates", 10)
-title_first_letter = Field("description.title.title_first_letter")
-title_raw = Field("description.title.title_raw")
-title = Field("description.title", 10, highlight=True)
-title_no_stem = Field("description.title.title_no_stem", 10)
-title_no_synonym_no_stem = Field(
-    "description.title.title_no_synonym_no_stem")  # used for suggestions
-edition = Field("description.edition", highlight=True)
-summary = Field("description.summary", highlight=True)
-releaseDate = Field("description.releaseDate")
-lastRevised = Field("description.lastRevised")
-metaDescription = Field("description.metaDescription", highlight=True)
-keywords = Field("description.keywords", highlight=True)
-keywords_raw = Field("description.keywords.keywords_raw", highlight=True)
-_type = Field("_type")
-cdid = Field("description.cdid", highlight=True)
-datasetId = Field("description.datasetId", highlight=True)
-searchBoost = Field("searchBoost", 100)
-latestRelease = Field("description.latestRelease")
-published = Field("description.published")
-cancelled = Field("description.cancelled")
-topics = Field("topics")
-embedding_vector = Field("embedding_vector")
+class Fields(Enum):
+    URI = Field("uri")
+    SCORE = Field("_score")
+    TITLE_NO_DATES = Field("description.title.title_no_dates", 10)
+    TITLE_FIRST_LETTER = Field("description.title.title_first_letter")
+    TITLE_RAW = Field("description.title.title_raw")
+    TITLE = Field("description.title", 10, highlight=True)
+    TITLE_NO_STEM = Field("description.title.title_no_stem", 10)
+    TITLE_NO_SYNONYM_NO_STEM = Field("description.title.title_no_synonym_no_stem")  # used for suggestions
+    EDITION = Field("description.edition", highlight=True)
+    SUMMARY = Field("description.summary", highlight=True)
+    RELEASE_DATE = Field("description.releaseDate")
+    LAST_REVISED = Field("description.lastRevised")
+    META_DESCRIPTION = Field("description.metaDescription", highlight=True)
+    KEYWORDS = Field("description.keywords", highlight=True)
+    KEYWORDS_RAW = Field("description.keywords.keywords_raw", highlight=True)
+    TYPE = Field("_type")
+    CDID = Field("description.cdid", highlight=True)
+    DATASET_ID = Field("description.datasetId", highlight=True)
+    SEARCH_BOOST = Field("searchBoost", 100)
+    LATEST_RELEASE = Field("description.latestRelease")
+    PUBLISHED = Field("description.published")
+    CANCELLED = Field("description.cancelled")
+    TOPICS = Field("topics")
+    EMBEDDING_VECTOR = Field("embedding_vector")
 
-field_list = [
-    uri,
-    _score,
-    title_no_dates,
-    title_first_letter,
-    title_raw,
-    title,
-    title_no_stem,
-    title_no_synonym_no_stem,
-    edition,
-    summary,
-    releaseDate,
-    metaDescription,
-    keywords,
-    keywords_raw,
-    _type,
-    cdid,
-    datasetId,
-    searchBoost,
-    latestRelease,
-    published,
-    cancelled,
-    topics]
 
-highlight_fields = [f for f in field_list if f.highlight]
-
-suggestion_field = title_no_synonym_no_stem
+def get_all_fields() -> List[Field]:
+    """
+    Returns a list of all available fields
+    :return:
+    """
+    fields = [field.value for field in list(Fields)]
+    return fields

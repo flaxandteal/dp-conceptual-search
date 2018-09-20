@@ -1,8 +1,9 @@
 from typing import List
 
-from ons.search.sort_fields import SortFields
-from ons.search.type_filter import TypeFilters
-from ons.search.content_type import ContentType
+from core.search.search_type import SearchType
+
+from ons.search import SortFields, TypeFilters, ContentType
+from ons.search.queries import content_query, function_score_content_query, departments_query
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
 
 
@@ -21,9 +22,6 @@ class SearchEngine(AbstractSearchEngine):
         :param size:
         :return:
         """
-        from core.search.search_type import SearchType
-        from ons.search.queries import departments_query
-
         s: SearchEngine = self._clone() \
             .query(departments_query(search_term)) \
             .paginate(current_page, size) \
@@ -50,15 +48,11 @@ class SearchEngine(AbstractSearchEngine):
         if type_filters is None:
             type_filters = list(TypeFilters)
 
-        from core.search.search_type import SearchType
-        from ons.search.queries import content_query
-
         # Build the query dict
         query = content_query(search_term)
 
         # Add function scores if specified
         if filter_functions is not None:
-            from ons.search.queries import function_score_content_query
             query = function_score_content_query(query, filter_functions)
 
         # Build the content query

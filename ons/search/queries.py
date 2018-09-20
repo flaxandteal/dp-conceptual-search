@@ -8,6 +8,7 @@ from elasticsearch_dsl.aggs import A as Aggregation
 
 from core.search.query_helper import match, multi_match
 from ons.search.content_type import ContentType
+from ons.search.fields import Fields
 
 
 def type_counts_query() -> Aggregation:
@@ -15,8 +16,7 @@ def type_counts_query() -> Aggregation:
     Helper method for generating ONS type counts aggregation
     :return:
     """
-    from ons.search.fields import _type as type_field
-    return Aggregation("terms", field=type_field.name)
+    return Aggregation("terms", field=Fields.TYPE.value.name)
 
 
 def departments_query(search_term: str) -> Q.Query:
@@ -35,24 +35,23 @@ def content_query(search_term: str, **kwargs) -> Q.DisMax:
     :param search_term:
     :return:
     """
-    from ons.search import fields
     q = Q.DisMax(
         queries=[
             Q.Bool(
                 should=[
-                    match(fields.title_no_dates.name, search_term, type="boolean", boost=10.0,
+                    match(Fields.TITLE_NO_DATES.value.name, search_term, type="boolean", boost=10.0,
                           minimum_should_match="1<-2 3<80% 5<60%"),
-                    match(fields.title_no_stem.name, search_term, type="boolean", boost=10.0,
+                    match(Fields.TITLE_NO_STEM.value.name, search_term, type="boolean", boost=10.0,
                           minimum_should_match="1<-2 3<80% 5<60%"),
-                    multi_match([fields.title.field_name_boosted, fields.edition.field_name_boosted], search_term,
+                    multi_match([Fields.TITLE.value.field_name_boosted, Fields.EDITION.value.field_name_boosted], search_term,
                                 type="cross_fields", minimum_should_match="3<80% 5<60%")
                 ]
             ),
-            multi_match([fields.summary.name, fields.metaDescription.name], search_term,
+            multi_match([Fields.SUMMARY.value.name, Fields.META_DESCRIPTION.value.name], search_term,
                         type="best_fields", minimum_should_match="75%"),
-            match(fields.keywords.name, search_term, type="boolean", operator="AND"),
-            multi_match([fields.cdid.name, fields.datasetId.name], search_term),
-            match(fields.searchBoost.name, search_term, type="boolean", operator="AND", boost=100.0)
+            match(Fields.KEYWORDS.value.name, search_term, type="boolean", operator="AND"),
+            multi_match([Fields.CDID.value.name, Fields.DATASET_ID.value.name], search_term),
+            match(Fields.SEARCH_BOOST.value.name, search_term, type="boolean", operator="AND", boost=100.0)
         ],
         **kwargs
     )
