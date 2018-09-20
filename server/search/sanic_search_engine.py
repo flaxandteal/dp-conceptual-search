@@ -9,7 +9,7 @@ from sanic.log import logger
 from sanic.exceptions import ServerError
 
 from ons.search.index import Index
-from ons.search.sort_fields import SortFields
+from ons.search.sort_fields import SortField
 from ons.search.response.search_result import SearchResult
 from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
@@ -49,7 +49,7 @@ class SanicSearchEngine(object):
         search_term = request.get_search_term()
         page = request.get_current_page()
         page_size = request.get_page_size()
-        sort_by: SortFields = request.get_sort_by()
+        sort_by: SortField = request.get_sort_by()
 
         try:
             response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by).execute()

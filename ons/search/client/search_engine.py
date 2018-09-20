@@ -2,7 +2,7 @@ from typing import List
 
 from core.search.search_type import SearchType
 
-from ons.search import SortFields, TypeFilters, ContentType
+from ons.search import SortField, TypeFilters, ContentType
 from ons.search.queries import content_query, function_score_content_query, departments_query
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
 
@@ -30,7 +30,7 @@ class SearchEngine(AbstractSearchEngine):
         return s
 
     def content_query(self, search_term: str, current_page: int, size: int,
-                      sort_by: SortFields=SortFields.relevance,
+                      sort_by: SortField=SortField.relevance,
                       filter_functions: List[ContentType]=None,
                       type_filters: List[TypeFilters]=None,
                       **kwargs):

@@ -3,7 +3,7 @@ from typing import List
 
 from core.search.client import SearchClient
 
-from ons.search.sort_fields import SortFields
+from ons.search.sort_fields import SortField
 from ons.search.type_filter import TypeFilters
 from ons.search.response.client.ons_response import ONSResponse
 
@@ -15,7 +15,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     def __init__(self, **kwargs):
         super(AbstractSearchEngine, self).__init__(response_class=ONSResponse, **kwargs)
 
-    def sort_by(self, sort_by: SortFields):
+    def sort_by(self, sort_by: SortField):
         """
         Adds sort options to query
         :param sort_by:

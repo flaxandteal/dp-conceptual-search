@@ -1,12 +1,22 @@
-"""
-Helper class for testing with Elasticsearch
-"""
+import abc
+import unittest
+from unittest.mock import MagicMock
+
+from unit.mocks.mock_es_client import MockElasticsearchClient
 
 
-class ElasticsearchTestUtils(object):
+class ElasticsearchTestCase(unittest.TestCase, abc.ABC):
     """
     A test class for working with Elasticsearch
     """
+
+    def setUp(self):
+        response = self.mock_response
+
+        # Mock the search client
+        self.mock_client = MockElasticsearchClient()
+        self.mock_client.search = MagicMock(return_value=response)
+
     @property
     def mock_shards_json(self) -> dict:
         """

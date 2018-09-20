@@ -1,15 +1,14 @@
 """
 Tests the ONSResponse class
 """
-from unit.ons.search.test_utils import SearchTestUtils
-from unit.mocks.elasticsearch_test_case import ElasticsearchTestCase
+from unit.ons.search.search_test_case import SearchTestCase
 
 from ons.search.response.search_result import SearchResult
 from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.search_engine import SearchEngine
 
 
-class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
+class ONSResponseTestCase(SearchTestCase):
 
     def test_ons_response(self):
         """
@@ -18,7 +17,7 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
         :return:
         """
         import asyncio
-        from ons.search.sort_fields import SortFields
+        from ons.search.sort_fields import SortField
 
         engine: SearchEngine = self.get_search_engine()
 
@@ -65,7 +64,7 @@ class ONSResponseTestCase(ElasticsearchTestCase, SearchTestUtils):
             self.assertIsInstance(response, ONSResponse, "response should be instance of ONSResponse")
 
             # Attempt to build SearchResult
-            sort_by = SortFields.relevance
+            sort_by = SortField.relevance
             result: SearchResult = response.to_content_query_search_result(current_page, size, sort_by)
 
             self.assertIsNotNone(result, "result should not be none")

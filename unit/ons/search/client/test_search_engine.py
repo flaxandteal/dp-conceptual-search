@@ -1,10 +1,10 @@
+from ons.search.sort_fields import SortField
 from ons.search.client.search_engine import SearchEngine
 
-from unit.ons.search.test_utils import SearchTestUtils
-from unit.mocks.elasticsearch_test_case import ElasticsearchTestCase
+from unit.ons.search.search_test_case import SearchTestCase
 
 
-class SearchEngineTestCase(ElasticsearchTestCase, SearchTestUtils):
+class SearchEngineTestCase(SearchTestCase):
     """
     Unit test for ONS SearchEngine class
 
@@ -15,10 +15,10 @@ class SearchEngineTestCase(ElasticsearchTestCase, SearchTestUtils):
         Test that sort_by works as expected
         :return:
         """
-        from ons.search.sort_fields import query_sort, SortFields
+        from ons.search.sort_fields import query_sort, SortField
 
         # Loop over all possible sort options
-        for sort_by in SortFields:
+        for sort_by in SortField:
             # Create an instance of the SearchEngine
             engine = self.get_search_engine()
 
@@ -131,7 +131,8 @@ class SearchEngineTestCase(ElasticsearchTestCase, SearchTestUtils):
         import asyncio
 
         # Setup content query with no type filters
-        engine, expected = self.setUpContentQuery()
+        sort_by: SortField = SortField.relevance
+        engine, expected = self.setUpContentQuery(sort_by)
 
         # Assert correct dict structure
         engine_dict = engine.to_dict()
@@ -169,7 +170,8 @@ class SearchEngineTestCase(ElasticsearchTestCase, SearchTestUtils):
         ]
 
         # Setup content query with type filters
-        engine, expected = self.setUpContentQuery(filter_by_content_types=filter_by_content_types)
+        sort_by: SortField = SortField.relevance
+        engine, expected = self.setUpContentQuery(sort_by, filter_by_content_types=filter_by_content_types)
 
         # Call execute asynchronously and test method calls
         event_loop = asyncio.new_event_loop()
@@ -206,7 +208,8 @@ class SearchEngineTestCase(ElasticsearchTestCase, SearchTestUtils):
         query_dict = query.to_dict()
 
         from_start = SearchEngine.default_page_number - 1
-        expected = self.expected_content_query(from_start, RESULTS_PER_PAGE, query_dict)
+        sort_by: SortField = SortField.relevance
+        expected = self.expected_content_query(from_start, RESULTS_PER_PAGE, query_dict, sort_by)
 
         # Add aggregations body
         expected["aggs"] = {

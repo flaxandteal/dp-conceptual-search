@@ -1,14 +1,14 @@
 from typing import List
 
-from ons.search.sort_fields import SortFields
+from ons.search.sort_fields import SortField
 from ons.search.content_type import ContentType
 from ons.search.type_filter import TypeFilter
 from ons.search.client.search_engine import SearchEngine
 
-from unittest import TestCase
+from unit.utils.elasticsearch_test_case import ElasticsearchTestCase
 
 
-class SearchTestUtils(TestCase):
+class SearchTestCase(ElasticsearchTestCase):
     """
     Contain common (useful) methods for testing search
     """
@@ -42,14 +42,6 @@ class SearchTestUtils(TestCase):
         :return:
         """
         return "Who ya gonna call?"
-
-    @property
-    def sort_by(self) -> SortFields:
-        """
-        SortBy option for testing
-        :return:
-        """
-        return SortFields.relevance
 
     @property
     def type_filters(self) -> List[TypeFilter]:
@@ -106,12 +98,13 @@ class SearchTestUtils(TestCase):
 
         return from_start, current_page, size
 
-    def expected_content_query(self, from_start: int, size: int, query_dict: dict) -> dict:
+    def expected_content_query(self, from_start: int, size: int, query_dict: dict, sort_by: SortField) -> dict:
         """
         Returns the expected query body for the given query dictionary
         :param from_start:
         :param size:
         :param query_dict:
+        :param sort_by:
         :return:
         """
         from ons.search.sort_fields import query_sort
@@ -133,15 +126,16 @@ class SearchTestUtils(TestCase):
                 }
             },
             "size": size,
-            "sort": query_sort(self.sort_by)
+            "sort": query_sort(sort_by)
         }
 
         return expected
 
-    def expected_type_counts_query(self, query_dict: dict) -> dict:
+    def expected_type_counts_query(self, query_dict: dict, sort_by: SortField) -> dict:
         """
         Returns the expected query body for the given query dictionary
         :param query_dict:
+        :param sort_by:
         :return:
         """
         from ons.search.queries import type_counts_query
@@ -153,7 +147,7 @@ class SearchTestUtils(TestCase):
         from_start = 0 if current_page <= 1 else (current_page - 1) * size
 
         # Build the expected query dict - note this should not change
-        expected = self.expected_content_query(from_start, size, query_dict)
+        expected = self.expected_content_query(from_start, size, query_dict, sort_by)
 
         # Add expected aggregations
         expected["aggs"] = {
@@ -196,12 +190,12 @@ class SearchTestUtils(TestCase):
                 }
             },
             "size": size,
-            "sort": query_sort(self.sort_by)
+            "sort": query_sort(SortField.relevance)
         }
 
         return expected
 
-    def setUpContentQuery(self, filter_by_content_types: List[ContentType]=None):
+    def setUpContentQuery(self, sort_by: SortField, filter_by_content_types: List[ContentType]=None):
         """
         Builds a SearchEngine instance and sets up the content query
         :return:
@@ -225,13 +219,13 @@ class SearchTestUtils(TestCase):
         query_dict = query.to_dict()
 
         # Build the expected query dict - note this should not change
-        expected = self.expected_content_query(from_start, size, query_dict)
+        expected = self.expected_content_query(from_start, size, query_dict, sort_by)
 
         # Call content_query
         engine: SearchEngine = engine.content_query(self.search_term,
                                                     current_page,
                                                     size,
-                                                    sort_by=self.sort_by,
+                                                    sort_by=sort_by,
                                                     type_filters=self.type_filters,
                                                     filter_functions=filter_by_content_types)
 

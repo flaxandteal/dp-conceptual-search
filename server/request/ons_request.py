@@ -1,7 +1,7 @@
 from sanic.request import Request
 from sanic.exceptions import InvalidUsage
 
-from ons.search.sort_fields import SortFields
+from ons.search.sort_fields import SortField
 from ons.search.paginator import RESULTS_PER_PAGE
 
 from uuid import uuid4
@@ -58,13 +58,13 @@ class ONSRequest(Request):
         page_size = self.args.get("size", RESULTS_PER_PAGE)
         return int(page_size)
 
-    def get_sort_by(self) -> SortFields:
+    def get_sort_by(self) -> SortField:
         """
         Returns the requests sort option. Defaults to relevance.
         :return:
         """
         if hasattr(self, "json") and isinstance(self.json, dict):
             sort_by_str = self.json.get("sort_by", "relevance")
-            if sort_by_str in SortFields:
-                return SortFields[sort_by_str]
-        return SortFields.relevance
+            if SortField.is_sort_field(sort_by_str):
+                return SortField.from_str(sort_by_str)
+        return SortField.relevance

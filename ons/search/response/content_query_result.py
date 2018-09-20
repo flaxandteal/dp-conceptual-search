@@ -1,14 +1,14 @@
 """
 Class to define the structure of an ONS content query search result
 """
-from ons.search import SortFields
+from ons.search import SortField
 from ons.search.paginator import Paginator
 from ons.search.response import SearchResult
 
 
 class ContentQueryResult(SearchResult):
     def __init__(self, number_of_results: int, took: int, results: list,
-                 paginator: Paginator, sort_by: SortFields):
+                 paginator: Paginator, sort_by: SortField):
 
         self.number_of_results = number_of_results
         self.took = took

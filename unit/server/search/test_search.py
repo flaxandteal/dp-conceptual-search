@@ -2,15 +2,16 @@
 Unit tests for search route
 """
 from unit.utils.test_app import TestApp
-from unit.ons.search.test_utils import SearchTestUtils
+from unit.ons.search.search_test_case import SearchTestCase
 
 from core.search.search_type import SearchType
 
 from ons.search.index import Index
+from ons.search.sort_fields import SortField
 from ons.search.queries import content_query
 
 
-class SearchTestCase(TestApp, SearchTestUtils):
+class SearchTestCase(TestApp, SearchTestCase):
 
     def test_content_query_search_called(self):
         """
@@ -19,10 +20,12 @@ class SearchTestCase(TestApp, SearchTestUtils):
         """
         # Make the request
         from_start, current_page, size = self.paginate()
+        sort_by: SortField = SortField.relevance
         params = {
             "q": self.search_term,
             "page": current_page,
-            "size": size
+            "size": size,
+            "sort_by": sort_by.name
         }
         url_encoded_params = self.url_encode(params)
         target = "/search/ons/content?{0}".format(url_encoded_params)
@@ -38,7 +41,7 @@ class SearchTestCase(TestApp, SearchTestUtils):
         query_dict = query.to_dict()
 
         # Build the expected query dict - note this should not change
-        expected = self.expected_content_query(from_start, size, query_dict)
+        expected = self.expected_content_query(from_start, size, query_dict, sort_by)
 
         # Assert search was called with correct arguments
         self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
@@ -50,8 +53,10 @@ class SearchTestCase(TestApp, SearchTestUtils):
         :return:
         """
         # Make the request
+        sort_by: SortField = SortField.relevance
         params = {
-            "q": self.search_term
+            "q": self.search_term,
+            "sort_by": sort_by.name
         }
         url_encoded_params = self.url_encode(params)
         target = "/search/ons/counts?{0}".format(url_encoded_params)
@@ -67,7 +72,7 @@ class SearchTestCase(TestApp, SearchTestUtils):
         query_dict = query.to_dict()
 
         # Build the expected query dict - note this should not change
-        expected = self.expected_type_counts_query(query_dict)
+        expected = self.expected_type_counts_query(query_dict, sort_by)
 
         # Assert search was called with correct arguments
         self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,

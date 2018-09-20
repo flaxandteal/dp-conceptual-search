@@ -1,6 +1,6 @@
 from elasticsearch_dsl.response import Response
 
-from ons.search.sort_fields import SortFields
+from ons.search.sort_fields import SortField
 from ons.search.response import SearchResult, ContentQueryResult, TypeCountsQueryResult
 from ons.search.paginator import Paginator
 
@@ -28,9 +28,9 @@ class ONSResponse(Response):
         Converts an Elasticsearch response into a ContentQueryResult
         :return:
         """
-        return self.to_content_query_search_result(1, 1, SortFields.relevance)
+        return self.to_content_query_search_result(1, 1, SortField.relevance)
 
-    def to_content_query_search_result(self, page_number: int, page_size: int, sort_by: SortFields) -> SearchResult:
+    def to_content_query_search_result(self, page_number: int, page_size: int, sort_by: SortField) -> SearchResult:
         """
         Converts an Elasticsearch response into a ContentQueryResult
         :param page_number:
