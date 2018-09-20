@@ -1,15 +1,12 @@
 """
 Test class for Sanic app
 """
-import os
 import unittest
 
 from urllib import parse as urllib_parse
 
 from server.app import create_app
 from server.sanic_elasticsearch import SanicElasticsearch
-
-os.environ['SEARCH_CONFIG'] = 'testing'
 
 
 class TestApp(unittest.TestCase):

@@ -14,9 +14,9 @@ from server.sanic_elasticsearch import SanicElasticsearch
 from server.search.routes import search_blueprint
 
 
-def init_app() -> SanicElasticsearch:
+def create_app() -> SanicElasticsearch:
     """
-    Initialises the default state for the Sanic APP
+    Creates the Sanic APP and registers all blueprints
     :return:
     """
     # First, set the ioloop event policy to use uvloop
@@ -27,16 +27,6 @@ def init_app() -> SanicElasticsearch:
 
     logger.info("Using config '%s'" % SEARCH_CONFIG)
     app.config.from_pyfile('config_%s.py' % SEARCH_CONFIG)
-
-    return app
-
-
-def create_app() -> SanicElasticsearch:
-    """
-    Creates the Sanic APP and registers all blueprints
-    :return:
-    """
-    app: SanicElasticsearch = init_app()
 
     # Register blueprints
     app.blueprint(search_blueprint)

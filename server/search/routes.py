@@ -22,7 +22,7 @@ async def ons_content_query(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.get_app(), SearchEngine, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.content_query(request)
@@ -38,7 +38,7 @@ async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.get_app(), SearchEngine, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.type_counts_query(request)

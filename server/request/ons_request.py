@@ -4,8 +4,6 @@ from sanic.exceptions import InvalidUsage
 from ons.search.sort_fields import SortFields
 from ons.search.paginator import RESULTS_PER_PAGE
 
-from server.sanic_elasticsearch import SanicElasticsearch
-
 
 class ONSRequest(Request):
     """
@@ -48,13 +46,3 @@ class ONSRequest(Request):
             if sort_by_str in SortFields:
                 return SortFields[sort_by_str]
         return SortFields.relevance
-
-    def get_app(self) -> SanicElasticsearch:
-        """
-        Returns the current SanicElasticsearch app (server)
-        :return:
-        """
-        if isinstance(self.app, SanicElasticsearch):
-            return self.app
-        raise ValueError("Detected incorrect app initialisation. Expected instance of SanicElasticsearch, got {0}"
-                         .format(type(self.app)))
