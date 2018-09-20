@@ -44,3 +44,19 @@ async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     search_result: SearchResult = await sanic_search_engine.type_counts_query(request)
 
     return json(search_result.to_dict(), 200)
+
+
+@search_blueprint.route('/ons/featured', methods=['GET', 'POST'], strict_slashes=True)
+async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
+    """
+    Handles type counts queries to the ONS list type
+    :param request:
+    :return:
+    """
+    # Initialise the search engine
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+
+    # Perform the request
+    search_result: SearchResult = await sanic_search_engine.featured_result_query(request)
+
+    return json(search_result.to_dict(), 200)

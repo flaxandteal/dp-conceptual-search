@@ -83,3 +83,25 @@ class SanicSearchEngine(object):
         search_result: SearchResult = response.to_type_counts_query_search_result()
 
         return search_result
+
+    async def featured_result_query(self, request: ONSRequest):
+        """
+        Executes the ONS featured result query using the given SearchEngine class
+        :param request:
+        :return:
+        """
+        engine: AbstractSearchEngine = self.get_search_engine_instance()
+
+        # Perform the query
+        search_term = request.get_search_term()
+
+        try:
+            response: ONSResponse = await engine.featured_result_query(search_term).execute()
+        except ConnectionError as e:
+            message = "Unable to connect to Elasticsearch cluster to perform featured result query request"
+            logger.error(message, exc_info=e)
+            raise ServerError(message)
+
+        search_result: SearchResult = response.to_featured_result_query_search_result()
+
+        return search_result

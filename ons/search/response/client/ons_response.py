@@ -2,7 +2,7 @@ from elasticsearch_dsl.response import Response
 
 from ons.search.sort_fields import SortFields
 from ons.search.response import SearchResult, ContentQueryResult, TypeCountsQueryResult
-from ons.search.paginator import Paginator, MAX_VISIBLE_PAGINATOR_LINK
+from ons.search.paginator import Paginator
 
 
 class ONSResponse(Response):
@@ -22,6 +22,13 @@ class ONSResponse(Response):
         """
         result: TypeCountsQueryResult = TypeCountsQueryResult(self.aggregations)
         return result
+
+    def to_featured_result_query_search_result(self) -> SearchResult:
+        """
+        Converts an Elasticsearch response into a ContentQueryResult
+        :return:
+        """
+        return self.to_content_query_search_result(1, 1, SortFields.relevance)
 
     def to_content_query_search_result(self, page_number: int, page_size: int, sort_by: SortFields) -> SearchResult:
         """

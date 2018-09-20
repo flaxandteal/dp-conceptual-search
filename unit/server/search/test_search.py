@@ -72,3 +72,32 @@ class SearchTestCase(TestApp, SearchTestUtils):
         # Assert search was called with correct arguments
         self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
                                                    search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+
+    def test_featured_result_query_search_called(self):
+        """
+        Tests that the search method is called properly by the server for a featured result query
+        :return:
+        """
+        # Make the request
+        params = {
+            "q": self.search_term
+        }
+        url_encoded_params = self.url_encode(params)
+        target = "/search/ons/featured?{0}".format(url_encoded_params)
+
+        # Make the request
+        request, response = self.get(target, 200)
+
+        # Build expected query
+        # Build the content query and convert to dict
+        query = content_query(self.search_term)
+
+        # Get the resulting query dict
+        query_dict = query.to_dict()
+
+        # Build the expected query dict - note this should not change
+        expected = self.expected_featured_result_query(query_dict)
+
+        # Assert search was called with correct arguments
+        self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
+                                                   search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
