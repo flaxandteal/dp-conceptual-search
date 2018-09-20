@@ -26,13 +26,15 @@ def bool_env(var_name, default=False):
     return bool(test_val)
 
 
-LOGO = None
-
-RESPONSE_TIMEOUT = 600
-
 API_VERSION = '1.0.1'
 API_TITLE = 'dp-conceptual-search'
 API_DESCRIPTION = 'Dedicated search API for digital publishing.'
+
+# General
+
+LOGO = None  # Disable printing of the Sanic logo
+RESPONSE_TIMEOUT = 600
+SEARCH_CONFIG = os.environ.get('SEARCH_CONFIG', 'development')
 
 # Elasticsearch
 
@@ -43,22 +45,29 @@ ELASTIC_SEARCH_TIMEOUT = int(os.environ.get("ELASTIC_SEARCH_TIMEOUT", 1000))
 # mongoDB
 
 MONGO_SEARCH_DATABASE = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
-
 MONGO_DEFAULT_HOST = os.environ.get("MONGO_DEFAULT_HOST", "localhost")
 MONGO_DEFAULT_PORT = os.environ.get("MONGO_DEFAULT_PORT", 27017)
-
 MONGO_BIND_ADDR = 'mongodb://{host}:{port}'.format(
     host=MONGO_DEFAULT_HOST, port=MONGO_DEFAULT_PORT)
+
+# Motor client
 
 MOTOR_URI = "{bind_addr}/{db}".format(
     bind_addr=MONGO_BIND_ADDR,
     db=MONGO_SEARCH_DATABASE
 )
 
+# Search
+
+RESULTS_PER_PAGE = int(os.getenv("RESULTS_PER_PAGE", 10))
+MAX_VISIBLE_PAGINATOR_LINK = int(os.getenv("MAX_VISIBLE_PAGINATOR_LINK", 5))
+
 # Conceptual search
+
 CONCEPTUAL_SEARCH_ENABLED = bool_env('CONCEPTUAL_SEARCH_ENABLED', False)
 
 # User recommendation
+
 USER_RECOMMENDATION_ENABLED = bool_env('USER_RECOMMENDATION_ENABLED', False)
 
 if USER_RECOMMENDATION_ENABLED and not CONCEPTUAL_SEARCH_ENABLED:
@@ -66,9 +75,10 @@ if USER_RECOMMENDATION_ENABLED and not CONCEPTUAL_SEARCH_ENABLED:
     raise SystemExit("ERROR: User recommendation requires conceptual search")
 
 # Prometheus metrics endpoint
+
 ENABLE_PROMETHEUS_METRICS = bool_env('ENABLE_PROMETHEUS_METRICS', False)
 
 # Logging
-COLOURED_LOGGING_ENABLED = bool_env('COLOURED_LOGGING_ENABLED', False)
 
+COLOURED_LOGGING_ENABLED = bool_env('COLOURED_LOGGING_ENABLED', False)
 PRETTY_LOGGING = bool_env('PRETTY_LOGGING', False)
