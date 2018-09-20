@@ -55,7 +55,7 @@ class SortField(Enum):
         :param label:
         :return:
         """
-        return label in SortField.available_sort_fields
+        return label in SortField.available_sort_fields()
 
     @staticmethod
     def from_str(label: str) -> 'SortField':
@@ -82,4 +82,5 @@ def query_sort(sort_field: SortField) -> List[dict]:
             }
         }
         s.append(d)
+
     return s

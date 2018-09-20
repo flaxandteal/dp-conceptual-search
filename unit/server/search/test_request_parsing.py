@@ -1,6 +1,7 @@
 """
 Tests that the ONSRequest properly parses input params
 """
+from json import dumps
 from unit.utils.test_app import TestApp
 from unit.ons.search.search_test_case import SearchTestCase
 
@@ -24,14 +25,17 @@ class ONSRequestTestCase(TestApp, SearchTestCase):
         params = {
             "q": self.search_term,
             "page": current_page,
-            "size": size,
-            "sort_by": sort_by.name
+            "size": size
         }
         url_encoded_params = self.url_encode(params)
         target = "/search/ons/content?{0}".format(url_encoded_params)
 
+        data = {
+            "sort_by": sort_by.name
+        }
+
         # Make the request
-        request, response = self.get(target, 200)
+        request, response = self.get(target, 200, data=dumps(data))
 
         # Build expected query
         # Build the content query and convert to dict
@@ -47,16 +51,11 @@ class ONSRequestTestCase(TestApp, SearchTestCase):
         self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
                                                    search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
 
-    def test_sort_by_relevance(self):
+    def test_sort_by_parsing(self):
         """
         Tests that the search method is called properly by the server for a content query
         :return:
         """
-        self.assert_sort_by(SortField.relevance)
-
-    # def test_sort_by_release_date(self):
-    #     """
-    #     Tests that the search method is called properly by the server for a content query
-    #     :return:
-    #     """
-    #     self.assert_sort_by(SortField.release_date)
+        sort_by: SortField
+        for sort_by in SortField:
+            self.assert_sort_by(sort_by)
