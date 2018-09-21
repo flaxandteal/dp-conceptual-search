@@ -6,7 +6,7 @@ import logging
 from sanic import Sanic
 
 from server.request.ons_request import ONSRequest
-from server.elasticsearch_client_service import ElasticsearchClientService
+from app.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SanicElasticsearch(Sanic):

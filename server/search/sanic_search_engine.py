@@ -15,7 +15,7 @@ from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
 
 from server.request.ons_request import ONSRequest
-from server.sanic_elasticsearch import SanicElasticsearch
+from app.sanic_elasticsearch import SanicElasticsearch
 
 
 class SanicSearchEngine(object):
@@ -67,7 +67,7 @@ class SanicSearchEngine(object):
         try:
             response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by).execute()
         except ConnectionError as e:
-            message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
+            message = "Unable to connect to Elasticsearch cluster to perform content query request"
             self.log_error(message, request, e)
             raise ServerError(message)
 

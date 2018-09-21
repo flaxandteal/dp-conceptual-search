@@ -12,7 +12,7 @@ class ONSRequest(Request):
     Custom ONS request class which implements some useful methods for request parsing
     """
 
-    request_id_log_key = "request_id"
+    request_id_log_key = "context"
     request_id_header = "X-Request-Id"
 
     def __init__(self, *args, **kwargs):

@@ -3,7 +3,7 @@ import os
 from pythonjsonlogger import jsonlogger
 from datetime import datetime
 
-from config_core import COLOURED_LOGGING_ENABLED, PRETTY_LOGGING
+from config.config_core import COLOURED_LOGGING_ENABLED, PRETTY_LOGGING
 
 log_level = os.environ.get("SEARCH_LOG_LEVEL", "INFO")
 
@@ -96,7 +96,7 @@ default_log_config = {
     'formatters': {
         'standard': {
             'format': custom_format,
-            'class': 'server.log_config.PrettyCustomJsonFormatter' if PRETTY_LOGGING else 'server.log_config.CustomJsonFormatter'
+            'class': 'app.log_config.PrettyCustomJsonFormatter' if PRETTY_LOGGING else 'app.log_config.CustomJsonFormatter'
         },
     },
     'handlers': {
