@@ -29,6 +29,19 @@ class SanicSearchEngine(object):
         self.index = index
         self._search_engine_cls = search_engine_cls
 
+    def log_error(self, message: str, request: ONSRequest, e: Exception):
+        """
+        Calls logger.error and attaches the request ID to the log message
+        :param message:
+        :param request:
+        :param e:
+        :return:
+        """
+        extra = {
+            ONSRequest.request_id_log_key: request.request_id
+        }
+        logger.error(message, extra=extra, exc_info=e)
+
     def get_search_engine_instance(self) -> AbstractSearchEngine:
         """
         Returns an instance of the desired SearchEngine class
@@ -55,7 +68,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
-            logger.error(message, exc_info=e)
+            self.log_error(message, request, e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
@@ -77,7 +90,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.type_counts_query(search_term).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
-            logger.error(message, exc_info=e)
+            self.log_error(message, request, e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_type_counts_query_search_result()
@@ -99,7 +112,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.featured_result_query(search_term).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform featured result query request"
-            logger.error(message, exc_info=e)
+            self.log_error(message, request, e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_featured_result_query_search_result()
