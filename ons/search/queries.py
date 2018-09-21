@@ -1,67 +1,22 @@
-from ons.search import fields
-from ons.search.query_dsl import ScriptScore
-
-from elasticsearch_dsl import query as Q
-from elasticsearch_dsl.aggs import A, Agg
-
+"""
+Defines a series of useful Elasticsearch queries for the ONS
+"""
 from typing import List
 
+from elasticsearch_dsl import query as Q
+from elasticsearch_dsl.aggs import A as Aggregation
 
-type_counts_query = A("terms", field=fields._type.name)
+from core.search.query_helper import match, multi_match
+from ons.search.content_type import ContentType
+from ons.search.fields import AvailableFields
 
 
-def match_by_uri(uri: str) -> Q.Query:
+def type_counts_query() -> Aggregation:
     """
-    Match a document by its uri
-    :param uri:
+    Helper method for generating ONS type counts aggregation
     :return:
     """
-    if not uri.startswith("/"):
-        uri = "/" + uri
-    return Q.Match(_id=uri)
-
-
-def match(field: str, search_term: str, **kwargs) -> Q.Query:
-    query_dict = {
-        field: {
-            "query": search_term,
-        }
-    }
-
-    for item in kwargs:
-        query_dict[field][item] = kwargs[item]
-
-    q = Q.Match(**query_dict)
-    return q
-
-
-def multi_match(field_list: List[str], search_term: str, **kwargs) -> Q.Query:
-    if hasattr(field_list, "__iter__") is False:
-        field_list = [field_list]
-
-    formatted_field_list = []
-    for field in field_list:
-        formatted_field_list.append(field)
-
-    query_dict = {
-        "query": search_term,
-        "fields": formatted_field_list,
-    }
-
-    for item in kwargs:
-        query_dict[item] = kwargs[item]
-
-    q = Q.MultiMatch(**query_dict)
-    return q
-
-
-def boost_score(boost_factor=1.0) -> ScriptScore:
-    return ScriptScore(
-        script="_score * boostFactor",
-        params={
-            "boostFactor": boost_factor
-        }
-    )
+    return Aggregation("terms", field=AvailableFields.TYPE.value.name)
 
 
 def departments_query(search_term: str) -> Q.Query:
@@ -84,19 +39,19 @@ def content_query(search_term: str, **kwargs) -> Q.DisMax:
         queries=[
             Q.Bool(
                 should=[
-                    match(fields.title_no_dates.name, search_term, type="boolean", boost=10.0,
+                    match(AvailableFields.TITLE_NO_DATES.value.name, search_term, type="boolean", boost=10.0,
                           minimum_should_match="1<-2 3<80% 5<60%"),
-                    match(fields.title_no_stem.name, search_term, type="boolean", boost=10.0,
+                    match(AvailableFields.TITLE_NO_STEM.value.name, search_term, type="boolean", boost=10.0,
                           minimum_should_match="1<-2 3<80% 5<60%"),
-                    multi_match([fields.title.field_name_boosted, fields.edition.field_name_boosted], search_term,
+                    multi_match([AvailableFields.TITLE.value.field_name_boosted, AvailableFields.EDITION.value.field_name_boosted], search_term,
                                 type="cross_fields", minimum_should_match="3<80% 5<60%")
                 ]
             ),
-            multi_match([fields.summary.name, fields.metaDescription.name], search_term,
+            multi_match([AvailableFields.SUMMARY.value.name, AvailableFields.META_DESCRIPTION.value.name], search_term,
                         type="best_fields", minimum_should_match="75%"),
-            match(fields.keywords.name, search_term, type="boolean", operator="AND"),
-            multi_match([fields.cdid.name, fields.datasetId.name], search_term),
-            match(fields.searchBoost.name, search_term, type="boolean", operator="AND", boost=100.0)
+            match(AvailableFields.KEYWORDS.value.name, search_term, type="boolean", operator="AND"),
+            multi_match([AvailableFields.CDID.value.name, AvailableFields.DATASET_ID.value.name], search_term),
+            match(AvailableFields.SEARCH_BOOST.value.name, search_term, type="boolean", operator="AND", boost=100.0)
         ],
         **kwargs
     )
@@ -104,8 +59,16 @@ def content_query(search_term: str, **kwargs) -> Q.DisMax:
     return q
 
 
-def function_score_content_query(
-        query: Q.Query,
-        function_scores: list,
-        boost: float=1.0) -> Q.Query:
+def function_score_content_query(query: Q.Query, content_types: List[ContentType], boost: float=1.0) -> Q.Query:
+    """
+    Generate a function score query using ContentType weights
+    :param query:
+    :param content_types:
+    :param boost:
+    :return:
+    """
+    function_scores = []
+    for content_type in content_types:
+        function_scores.append(content_type.filter_function())
+
     return Q.FunctionScore(query=query, functions=function_scores, boost=boost)

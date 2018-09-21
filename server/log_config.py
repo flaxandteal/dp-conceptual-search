@@ -85,11 +85,7 @@ supported_keys = [
     'module',
     'message',
     'name',
-    'pathname',
-    # 'process',
-    # 'processName',
-    # 'thread',
-    # 'threadName'
+    'pathname'
 ]
 
 custom_format = ' '.join(log_format(supported_keys))
