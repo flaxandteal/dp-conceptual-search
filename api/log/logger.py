@@ -18,7 +18,9 @@ def _log(level: str, request: ONSRequest, msg: str, *args, **kwargs):
     """
     if hasattr(logger, level):
         fn = getattr(logger, level)
-        kwargs['extra'] = request.logging_params
+        kwargs['extra'] = {
+            ONSRequest.request_id_log_key, request.request_id
+        }
         fn(msg, *args, **kwargs)
     else:
         logger.error("Unknown log level: '{0}'".format(level))
