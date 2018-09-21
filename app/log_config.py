@@ -2,7 +2,8 @@
 Initialises APP wide logging config
 """
 from dp.log.config import config_for_formatter
-from dp.log.formatters import PrettyCustomJsonFormatter
+
+from api.log.formatter import SearchJsonFormatter
 
 supported_keys = [
     'timestamp',
@@ -16,4 +17,4 @@ supported_keys = [
     'pathname'
 ]
 
-log_config = config_for_formatter(PrettyCustomJsonFormatter, supported_keys)
+log_config = config_for_formatter(SearchJsonFormatter, supported_keys)
