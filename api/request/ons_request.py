@@ -69,3 +69,13 @@ class ONSRequest(Request):
             if SortField.is_sort_field(sort_by_str):
                 return SortField.from_str(sort_by_str)
         return SortField.relevance
+
+    @property
+    def logging_params(self):
+        """
+        Returns dict of params to be logged out
+        :return:
+        """
+        return {
+            self.request_id_log_key: self.request_id
+        }

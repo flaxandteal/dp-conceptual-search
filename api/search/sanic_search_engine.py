@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from elasticsearch.exceptions import ConnectionError
 
-from sanic.log import logger
+from api.log import logger
 from sanic.exceptions import ServerError
 
 from ons.search.index import Index
