@@ -12,6 +12,10 @@ from server.sanic_elasticsearch import SanicElasticsearch
 
 class TestApp(unittest.TestCase):
     def setUp(self):
+        """
+        Initialises the Sanic app and test client
+        :return:
+        """
         self._app: SanicElasticsearch = create_app()
         self._client = self._app.test_client
 
@@ -33,6 +37,13 @@ class TestApp(unittest.TestCase):
         return urllib_parse.urlencode(params)
 
     def assert_response_code(self, request, response, code: int):
+        """
+        Assert a response has the correct response code
+        :param request:
+        :param response:
+        :param code:
+        :return:
+        """
         self.assertIsNotNone(request, msg="request should not be none")
         self.assertIsNotNone(response, msg="response should not be none")
         self.assertIsNotNone(response.body,
@@ -49,6 +60,14 @@ class TestApp(unittest.TestCase):
             uri: str,
             expected_code: int,
             **kwargs):
+        """
+        Routes the request via the test client and makes basic assertions, including status code and request ID
+        :param method:
+        :param uri:
+        :param expected_code:
+        :param kwargs:
+        :return:
+        """
         fn = getattr(self._client, method)
 
         request, response = fn(uri, **kwargs)
