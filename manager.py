@@ -1,4 +1,4 @@
-from server.protocol.ons_http_protocol import ONSHttpProtocol
+from api.protocol.ons_http_protocol import ONSHttpProtocol
 
 
 def test():
@@ -19,7 +19,7 @@ def test():
 
 def run(app_host: str='0.0.0.0', app_port: int=5000, app_workers: int=1):
     """
-    Runs the Sanic server on the given host and port address.
+    Runs the Sanic api on the given host and port address.
     :param app_host:
     :param app_port:
     :param app_workers: Number of worker threads to use (defaults to 1)
@@ -29,7 +29,7 @@ def run(app_host: str='0.0.0.0', app_port: int=5000, app_workers: int=1):
 
     # Create the app
     app = create_app()
-    # Run the server with our custom HttpProtocol (for more control over access log)
+    # Run the api with our custom HttpProtocol (for more control over access log)
     app.run(host=app_host, port=app_port, workers=app_workers, protocol=ONSHttpProtocol)
 
 

@@ -1,7 +1,7 @@
 import abc
 from typing import List
 
-from core.search.client import SearchClient
+from search.client.search_client import SearchClient
 
 from ons.search.sort_fields import SortField
 from ons.search.type_filter import TypeFilters

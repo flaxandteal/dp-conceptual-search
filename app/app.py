@@ -1,5 +1,5 @@
 """
-Code for creating HTTP server app
+Code for creating HTTP api app
 """
 import asyncio
 import uvloop
@@ -11,7 +11,7 @@ from config.config_core import SEARCH_CONFIG
 from app.log_config import default_log_config
 from app.sanic_elasticsearch import SanicElasticsearch
 
-from server.search.routes import search_blueprint
+from api.search.routes import search_blueprint
 
 
 def create_app() -> SanicElasticsearch:

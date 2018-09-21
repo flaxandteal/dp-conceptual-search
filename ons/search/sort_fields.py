@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List
 
-from core.search.sort_by import SortOrder
+from search.sort_by import SortOrder
 from ons.search.fields import AvailableFields, Field
 
 

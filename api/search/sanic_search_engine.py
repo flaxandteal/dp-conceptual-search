@@ -14,7 +14,7 @@ from ons.search.response.search_result import SearchResult
 from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
 
-from server.request.ons_request import ONSRequest
+from api.request.ons_request import ONSRequest
 from app.sanic_elasticsearch import SanicElasticsearch
 
 

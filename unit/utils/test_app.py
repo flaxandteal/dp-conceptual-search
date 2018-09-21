@@ -6,7 +6,7 @@ import unittest
 from urllib import parse as urllib_parse
 
 from app.app import create_app
-from server.request.ons_request import ONSRequest
+from api.request.ons_request import ONSRequest
 from app.sanic_elasticsearch import SanicElasticsearch
 
 

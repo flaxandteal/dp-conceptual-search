@@ -4,7 +4,7 @@ Unit tests for search route
 from unit.utils.test_app import TestApp
 from unit.ons.search.search_test_case import SearchTestCase
 
-from core.search.search_type import SearchType
+from search.search_type import SearchType
 
 from ons.search.index import Index
 from ons.search.sort_fields import SortField
@@ -15,7 +15,7 @@ class SearchTestCase(TestApp, SearchTestCase):
 
     def test_content_query_search_called(self):
         """
-        Tests that the search method is called properly by the server for a content query
+        Tests that the search method is called properly by the api for a content query
         :return:
         """
         # Make the request
@@ -49,7 +49,7 @@ class SearchTestCase(TestApp, SearchTestCase):
 
     def test_type_counts_query_search_called(self):
         """
-        Tests that the search method is called properly by the server for a type counts query
+        Tests that the search method is called properly by the api for a type counts query
         :return:
         """
         # Make the request
@@ -80,7 +80,7 @@ class SearchTestCase(TestApp, SearchTestCase):
 
     def test_featured_result_query_search_called(self):
         """
-        Tests that the search method is called properly by the server for a featured result query
+        Tests that the search method is called properly by the api for a featured result query
         :return:
         """
         # Make the request

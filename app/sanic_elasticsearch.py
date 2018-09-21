@@ -5,7 +5,7 @@ import logging
 
 from sanic import Sanic
 
-from server.request.ons_request import ONSRequest
+from api.request.ons_request import ONSRequest
 from app.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -20,7 +20,7 @@ class SanicElasticsearch(Sanic):
         @self.listener("after_server_start")
         async def init(app: SanicElasticsearch, loop):
             """
-            Initialise the ES client after server start (when the ioloop exists)
+            Initialise the ES client after api start (when the ioloop exists)
             :param app:
             :param loop:
             :return:

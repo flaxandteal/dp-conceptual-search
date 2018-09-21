@@ -1,6 +1,6 @@
 import asyncio
 
-from core.search.client import SearchClient
+from search.client.search_client import SearchClient
 
 from unit.utils.elasticsearch_test_case import ElasticsearchTestCase
 

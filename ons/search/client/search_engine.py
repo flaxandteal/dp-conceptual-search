@@ -1,6 +1,6 @@
 from typing import List
 
-from core.search.search_type import SearchType
+from search.search_type import SearchType
 
 from ons.search import SortField, TypeFilters, ContentType
 from ons.search.queries import content_query, function_score_content_query, departments_query

@@ -4,8 +4,8 @@ This file contains all routes for the /search API
 from sanic import Blueprint
 from sanic.response import json, HTTPResponse
 
-from server.request import ONSRequest
-from server.search.sanic_search_engine import SanicSearchEngine
+from api.request import ONSRequest
+from api.search.sanic_search_engine import SanicSearchEngine
 from ons.search.response.search_result import SearchResult
 
 from ons.search.index import Index

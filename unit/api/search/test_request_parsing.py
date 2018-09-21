@@ -5,7 +5,7 @@ from json import dumps
 from unit.utils.test_app import TestApp
 from unit.ons.search.search_test_case import SearchTestCase
 
-from core.search.search_type import SearchType
+from search.search_type import SearchType
 
 from ons.search.index import Index
 from ons.search.sort_fields import SortField
@@ -53,7 +53,7 @@ class ONSRequestTestCase(TestApp, SearchTestCase):
 
     def test_sort_by_parsing(self):
         """
-        Tests that the search method is called properly by the server for a content query
+        Tests that the search method is called properly by the api for a content query
         :return:
         """
         sort_by: SortField

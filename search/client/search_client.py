@@ -4,7 +4,7 @@ from elasticsearch_dsl import Search
 from elasticsearch_dsl.response import Response
 from elasticsearch_dsl.connections import connections
 
-from core.search.search_type import SearchType
+from search.search_type import SearchType
 
 
 class SearchClient(Search):

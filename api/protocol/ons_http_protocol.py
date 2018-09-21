@@ -5,7 +5,7 @@ from sanic.log import access_logger
 from sanic.server import HttpProtocol
 from sanic.response import HTTPResponse
 
-from server.request.ons_request import ONSRequest
+from api.request.ons_request import ONSRequest
 
 
 class ONSHttpProtocol(HttpProtocol):

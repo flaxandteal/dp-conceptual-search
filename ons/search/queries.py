@@ -6,7 +6,7 @@ from typing import List
 from elasticsearch_dsl import query as Q
 from elasticsearch_dsl.aggs import A as Aggregation
 
-from core.search.query_helper import match, multi_match
+from search.query_helper import match, multi_match
 from ons.search.content_type import ContentType
 from ons.search.fields import AvailableFields
 
