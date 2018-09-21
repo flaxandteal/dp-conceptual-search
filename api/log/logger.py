@@ -18,8 +18,12 @@ def _log(level: str, request: ONSRequest, msg: str, *args, **kwargs):
     """
     if hasattr(logger, level):
         fn = getattr(logger, level)
+        if 'extra' not in kwargs:
+            kwargs['extra'] = {}
+
         kwargs['extra'] = {
-            ONSRequest.request_id_log_key, request.request_id
+            ONSRequest.request_id_log_key: request.request_id,
+            **kwargs['extra']
         }
         fn(msg, *args, **kwargs)
     else:
