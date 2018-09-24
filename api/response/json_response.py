@@ -20,7 +20,7 @@ def json(request: ONSRequest, body, status=200, headers: dict=None, dumps=json_d
     if headers is None:
         headers = {}
     if ONSRequest.request_id_log_key not in headers:
-        headers[ONSRequest.request_id_log_key] = request.request_id
+        headers[ONSRequest.request_id_header] = request.request_id
 
     return HTTPResponse(dumps(body, **kwargs), headers=headers,
                         status=status, content_type=content_type)
