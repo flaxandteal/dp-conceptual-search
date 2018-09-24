@@ -39,7 +39,7 @@ def info(request: ONSRequest, msg: str, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    _log(lo, request, msg, *args, **kwargs)
+    _log('info', request, msg, *args, **kwargs)
 
 
 def debug(request: ONSRequest, msg: str, *args, **kwargs):
