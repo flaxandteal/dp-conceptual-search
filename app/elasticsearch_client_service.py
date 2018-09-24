@@ -1,7 +1,7 @@
 """
 Parses config options and sets up Elasticsearch client
 """
-import logging
+from sanic.log import logger
 
 from sanic import Sanic
 from elasticsearch import Elasticsearch
@@ -39,7 +39,7 @@ class ElasticsearchClientService(object):
         :return:
         """
         if self.app.config.get("TESTING", False):
-            logging.warning("Test environment active, using MockElasticSearch client")
+            logger.warning("Test environment active, using MockElasticSearch client")
             self._mock_client()
         else:
             es_host = self.elasticsearch_host

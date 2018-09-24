@@ -1,10 +1,13 @@
+from uuid import uuid4
+from typing import List
+
 from sanic.request import Request
 from sanic.exceptions import InvalidUsage
 
 from ons.search.sort_fields import SortField
+from ons.search.type_filter import TypeFilter, TypeFilters
 from ons.search.paginator import RESULTS_PER_PAGE
-
-from uuid import uuid4
+from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
 
 
 class ONSRequest(Request):
@@ -69,3 +72,45 @@ class ONSRequest(Request):
             if SortField.is_sort_field(sort_by_str):
                 return SortField.from_str(sort_by_str)
         return SortField.relevance
+
+    def get_type_filters(self) -> List[TypeFilter]:
+        """
+        Returns requested type filters
+        :return:
+        """
+        if hasattr(self, "json") and isinstance(self.json, dict):
+            type_filters_raw = self.json.get("filter", None)
+
+            if not isinstance(type_filters_raw, list):
+                type_filters_raw = [type_filters_raw]
+
+            try:
+                type_filters: List[TypeFilter] = TypeFilters.from_string_list(type_filters_raw)
+                return type_filters
+            except UnknownTypeFilter as e:
+                # Import logger here to prevent circular dependency on module import
+                from api.log import logger
+
+                message = "Received unknown type filter: '{0}'".format(e.unknown_type_filter)
+                logger.error(self, message, exc_info=e)
+                raise InvalidUsage(message)
+
+        return TypeFilters.all()
+
+    def get_elasticsearch_query(self) -> dict:
+        """
+        Parse the request body for Elasticsearch query JSON and return as dict
+        :return:
+        """
+        body = self.json
+
+        if body is not None and isinstance(body, dict) and "query" in body:
+            return body
+        else:
+            # Raise InvalidUsage (400) and log error
+            # Import logger here to prevent circular dependency on module import
+            from api.log import logger
+
+            message = "Invalid request body whilst trying to parse for Elasticsearch query"
+            logger.error(self, message, extra={"body": body})
+            raise InvalidUsage(message)

@@ -1,7 +1,7 @@
 """
 This file defines our custom Sanic app class
 """
-import logging
+from sanic.log import logger
 
 from sanic import Sanic
 
@@ -35,7 +35,7 @@ class SanicElasticsearch(Sanic):
                 }
             }
 
-            logging.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
+            logger.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
         @self.listener("after_server_stop")
         async def shutdown(app: SanicElasticsearch, loop):

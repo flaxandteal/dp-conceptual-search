@@ -77,10 +77,32 @@ class ContentTypes(Enum):
     EQUATION = ContentType("equation")
     DEPARTMENTS = ContentType("departments")
 
+    @staticmethod
+    def available_content_types():
+        """
+        Returns a list of all available type filters
+        :return:
+        """
+        return [f.name for f in ContentTypes]
 
-def get_all_content_types() -> List[ContentType]:
-    """
-    Returns a list of all available content types
-    :return:
-    """
-    return [content_type.value for content_type in ContentTypes]
+    @staticmethod
+    def is_content_type(label: str) -> bool:
+        """
+        Returns True is string is a valid TypeFilter, else False. Makes case insensitive comparison.
+        :param label:
+        :return:
+        """
+        return label.upper() in ContentTypes.available_content_types()
+
+    @staticmethod
+    def from_str(label: str) -> 'ContentTypes':
+        """
+        Returns the enum type corresponding to the input string
+        :param label:
+        :return:
+        """
+
+        if ContentTypes.is_content_type(label):
+            return ContentTypes[label.upper()]
+        else:
+            raise NotImplementedError("No such ContentType for string: '{0}'".format(label))
