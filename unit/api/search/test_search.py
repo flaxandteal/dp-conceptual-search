@@ -17,7 +17,7 @@ from ons.search.queries import content_query, departments_query
 from api.search.list_type import ListType
 
 
-class SearchTestCase(TestApp, SearchTestCase):
+class SearchApiTestCase(TestApp, SearchTestCase):
 
     def test_proxy_api_raises_400(self):
         """

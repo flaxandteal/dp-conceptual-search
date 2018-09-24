@@ -5,8 +5,6 @@ from ons.search.content_type import AvailableContentTypes
 from ons.search.type_filter import TypeFilter
 from ons.search.client.search_engine import SearchEngine
 
-from api.search.list_type import ListType
-
 from unit.utils.elasticsearch_test_case import ElasticsearchTestCase
 
 
