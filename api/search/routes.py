@@ -6,10 +6,10 @@ from sanic.response import json, HTTPResponse
 
 from api.request import ONSRequest
 from api.search.sanic_search_engine import SanicSearchEngine
-from ons.search.response.search_result import SearchResult
 
 from ons.search.index import Index
 from ons.search.client.search_engine import SearchEngine
+from ons.search.response.search_result import SearchResult
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
