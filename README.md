@@ -51,10 +51,6 @@ The swagger spec can be found in ```swagger.yaml```
 
 To run the unit tests, use: ```make test```.
 
-# Integration
-
-To run the integration tests, use  ```make integration-test```.
-
 # Structure
 
 The code is organised into four main modules:
