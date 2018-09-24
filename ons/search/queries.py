@@ -7,7 +7,7 @@ from elasticsearch_dsl import query as Q
 from elasticsearch_dsl.aggs import A as Aggregation
 
 from search.query_helper import match, multi_match
-from ons.search.content_type import ContentTypes
+from ons.search.content_type import AvailableContentTypes
 from ons.search.fields import AvailableFields
 
 
@@ -59,7 +59,7 @@ def content_query(search_term: str, **kwargs) -> Q.DisMax:
     return q
 
 
-def function_score_content_query(query: Q.Query, content_types: List[ContentTypes], boost: float=1.0) -> Q.Query:
+def function_score_content_query(query: Q.Query, content_types: List[AvailableContentTypes], boost: float=1.0) -> Q.Query:
     """
     Generate a function score query using ContentType weights
     :param query:

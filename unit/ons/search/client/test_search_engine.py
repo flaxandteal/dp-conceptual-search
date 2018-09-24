@@ -161,12 +161,12 @@ class SearchEngineTestCase(SearchTestCase):
         :return:
         """
         import asyncio
-        from ons.search.content_type import ContentTypes
+        from ons.search.content_type import AvailableContentTypes
 
         # Setup content type filters
         filter_by_content_types = [
-            ContentTypes.BULLETIN,
-            ContentTypes.ARTICLE
+            AvailableContentTypes.BULLETIN,
+            AvailableContentTypes.ARTICLE
         ]
 
         # Setup content query with type filters
