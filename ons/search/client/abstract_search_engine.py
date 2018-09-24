@@ -3,9 +3,8 @@ from typing import List
 
 from search.client.search_client import SearchClient
 
-from ons.search.sort_fields import SortField
-from ons.search.type_filter import TypeFilter
 from ons.search.response.client.ons_response import ONSResponse
+from ons.search import AvailableContentTypes, SortField, TypeFilter
 
 
 class AbstractSearchEngine(SearchClient, abc.ABC):
@@ -71,30 +70,30 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def content_query(
-            self,
-            search_term: str,
-            current_page: int,
-            size: int,
-            **kwargs):
+    def content_query(self, search_term: str, current_page: int, size: int,
+                      sort_by: SortField=SortField.relevance,
+                      filter_functions: List[AvailableContentTypes]=None,
+                      type_filters: List[TypeFilter]=None,
+                      **kwargs):
         """
-        ONS search query to populate the SERP
+        Builds the ONS content query, responsible for populating the SERP
         :param search_term:
         :param current_page:
         :param size:
+        :param sort_by:
+        :param filter_functions:
+        :param type_filters:
         :param kwargs:
         :return:
         """
         pass
 
     @abc.abstractmethod
-    def type_counts_query(
-            self,
-            search_term,
-            **kwargs):
+    def type_counts_query(self, search_term, type_filters: List[TypeFilter]=None, **kwargs):
         """
-        ONS aggregations query to compute _type counts
+        Builds the ONS type counts query, responsible providing counts by content type
         :param search_term:
+        :param type_filters:
         :param kwargs:
         :return:
         """

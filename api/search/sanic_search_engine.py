@@ -1,7 +1,7 @@
 """
 This file contains utility methods for performing search queries using abstract search engines and clients
 """
-from typing import ClassVar
+from typing import ClassVar, List
 from json import loads
 
 from elasticsearch.exceptions import ConnectionError
@@ -11,13 +11,14 @@ from sanic.exceptions import ServerError, InvalidUsage
 
 from ons.search.index import Index
 from ons.search.sort_fields import SortField
-from ons.search.type_filter import AvailableTypeFilters
+from ons.search.type_filter import AvailableTypeFilters, TypeFilter
 from ons.search.response.search_result import SearchResult
 from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
 from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
 
 from api.request.ons_request import ONSRequest
+from api.search.list_type import ListType
 from app.sanic_elasticsearch import SanicElasticsearch
 
 
@@ -27,6 +28,8 @@ class SanicSearchEngine(object):
         Helper class for working with abstract search engine instances
         :param app:
         :param search_engine_cls:
+        :param index:
+        :param list_type:
         """
         self.app = app
         self.index = index
@@ -112,10 +115,11 @@ class SanicSearchEngine(object):
 
         return search_result
 
-    async def content_query(self, request: ONSRequest) -> SearchResult:
+    async def content_query(self, request: ONSRequest, list_type: ListType) -> SearchResult:
         """
         Executes the ONS content query using the given SearchEngine class
         :param request:
+        :param list_type:
         :return:
         """
         # Initialise the search engine
@@ -126,9 +130,11 @@ class SanicSearchEngine(object):
         page = request.get_current_page()
         page_size = request.get_page_size()
         sort_by: SortField = request.get_sort_by()
+        type_filters: List[TypeFilter] = request.get_type_filters(list_type)
 
         try:
-            response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by).execute()
+            response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by,
+                                                               type_filters=type_filters).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform content query request"
             logger.error(request, message, e)
@@ -138,19 +144,21 @@ class SanicSearchEngine(object):
 
         return search_result
 
-    async def type_counts_query(self, request: ONSRequest) -> SearchResult:
+    async def type_counts_query(self, request: ONSRequest, list_type: ListType) -> SearchResult:
         """
         Executes the ONS type counts query using the given SearchEngine class
         :param request:
+        :param list_type:
         :return:
         """
         engine: AbstractSearchEngine = self.get_search_engine_instance()
 
         # Perform the query
         search_term = request.get_search_term()
+        type_filters: List[TypeFilter] = request.get_type_filters(list_type)
 
         try:
-            response: ONSResponse = await engine.type_counts_query(search_term).execute()
+            response: ONSResponse = await engine.type_counts_query(search_term, type_filters=type_filters).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
             logger.error(request, message, e)

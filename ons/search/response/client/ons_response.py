@@ -1,4 +1,5 @@
 from elasticsearch_dsl.response import Response
+from elasticsearch_dsl.response import Hit, HitMeta
 
 from ons.search.sort_fields import SortField
 from ons.search.response import SearchResult, ContentQueryResult, TypeCountsQueryResult

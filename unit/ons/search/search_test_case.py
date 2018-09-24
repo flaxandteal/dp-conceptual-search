@@ -43,34 +43,6 @@ class SearchTestCase(ElasticsearchTestCase):
         """
         return "Who ya gonna call?"
 
-    @property
-    def type_filters(self) -> List[TypeFilter]:
-        """
-        Returns a list of type filters for testing
-        :return:
-        """
-        from ons.search.type_filter import AvailableTypeFilters
-
-        # Get list of all type filters
-        type_filters = AvailableTypeFilters.all()
-
-        return type_filters
-
-    @property
-    def content_types(self) -> List[AvailableContentTypes]:
-        """
-        Content type list for testing
-        :return:
-        """
-
-        # Build up the list of content types for filtering
-        content_types = []
-        for type_filter in self.type_filters:
-            type_filter_content_types = type_filter.get_content_types()
-            content_types.extend(type_filter_content_types)
-
-        return content_types
-
     def get_search_engine(self) -> SearchEngine:
         """
         Create an instance of a SearchEngine for testing
@@ -104,7 +76,6 @@ class SearchTestCase(ElasticsearchTestCase):
         :param from_start:
         :param size:
         :param query_dict:
-        :param sort_by:
         :return:
         """
         expected = {
@@ -117,16 +88,22 @@ class SearchTestCase(ElasticsearchTestCase):
 
         return expected
 
-    def expected_content_query(self, from_start: int, size: int, query_dict: dict, sort_by: SortField) -> dict:
+    def expected_content_query(self, from_start: int, size: int, query_dict: dict, sort_by: SortField, type_filters: List[TypeFilter]) -> dict:
         """
         Returns the expected query body for the given query dictionary
         :param from_start:
         :param size:
         :param query_dict:
         :param sort_by:
+        :param type_filters:
         :return:
         """
         from ons.search.sort_fields import query_sort
+
+        # Build content type from type filters
+        content_types: List[AvailableContentTypes] = []
+        for type_filter in type_filters:
+            content_types.extend(type_filter.get_content_types())
 
         expected = {
             "from": from_start,
@@ -135,7 +112,7 @@ class SearchTestCase(ElasticsearchTestCase):
                     "filter": [
                         {
                             "terms": {
-                                "type": [content_type.name for content_type in self.content_types]
+                                "type": [content_type.name for content_type in content_types]
                             }
                         }
                     ],
@@ -150,23 +127,24 @@ class SearchTestCase(ElasticsearchTestCase):
 
         return expected
 
-    def expected_type_counts_query(self, query_dict: dict, sort_by: SortField) -> dict:
+    def expected_type_counts_query(self, query_dict: dict, sort_by: SortField, type_filters: List[TypeFilter]) -> dict:
         """
         Returns the expected query body for the given query dictionary
         :param query_dict:
         :param sort_by:
+        :param type_filters:
         :return:
         """
         from ons.search.queries import type_counts_query
         from ons.search.paginator import RESULTS_PER_PAGE
 
         # Calculate correct start page number
-        current_page = SearchEngine.default_page_number
+        current_page = SearchEngine.default_page_number - 1
         size = RESULTS_PER_PAGE
         from_start = 0 if current_page <= 1 else (current_page - 1) * size
 
         # Build the expected query dict - note this should not change
-        expected = self.expected_content_query(from_start, size, query_dict, sort_by)
+        expected = self.expected_content_query(from_start, size, query_dict, sort_by, type_filters)
 
         # Add expected aggregations
         expected["aggs"] = {
@@ -214,7 +192,7 @@ class SearchTestCase(ElasticsearchTestCase):
 
         return expected
 
-    def setUpContentQuery(self, sort_by: SortField, filter_by_content_types: List[AvailableContentTypes]=None):
+    def setUpContentQuery(self, sort_by: SortField, type_filters: List[TypeFilter], filter_functions: List[AvailableContentTypes]=None):
         """
         Builds a SearchEngine instance and sets up the content query
         :return:
@@ -230,23 +208,23 @@ class SearchTestCase(ElasticsearchTestCase):
         # Build the content query and convert to dict
         query = content_query(self.search_term)
 
-        if filter_by_content_types is not None:
+        if filter_functions is not None:
             # Add filter functions
-            query = function_score_content_query(query, filter_by_content_types)
+            query = function_score_content_query(query, filter_functions)
 
         # Get the resulting query dict
         query_dict = query.to_dict()
 
         # Build the expected query dict - note this should not change
-        expected = self.expected_content_query(from_start, size, query_dict, sort_by)
+        expected = self.expected_content_query(from_start, size, query_dict, sort_by, type_filters)
 
         # Call content_query
         engine: SearchEngine = engine.content_query(self.search_term,
                                                     current_page,
                                                     size,
                                                     sort_by=sort_by,
-                                                    type_filters=self.type_filters,
-                                                    filter_functions=filter_by_content_types)
+                                                    type_filters=type_filters,
+                                                    filter_functions=filter_functions)
 
         # Assert correct dict structure
         engine_dict = engine.to_dict()
