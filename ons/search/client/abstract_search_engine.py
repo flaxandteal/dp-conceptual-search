@@ -1,10 +1,10 @@
 import abc
 from typing import List
 
-from core.search.client import SearchClient
+from search.client.search_client import SearchClient
 
 from ons.search.sort_fields import SortField
-from ons.search.type_filter import TypeFilters
+from ons.search.type_filter import TypeFilter
 from ons.search.response.client.ons_response import ONSResponse
 
 
@@ -27,7 +27,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
             *query_sort(sort_by)
         )
 
-    def type_filter(self, type_filters: List[TypeFilters]):
+    def type_filter(self, type_filters: List[TypeFilter]):
         """
         Add type filter options to the query
         :param type_filters:
@@ -35,7 +35,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         """
         type_filter_list = []
         for type_filter in type_filters:
-            for content_type in type_filter.value.get_content_types():
+            for content_type in type_filter.get_content_types():
                 type_filter_list.append(content_type.name)
 
         return self.filter("terms", type=type_filter_list)

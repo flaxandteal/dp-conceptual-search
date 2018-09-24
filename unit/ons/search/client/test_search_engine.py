@@ -111,7 +111,7 @@ class SearchEngineTestCase(SearchTestCase):
         asyncio.set_event_loop(event_loop)
 
         async def run_async():
-            from core.search.search_type import SearchType
+            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -143,7 +143,7 @@ class SearchEngineTestCase(SearchTestCase):
         asyncio.set_event_loop(event_loop)
 
         async def run_async():
-            from core.search.search_type import SearchType
+            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -165,8 +165,8 @@ class SearchEngineTestCase(SearchTestCase):
 
         # Setup content type filters
         filter_by_content_types = [
-            ContentTypes.BULLETIN.value,
-            ContentTypes.ARTICLE.value
+            ContentTypes.BULLETIN,
+            ContentTypes.ARTICLE
         ]
 
         # Setup content query with type filters
@@ -178,7 +178,7 @@ class SearchEngineTestCase(SearchTestCase):
         asyncio.set_event_loop(event_loop)
 
         async def run_async():
-            from core.search.search_type import SearchType
+            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -228,7 +228,7 @@ class SearchEngineTestCase(SearchTestCase):
         asyncio.set_event_loop(event_loop)
 
         async def run_async():
-            from core.search.search_type import SearchType
+            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -266,7 +266,7 @@ class SearchEngineTestCase(SearchTestCase):
         asyncio.set_event_loop(event_loop)
 
         async def run_async():
-            from core.search.search_type import SearchType
+            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 

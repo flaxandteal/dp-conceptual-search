@@ -3,7 +3,7 @@ Paginator class - replicates pagination functionality from babbage
 """
 import math
 
-from config_core import RESULTS_PER_PAGE, MAX_VISIBLE_PAGINATOR_LINK
+from config.config_core import RESULTS_PER_PAGE, MAX_VISIBLE_PAGINATOR_LINK
 
 
 class Paginator(object):

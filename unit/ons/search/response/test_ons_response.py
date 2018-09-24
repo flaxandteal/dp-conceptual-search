@@ -50,7 +50,7 @@ class ONSResponseTestCase(SearchTestCase):
 
         async def run_async():
             from ons.search.paginator import Paginator
-            from core.search.search_type import SearchType
+            from search.search_type import SearchType
             from ons.search.response.content_query_result import ContentQueryResult
 
             # Ensure search method on SearchClient is called correctly on execute

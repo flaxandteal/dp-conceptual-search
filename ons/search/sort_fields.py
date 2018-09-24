@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List
 
-from core.search.sort_by import SortOrder
+from search.sort_by import SortOrder
 from ons.search.fields import AvailableFields, Field
 
 
@@ -41,7 +41,7 @@ class SortField(Enum):
     ]
 
     @staticmethod
-    def available_sort_fields():
+    def available_sort_fields() -> List[str]:
         """
         Returns a list of all available sort fields
         :return:
@@ -49,7 +49,7 @@ class SortField(Enum):
         return [f.name for f in SortField]
 
     @staticmethod
-    def is_sort_field(label: str):
+    def is_sort_field(label: str) -> bool:
         """
         Returns True is string is a valid SortField, else False
         :param label:
