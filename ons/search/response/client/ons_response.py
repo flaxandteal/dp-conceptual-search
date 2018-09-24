@@ -30,6 +30,17 @@ class ONSResponse(Response):
         """
         return self.to_content_query_search_result(1, 1, SortField.relevance)
 
+    def to_departments_query_search_result(self, page_number: int, page_size: int) -> SearchResult:
+        """
+        Converts an Elasticsearch response into a ContentQueryResult. Note, for a departments query the only
+        possible sort option is by relevence.
+        :param page_number:
+        :param page_size:
+        :param sort_by:
+        :return:
+        """
+        return self.to_content_query_search_result(page_number, page_size, SortField.relevance)
+
     def to_content_query_search_result(self, page_number: int, page_size: int, sort_by: SortField) -> SearchResult:
         """
         Converts an Elasticsearch response into a ContentQueryResult

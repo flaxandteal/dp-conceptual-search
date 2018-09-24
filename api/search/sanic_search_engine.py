@@ -11,7 +11,7 @@ from sanic.exceptions import ServerError, InvalidUsage
 
 from ons.search.index import Index
 from ons.search.sort_fields import SortField
-from ons.search.type_filter import TypeFilters
+from ons.search.type_filter import AvailableTypeFilters
 from ons.search.response.search_result import SearchResult
 from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
@@ -68,7 +68,7 @@ class SanicSearchEngine(object):
             if not isinstance(type_filters_raw, list):
                 type_filters_raw = [type_filters_raw]
             try:
-                type_filters = TypeFilters.from_string_list(type_filters_raw)
+                type_filters = AvailableTypeFilters.from_string_list(type_filters_raw)
                 engine: AbstractSearchEngine = engine.type_filter(type_filters)
             except UnknownTypeFilter as e:
                 message = "Received unknown type filter: '{0}'".format(e.unknown_type_filter)
@@ -100,7 +100,6 @@ class SanicSearchEngine(object):
         search_term = request.get_search_term()
         page = request.get_current_page()
         page_size = request.get_page_size()
-        sort_by: SortField = request.get_sort_by()
 
         try:
             response: ONSResponse = await engine.departments_query(search_term, page, page_size).execute()
@@ -109,7 +108,7 @@ class SanicSearchEngine(object):
             logger.error(request, message, e)
             raise ServerError(message)
 
-        search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
+        search_result: SearchResult = response.to_departments_query_search_result(page, page_size)
 
         return search_result
 
