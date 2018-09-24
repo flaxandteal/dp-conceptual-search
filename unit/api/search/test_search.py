@@ -15,6 +15,40 @@ from ons.search.queries import content_query, departments_query
 
 class SearchTestCase(TestApp, SearchTestCase):
 
+    def test_proxy_api_raises_400(self):
+        """
+        Tests that the proxy search API raises a 400 when no query body is specified (or the 'query' key doesn't exist)
+        :return:
+        """
+        # Make the request
+        from_start, current_page, size = self.paginate()
+        params = {
+            "page": current_page,
+            "size": size
+        }
+        url_encoded_params = self.url_encode(params)
+        target = "/search/?{0}".format(url_encoded_params)
+
+        # Make the request
+        request, response = self.post(target, 400)
+
+        # Specify data but with no query key
+        # Build expected query
+        # Build the content query and convert to dict
+        query = {
+            "query" : {
+                "match": {
+                    "name": "Zuul"
+                }
+            }
+        }
+
+        post_params = {
+            "wrong_key": dumps(query)
+        }
+        # Make the request
+        request, response = self.post(target, 400, data=dumps(post_params))
+
     def test_proxy_query_search_called(self):
         """
         Tests that the search method is called properly by the api for a proxy query
