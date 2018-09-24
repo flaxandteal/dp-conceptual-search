@@ -1,4 +1,7 @@
+from typing import List
+
 from ons.search.sort_fields import SortField
+from ons.search.type_filter import AvailableTypeFilters, TypeFilter
 from ons.search.client.search_engine import SearchEngine
 
 from unit.ons.search.search_test_case import SearchTestCase
@@ -9,6 +12,13 @@ class SearchEngineTestCase(SearchTestCase):
     Unit test for ONS SearchEngine class
 
     """
+    @property
+    def type_filters(self) -> List[TypeFilter]:
+        """
+        Returns type filters for testing
+        :return:
+        """
+        return [AvailableTypeFilters.BULLETIN.value]
 
     def test_sort_by(self):
         """
@@ -132,7 +142,8 @@ class SearchEngineTestCase(SearchTestCase):
 
         # Setup content query with no type filters
         sort_by: SortField = SortField.relevance
-        engine, expected = self.setUpContentQuery(sort_by)
+        type_filters: List[TypeFilter] = self.type_filters
+        engine, expected = self.setUpContentQuery(sort_by, type_filters)
 
         # Assert correct dict structure
         engine_dict = engine.to_dict()
@@ -164,14 +175,15 @@ class SearchEngineTestCase(SearchTestCase):
         from ons.search.content_type import AvailableContentTypes
 
         # Setup content type filters
-        filter_by_content_types = [
+        filter_functions = [
             AvailableContentTypes.BULLETIN,
             AvailableContentTypes.ARTICLE
         ]
 
         # Setup content query with type filters
         sort_by: SortField = SortField.relevance
-        engine, expected = self.setUpContentQuery(sort_by, filter_by_content_types=filter_by_content_types)
+        type_filters: List[TypeFilter] = self.type_filters
+        engine, expected = self.setUpContentQuery(sort_by, type_filters, filter_functions=filter_functions)
 
         # Call execute asynchronously and test method calls
         event_loop = asyncio.new_event_loop()
@@ -198,7 +210,6 @@ class SearchEngineTestCase(SearchTestCase):
         import asyncio
 
         from ons.search.queries import content_query
-        from ons.search.paginator import RESULTS_PER_PAGE
 
         # Create instance of SearchEngine
         engine = self.get_search_engine()
@@ -207,21 +218,12 @@ class SearchEngineTestCase(SearchTestCase):
         query = content_query(self.search_term)
         query_dict = query.to_dict()
 
-        from_start = SearchEngine.default_page_number - 1
         sort_by: SortField = SortField.relevance
-        expected = self.expected_content_query(from_start, RESULTS_PER_PAGE, query_dict, sort_by)
-
-        # Add aggregations body
-        expected["aggs"] = {
-            "docCounts": {
-                "terms": {
-                    "field": "_type"
-                }
-            }
-        }
+        type_filters: List[TypeFilter] = self.type_filters
+        expected = self.expected_type_counts_query(query_dict, sort_by, type_filters)
 
         # Call type_counts_query
-        engine: SearchEngine = engine.type_counts_query(self.search_term)
+        engine: SearchEngine = engine.type_counts_query(self.search_term, type_filters=type_filters)
 
         # Call execute asynchronously and test method calls
         event_loop = asyncio.new_event_loop()
