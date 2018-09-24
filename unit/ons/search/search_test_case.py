@@ -1,7 +1,7 @@
 from typing import List
 
 from ons.search.sort_fields import SortField
-from ons.search.content_type import ContentTypes
+from ons.search.content_type import AvailableContentTypes
 from ons.search.type_filter import TypeFilter
 from ons.search.client.search_engine import SearchEngine
 
@@ -49,15 +49,15 @@ class SearchTestCase(ElasticsearchTestCase):
         Returns a list of type filters for testing
         :return:
         """
-        from ons.search.type_filter import TypeFilters
+        from ons.search.type_filter import AvailableTypeFilters
 
         # Get list of all type filters
-        type_filters = TypeFilters.all()
+        type_filters = AvailableTypeFilters.all()
 
         return type_filters
 
     @property
-    def content_types(self) -> List[ContentTypes]:
+    def content_types(self) -> List[AvailableContentTypes]:
         """
         Content type list for testing
         :return:
@@ -182,11 +182,11 @@ class SearchTestCase(ElasticsearchTestCase):
         :return:
         """
         from ons.search.sort_fields import query_sort
-        from ons.search.type_filter import TypeFilters
+        from ons.search.type_filter import AvailableTypeFilters
 
         # Setup expected content types filter
-        type_filter: TypeFilter = TypeFilters.FEATURED.value
-        content_types: List[ContentTypes] = type_filter.get_content_types()
+        type_filter: TypeFilter = AvailableTypeFilters.FEATURED.value
+        content_types: List[AvailableContentTypes] = type_filter.get_content_types()
 
         # Expected from_start and page size params
         from_start = 0
@@ -214,7 +214,7 @@ class SearchTestCase(ElasticsearchTestCase):
 
         return expected
 
-    def setUpContentQuery(self, sort_by: SortField, filter_by_content_types: List[ContentTypes]=None):
+    def setUpContentQuery(self, sort_by: SortField, filter_by_content_types: List[AvailableContentTypes]=None):
         """
         Builds a SearchEngine instance and sets up the content query
         :return:

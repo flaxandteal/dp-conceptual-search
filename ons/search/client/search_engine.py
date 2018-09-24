@@ -2,7 +2,7 @@ from typing import List
 
 from search.search_type import SearchType
 
-from ons.search import SortField, TypeFilters, TypeFilter, ContentTypes
+from ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
 from ons.search.queries import content_query, function_score_content_query, departments_query
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
 
@@ -31,7 +31,7 @@ class SearchEngine(AbstractSearchEngine):
 
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField=SortField.relevance,
-                      filter_functions: List[ContentTypes]=None,
+                      filter_functions: List[AvailableContentTypes]=None,
                       type_filters: List[TypeFilter]=None,
                       **kwargs):
         """
@@ -46,7 +46,7 @@ class SearchEngine(AbstractSearchEngine):
         :return:
         """
         if type_filters is None:
-            type_filters = TypeFilters.all()
+            type_filters = AvailableTypeFilters.all()
 
         # Build the query dict
         query = content_query(search_term)
@@ -93,7 +93,7 @@ class SearchEngine(AbstractSearchEngine):
         :return:
         """
         type_filters: List[TypeFilter] = [
-            TypeFilters.FEATURED.value
+            AvailableTypeFilters.FEATURED.value
         ]
 
         page_size = 1  # Only want one hit

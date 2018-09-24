@@ -5,7 +5,7 @@ from sanic.request import Request
 from sanic.exceptions import InvalidUsage
 
 from ons.search.sort_fields import SortField
-from ons.search.type_filter import TypeFilter, TypeFilters
+from ons.search.type_filter import TypeFilter, AvailableTypeFilters
 from ons.search.paginator import RESULTS_PER_PAGE
 from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
 
@@ -85,7 +85,7 @@ class ONSRequest(Request):
                 type_filters_raw = [type_filters_raw]
 
             try:
-                type_filters: List[TypeFilter] = TypeFilters.from_string_list(type_filters_raw)
+                type_filters: List[TypeFilter] = AvailableTypeFilters.from_string_list(type_filters_raw)
                 return type_filters
             except UnknownTypeFilter as e:
                 # Import logger here to prevent circular dependency on module import
@@ -95,7 +95,7 @@ class ONSRequest(Request):
                 logger.error(self, message, exc_info=e)
                 raise InvalidUsage(message)
 
-        return TypeFilters.all()
+        return AvailableTypeFilters.all()
 
     def get_elasticsearch_query(self) -> dict:
         """

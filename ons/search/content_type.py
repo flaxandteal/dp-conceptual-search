@@ -43,7 +43,7 @@ class ContentType(object):
         }
 
 
-class ContentTypes(Enum):
+class AvailableContentTypes(Enum):
     """
     Enum containing all available content types
     """
@@ -78,12 +78,20 @@ class ContentTypes(Enum):
     DEPARTMENTS = ContentType("departments")
 
     @staticmethod
-    def available_content_types():
+    def available_content_type_names() -> List[str]:
         """
-        Returns a list of all available type filters
+        Returns a list of all available content type names
         :return:
         """
-        return [f.name for f in ContentTypes]
+        return [f.name for f in AvailableContentTypes]
+
+    @staticmethod
+    def available_content_types() -> List[ContentType]:
+        """
+        Returns a list of all available content types
+        :return:
+        """
+        return [f.value for f in AvailableContentTypes]
 
     @staticmethod
     def is_content_type(label: str) -> bool:
@@ -92,17 +100,17 @@ class ContentTypes(Enum):
         :param label:
         :return:
         """
-        return label.upper() in ContentTypes.available_content_types()
+        return label.upper() in AvailableContentTypes.available_content_type_names()
 
     @staticmethod
-    def from_str(label: str) -> 'ContentTypes':
+    def from_str(label: str) -> 'AvailableContentTypes':
         """
         Returns the enum type corresponding to the input string
         :param label:
         :return:
         """
 
-        if ContentTypes.is_content_type(label):
-            return ContentTypes[label.upper()]
+        if AvailableContentTypes.is_content_type(label):
+            return AvailableContentTypes[label.upper()]
         else:
             raise NotImplementedError("No such ContentType for string: '{0}'".format(label))
