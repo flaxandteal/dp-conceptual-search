@@ -165,8 +165,8 @@ class SearchEngineTestCase(SearchTestCase):
 
         # Setup content type filters
         filter_by_content_types = [
-            ContentTypes.BULLETIN.value,
-            ContentTypes.ARTICLE.value
+            ContentTypes.BULLETIN,
+            ContentTypes.ARTICLE
         ]
 
         # Setup content query with type filters

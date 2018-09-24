@@ -1,7 +1,7 @@
 from typing import List
 
 from ons.search.sort_fields import SortField
-from ons.search.content_type import ContentType
+from ons.search.content_type import ContentTypes
 from ons.search.type_filter import TypeFilter
 from ons.search.client.search_engine import SearchEngine
 
@@ -52,12 +52,12 @@ class SearchTestCase(ElasticsearchTestCase):
         from ons.search.type_filter import TypeFilters
 
         # Get list of all type filters
-        type_filters = list(TypeFilters)
+        type_filters = TypeFilters.all()
 
         return type_filters
 
     @property
-    def content_types(self) -> List[ContentType]:
+    def content_types(self) -> List[ContentTypes]:
         """
         Content type list for testing
         :return:
@@ -66,7 +66,7 @@ class SearchTestCase(ElasticsearchTestCase):
         # Build up the list of content types for filtering
         content_types = []
         for type_filter in self.type_filters:
-            type_filter_content_types = type_filter.value.get_content_types()
+            type_filter_content_types = type_filter.get_content_types()
             content_types.extend(type_filter_content_types)
 
         return content_types
@@ -97,6 +97,25 @@ class SearchTestCase(ElasticsearchTestCase):
         from_start = 0 if current_page <= 1 else (current_page - 1) * size
 
         return from_start, current_page, size
+
+    def expected_departments_query(self, from_start: int, size: int, query_dict: dict) -> dict:
+        """
+        Returns the expected query body for the given query dictionary
+        :param from_start:
+        :param size:
+        :param query_dict:
+        :param sort_by:
+        :return:
+        """
+        expected = {
+            "from": from_start,
+            "query": {
+                **query_dict
+            },
+            "size": size
+        }
+
+        return expected
 
     def expected_content_query(self, from_start: int, size: int, query_dict: dict, sort_by: SortField) -> dict:
         """
@@ -167,7 +186,7 @@ class SearchTestCase(ElasticsearchTestCase):
 
         # Setup expected content types filter
         type_filter: TypeFilter = TypeFilters.FEATURED.value
-        content_types: List[ContentType] = type_filter.get_content_types()
+        content_types: List[ContentTypes] = type_filter.get_content_types()
 
         # Expected from_start and page size params
         from_start = 0
@@ -195,7 +214,7 @@ class SearchTestCase(ElasticsearchTestCase):
 
         return expected
 
-    def setUpContentQuery(self, sort_by: SortField, filter_by_content_types: List[ContentType]=None):
+    def setUpContentQuery(self, sort_by: SortField, filter_by_content_types: List[ContentTypes]=None):
         """
         Builds a SearchEngine instance and sets up the content query
         :return:
