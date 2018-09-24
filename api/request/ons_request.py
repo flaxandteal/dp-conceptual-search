@@ -1,5 +1,6 @@
 from uuid import uuid4
 from typing import List
+from ujson import loads
 
 from sanic.request import Request
 from sanic.exceptions import InvalidUsage
@@ -8,6 +9,8 @@ from ons.search.sort_fields import SortField
 from ons.search.type_filter import TypeFilter, AvailableTypeFilters
 from ons.search.paginator import RESULTS_PER_PAGE
 from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
+
+from api.search.list_type import ListType
 
 
 class ONSRequest(Request):
@@ -73,29 +76,34 @@ class ONSRequest(Request):
                 return SortField.from_str(sort_by_str)
         return SortField.relevance
 
-    def get_type_filters(self) -> List[TypeFilter]:
+    def get_type_filters(self, list_type: ListType) -> List[TypeFilter]:
         """
-        Returns requested type filters
+        Returns requested type filters or the defaults for the desired ListType
+        :param list_type:
         :return:
         """
         if hasattr(self, "json") and isinstance(self.json, dict):
             type_filters_raw = self.json.get("filter", None)
 
-            if not isinstance(type_filters_raw, list):
-                type_filters_raw = [type_filters_raw]
+            if type_filters_raw is not None:
+                if isinstance(type_filters_raw, str):
+                    type_filters_raw = loads(type_filters_raw)
 
-            try:
-                type_filters: List[TypeFilter] = AvailableTypeFilters.from_string_list(type_filters_raw)
-                return type_filters
-            except UnknownTypeFilter as e:
-                # Import logger here to prevent circular dependency on module import
-                from api.log import logger
+                if not isinstance(type_filters_raw, list):
+                    type_filters_raw = [type_filters_raw]
 
-                message = "Received unknown type filter: '{0}'".format(e.unknown_type_filter)
-                logger.error(self, message, exc_info=e)
-                raise InvalidUsage(message)
+                try:
+                    type_filters: List[TypeFilter] = AvailableTypeFilters.from_string_list(type_filters_raw)
+                    return type_filters
+                except UnknownTypeFilter as e:
+                    # Import logger here to prevent circular dependency on module import
+                    from api.log import logger
 
-        return AvailableTypeFilters.all()
+                    message = "Received unknown type filter: '{0}'".format(e.unknown_type_filter)
+                    logger.error(self, message, exc_info=e)
+                    raise InvalidUsage(message)
+
+        return list_type.to_type_filters()
 
     def get_elasticsearch_query(self) -> dict:
         """

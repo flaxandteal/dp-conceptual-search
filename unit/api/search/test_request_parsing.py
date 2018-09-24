@@ -2,6 +2,8 @@
 Tests that the ONSRequest properly parses input params
 """
 from json import dumps
+from typing import List
+
 from unit.utils.test_app import TestApp
 from unit.ons.search.search_test_case import SearchTestCase
 
@@ -9,7 +11,10 @@ from search.search_type import SearchType
 
 from ons.search.index import Index
 from ons.search.sort_fields import SortField
+from ons.search.type_filter import TypeFilter
 from ons.search.queries import content_query
+
+from api.search.list_type import ListType
 
 
 class ONSRequestTestCase(TestApp, SearchTestCase):
@@ -45,7 +50,9 @@ class ONSRequestTestCase(TestApp, SearchTestCase):
         query_dict = query.to_dict()
 
         # Build the expected query dict - note this should not change
-        expected = self.expected_content_query(from_start, size, query_dict, sort_by)
+        list_type: ListType = ListType.ONS
+        type_filters: List[TypeFilter] = list_type.to_type_filters()
+        expected = self.expected_content_query(from_start, size, query_dict, sort_by, type_filters)
 
         # Assert search was called with correct arguments
         self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,

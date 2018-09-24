@@ -2,6 +2,7 @@
 Unit tests for search route
 """
 from json import dumps
+from typing import List
 
 from unit.utils.test_app import TestApp
 from unit.ons.search.search_test_case import SearchTestCase
@@ -10,7 +11,10 @@ from search.search_type import SearchType
 
 from ons.search.index import Index
 from ons.search.sort_fields import SortField
+from ons.search.type_filter import TypeFilter
 from ons.search.queries import content_query, departments_query
+
+from api.search.list_type import ListType
 
 
 class SearchTestCase(TestApp, SearchTestCase):
@@ -129,28 +133,35 @@ class SearchTestCase(TestApp, SearchTestCase):
         params = {
             "q": self.search_term,
             "page": current_page,
-            "size": size,
+            "size": size
+        }
+        data = {
             "sort_by": sort_by.name
         }
         url_encoded_params = self.url_encode(params)
-        target = "/search/ons/content?{0}".format(url_encoded_params)
 
-        # Make the request
-        request, response = self.get(target, 200)
+        # Loop over list types
+        list_type: ListType
+        for list_type in ListType:
+            target = "/search/{list_type}/content?{q}".format(list_type=list_type.name.lower(), q=url_encoded_params)
 
-        # Build expected query
-        # Build the content query and convert to dict
-        query = content_query(self.search_term)
+            # Make the request
+            request, response = self.post(target, 200, data=dumps(data))
 
-        # Get the resulting query dict
-        query_dict = query.to_dict()
+            # Build expected query
+            # Build the content query and convert to dict
+            query = content_query(self.search_term)
 
-        # Build the expected query dict - note this should not change
-        expected = self.expected_content_query(from_start, size, query_dict, sort_by)
+            # Get the resulting query dict
+            query_dict = query.to_dict()
 
-        # Assert search was called with correct arguments
-        self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
-                                                   search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+            # Build the expected query dict - note this should not change
+            type_filters: List[TypeFilter] = list_type.to_type_filters()
+            expected = self.expected_content_query(from_start, size, query_dict, sort_by, type_filters)
+
+            # Assert search was called with correct arguments
+            self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
+                                                       search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
 
     def test_type_counts_query_search_called(self):
         """
@@ -161,27 +172,34 @@ class SearchTestCase(TestApp, SearchTestCase):
         sort_by: SortField = SortField.relevance
         params = {
             "q": self.search_term,
+        }
+        data = {
             "sort_by": sort_by.name
         }
         url_encoded_params = self.url_encode(params)
-        target = "/search/ons/counts?{0}".format(url_encoded_params)
 
-        # Make the request
-        request, response = self.get(target, 200)
+        # Loop over list types
+        list_type: ListType
+        for list_type in ListType:
+            target = "/search/{list_type}/counts?{q}".format(list_type=list_type.name.lower(), q=url_encoded_params)
 
-        # Build expected query
-        # Build the content query and convert to dict
-        query = content_query(self.search_term)
+            # Make the request
+            request, response = self.post(target, 200, data=dumps(data))
 
-        # Get the resulting query dict
-        query_dict = query.to_dict()
+            # Build expected query
+            # Build the content query and convert to dict
+            query = content_query(self.search_term)
 
-        # Build the expected query dict - note this should not change
-        expected = self.expected_type_counts_query(query_dict, sort_by)
+            # Get the resulting query dict
+            query_dict = query.to_dict()
 
-        # Assert search was called with correct arguments
-        self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
-                                                   search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+            # Build the expected query dict - note this should not change
+            type_filters: List[TypeFilter] = list_type.to_type_filters()
+            expected = self.expected_type_counts_query(query_dict, sort_by, type_filters)
+
+            # Assert search was called with correct arguments
+            self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
+                                                       search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
 
     def test_featured_result_query_search_called(self):
         """
