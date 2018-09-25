@@ -8,7 +8,7 @@ from ml.word_embedding.utils import cosine_sim
 
 
 class SupervisedModel(fastText.FastText._FastText):
-    def __init__(self, filename: str, label_prefix: str="__label__", **kwargs):
+    def __init__(self, filename: str, label_prefix: str="__label__"):
         super(SupervisedModel, self).__init__(model=filename)
 
         self.label_prefix = label_prefix
