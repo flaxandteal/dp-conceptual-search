@@ -7,6 +7,3 @@
 
 cover/
 tests/server/**/.cache/
-
-# Temporary
-supervised_models/
