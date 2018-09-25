@@ -29,7 +29,6 @@ class SanicSearchEngine(object):
         :param app:
         :param search_engine_cls:
         :param index:
-        :param list_type:
         """
         self.app = app
         self.index = index

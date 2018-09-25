@@ -1,5 +1,5 @@
-from typing import List
 from enum import Enum
+from typing import List, Iterable
 
 from ons.search.content_type import AvailableContentTypes
 from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
@@ -42,6 +42,14 @@ class AvailableTypeFilters(Enum):
         :return:
         """
         return [e.value for e in list(AvailableTypeFilters)]
+
+    @property
+    def value(self) -> TypeFilter:
+        """
+        Implements 'value' from super with additional type information
+        :return:
+        """
+        return super(AvailableTypeFilters, self).value
 
     @staticmethod
     def from_string_list(type_filter_strings: List[str]) -> List['TypeFilter']:

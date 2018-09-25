@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Iterable
 
 from search.sort_by import SortOrder
 from ons.search.fields import AvailableFields, Field
@@ -39,6 +39,14 @@ class SortField(Enum):
         SortOption(AvailableFields.RELEASE_DATE.value, SortOrder.ASC),
         SortOption(AvailableFields.SCORE.value, SortOrder.DESC)
     ]
+
+    @property
+    def value(self) -> Iterable['SortOption']:
+        """
+        Implements 'value' from super with additional type information
+        :return:
+        """
+        return super(SortField, self).value
 
     @staticmethod
     def available_sort_fields() -> List[str]:

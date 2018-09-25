@@ -2,36 +2,36 @@
 Enum of all available ONS list_types and default type filters associated with them
 """
 from enum import Enum
-from typing import List
+from typing import List, Iterable
 
 from ons.search.type_filter import AvailableTypeFilters, TypeFilter
 
 
 class ListType(Enum):
     # Default list_type - default to all available type filters
-    ONS = list(AvailableTypeFilters)
+    ONS: List[AvailableTypeFilters] = list(AvailableTypeFilters)
 
     # Returns datasets only
-    ONSDATA = [
+    ONSDATA: List[AvailableTypeFilters] = [
         AvailableTypeFilters.DATASETS,
         AvailableTypeFilters.TIME_SERIES,
         AvailableTypeFilters.USER_REQUESTED_DATA
     ]
 
     # Returns publications only
-    ONSPUBLICATIONS = [
+    ONSPUBLICATIONS: List[AvailableTypeFilters] = [
         AvailableTypeFilters.BULLETIN,
         AvailableTypeFilters.COMPENDIA,
         AvailableTypeFilters.ARTICLE
     ]
 
-    @staticmethod
-    def all() -> List['ListType']:
+    @property
+    def value(self) -> Iterable['AvailableTypeFilters']:
         """
-        Returns all available TypeFilters
+        Implements 'value' from super with additional type information
         :return:
         """
-        return list(ListType)
+        return super(ListType, self).value
 
     @staticmethod
     def available_list_types() -> List[str]:
