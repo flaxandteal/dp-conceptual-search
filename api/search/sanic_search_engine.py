@@ -102,7 +102,6 @@ class SanicSearchEngine(object):
         search_term = request.get_search_term()
         page = request.get_current_page()
         page_size = request.get_page_size()
-        sort_by: SortField = request.get_sort_by()
 
         try:
             response: ONSResponse = await engine.departments_query(search_term, page, page_size).execute()
@@ -111,7 +110,7 @@ class SanicSearchEngine(object):
             logger.error(request, message, e)
             raise ServerError(message)
 
-        search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
+        search_result: SearchResult = response.to_departments_query_search_result(page, page_size)
 
         return search_result
 
