@@ -7,19 +7,21 @@ from sanic import Sanic
 
 from config.config_ml import UNSUPERVISED_MODEL_FILENAME
 
-from api.request.ons_request import ONSRequest
 from app.ml.ml_models import Models
 from app.elasticsearch_client_service import ElasticsearchClientService
 from ml.word_embedding.fastText import UnsupervisedModel
+from ml.spelling.spell_checker import SpellChecker
 
 
 class SanicSearch(Sanic):
     def __init__(self, *args, **kwargs):
+        from api.request.ons_request import ONSRequest
         # Initialise APP with custom ONSRequest class
         super(SanicSearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
         self._elasticsearch = None
+        self._spell_checker = None
 
         # Create cache for ML models
         self._models = {}
@@ -50,6 +52,11 @@ class SanicSearch(Sanic):
 
             logger.info("Initialised unsupervised fastText model: {fname}".format(fname=UNSUPERVISED_MODEL_FILENAME))
 
+            # Initialise spell checker
+            self._spell_checker = SpellChecker(self._models[Models.ONS_UNSUPERVISED_MODEL])
+
+            logger.info("Initialised spell checker")
+
         @self.listener("after_server_stop")
         async def shutdown(app: SanicSearch, loop):
             """
@@ -62,7 +69,19 @@ class SanicSearch(Sanic):
 
     @property
     def elasticsearch(self) -> ElasticsearchClientService:
+        """
+        Return the Elasticsearch client
+        :return:
+        """
         return self._elasticsearch
+
+    @property
+    def spell_checker(self) -> SpellChecker:
+        """
+        Returns the spell checker
+        :return:
+        """
+        return self._spell_checker
 
     def get_unsupervised_model(self) -> UnsupervisedModel:
         """
