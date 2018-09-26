@@ -5,26 +5,34 @@ from sanic.log import logger
 
 from sanic import Sanic
 
+from config.config_ml import UNSUPERVISED_MODEL_FILENAME
+
 from api.request.ons_request import ONSRequest
+from app.ml.ml_models import Models
 from app.elasticsearch_client_service import ElasticsearchClientService
+from ml.word_embedding.fastText import UnsupervisedModel
 
 
-class SanicElasticsearch(Sanic):
+class SanicSearch(Sanic):
     def __init__(self, *args, **kwargs):
         # Initialise APP with custom ONSRequest class
-        super(SanicElasticsearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
+        super(SanicSearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
         self._elasticsearch = None
 
+        # Create cache for ML models
+        self._models = {}
+
         @self.listener("after_server_start")
-        async def init(app: SanicElasticsearch, loop):
+        async def init(app: SanicSearch, loop):
             """
-            Initialise the ES client after api start (when the ioloop exists)
+            Initialise the ES client and ML models after api start (when the ioloop exists)
             :param app:
             :param loop:
             :return:
             """
+            # First, initialise Elasticsearch
             app._elasticsearch: ElasticsearchClientService = ElasticsearchClientService(app, loop)
 
             elasticsearch_log_data = {
@@ -37,8 +45,13 @@ class SanicElasticsearch(Sanic):
 
             logger.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
+            # Now initialise the ML models essential to the APP
+            self._models[Models.ONS_UNSUPERVISED_MODEL] = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+
+            logger.info("Initialised unsupervised fastText model: {fname}".format(fname=UNSUPERVISED_MODEL_FILENAME))
+
         @self.listener("after_server_stop")
-        async def shutdown(app: SanicElasticsearch, loop):
+        async def shutdown(app: SanicSearch, loop):
             """
             Trigger clean shutdown of ES client
             :param app:
@@ -50,3 +63,10 @@ class SanicElasticsearch(Sanic):
     @property
     def elasticsearch(self) -> ElasticsearchClientService:
         return self._elasticsearch
+
+    def get_unsupervised_model(self) -> UnsupervisedModel:
+        """
+        Returns the cached unsupervised model
+        :return:
+        """
+        return self._models.get(Models.ONS_UNSUPERVISED_MODEL)

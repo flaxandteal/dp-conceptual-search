@@ -57,14 +57,6 @@ MOTOR_URI = "{bind_addr}/{db}".format(
     db=MONGO_SEARCH_DATABASE
 )
 
-# ML
-
-ML_DATA_DIR = os.environ.get("ML_DATA_DIR", "./ml/data/")
-SUPERVISED_MODELS_DIR = os.environ.get("SUPERVISED_MODELS_DIR", "supervised_models/")
-UNSUPERVISED_MODELS_DIR = os.environ.get("UNSUPERVISED_MODELS_DIR", "word2vec/")
-SUPERVISED_MODEL_NAME = os.environ.get("SUPERVISED_MODEL_NAME", "ons_supervised.bin")
-UNSUPERVISED_MODEL_NAME = os.environ.get("UNSUPERVISED_MODEL_NAME", "ons_supervised.vec")
-
 # Search
 
 RESULTS_PER_PAGE = int(os.getenv("RESULTS_PER_PAGE", 10))

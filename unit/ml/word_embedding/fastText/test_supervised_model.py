@@ -4,8 +4,8 @@ Tests our SupervisedModel class
 from os.path import isfile
 from unittest import TestCase
 
+from config.config_ml import SUPERVISED_MODEL_FILENAME
 from ml.word_embedding.fastText.supervised import SupervisedModel
-from config.config_core import ML_DATA_DIR, SUPERVISED_MODELS_DIR, SUPERVISED_MODEL_NAME
 
 
 class SupervisedModelTestCase(TestCase):
@@ -14,12 +14,10 @@ class SupervisedModelTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        fname = "{data_dir}/{model_dir}/{model_fname}".format(data_dir=ML_DATA_DIR, model_dir=SUPERVISED_MODELS_DIR,
-                                                              model_fname=SUPERVISED_MODEL_NAME)
+        self.assertTrue(isfile(SUPERVISED_MODEL_FILENAME),
+                        "must be able to locate default model at path {0}".format(SUPERVISED_MODEL_FILENAME))
 
-        self.assertTrue(isfile(fname), "must be able to locate default model at path {0}".format(fname))
-
-        self.model = SupervisedModel(filename=fname)
+        self.model = SupervisedModel(filename=SUPERVISED_MODEL_FILENAME)
 
     @property
     def text(self):
