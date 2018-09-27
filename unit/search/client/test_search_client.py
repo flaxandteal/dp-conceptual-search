@@ -2,7 +2,7 @@ import asyncio
 
 from search.client.search_client import SearchClient
 
-from unit.utils.elasticsearch_test_case import ElasticsearchTestCase
+from unit.elasticsearch.elasticsearch_test_case import ElasticsearchTestCase
 
 
 class SearchClientTestCase(ElasticsearchTestCase):
