@@ -81,7 +81,7 @@ class SearchEngineTestCase(AsyncTestCase, ElasticsearchTestCase):
 
     def test_sort_by(self):
         """
-        Tests that the sort by method builds the query query dictionary
+        Tests that the sort by method builds the correct query dictionary
         :return:
         """
 
