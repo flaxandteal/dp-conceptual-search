@@ -68,6 +68,8 @@ def function_score_content_query(query: Q.Query, content_types: List[AvailableCo
     :return:
     """
     function_scores = []
+
+    content_type: AvailableContentTypes
     for content_type in content_types:
         function_scores.append(content_type.value.filter_function())
 

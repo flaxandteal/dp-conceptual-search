@@ -47,6 +47,18 @@ class AvailableFields(Enum):
     EMBEDDING_VECTOR = Field("embedding_vector")
 
 
+# Create constant for highlight fields
+_highlight_fields = [field.value for field in AvailableFields if field.value.highlight]
+
+
+def get_highlighted_fields() -> List[Field]:
+    """
+    Returns the above list of highlight fields
+    :return:
+    """
+    return _highlight_fields
+
+
 def get_all_fields() -> List[Field]:
     """
     Returns a list of all available fields
