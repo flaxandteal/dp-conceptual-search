@@ -1,10 +1,10 @@
 """
 Defines custom Sanic error handlers
 """
-import sanic
 import sanic.exceptions
 from sanic.response import json
 
+from app.sanic_search import SanicSearch
 from api.log import logger
 from api.request import ONSRequest
 
@@ -12,7 +12,7 @@ from api.request import ONSRequest
 class ErrorHandlers(object):
 
     @staticmethod
-    def register(app: sanic.Sanic):
+    def register(app: SanicSearch):
         # Explicitly handle RequestTimeouts -> These are logged out as Errors by default (unwanted)
         @app.exception(sanic.exceptions.RequestTimeout)
         def timeout(request: ONSRequest, exception: sanic.exceptions.SanicException):

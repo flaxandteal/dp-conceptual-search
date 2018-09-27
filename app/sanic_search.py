@@ -6,7 +6,6 @@ from sanic.log import logger
 from sanic import Sanic
 
 from api.request.ons_request import ONSRequest
-from app.error_handlers import ErrorHandlers
 from app.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -17,9 +16,6 @@ class SanicSearch(Sanic):
 
         # Attach an Elasticsearh client
         self._elasticsearch = None
-
-        # Register error handlers
-        ErrorHandlers.register(self)
 
         @self.listener("after_server_start")
         async def init(app: SanicSearch, loop):
