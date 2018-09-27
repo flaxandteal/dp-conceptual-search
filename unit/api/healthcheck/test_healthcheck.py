@@ -29,7 +29,7 @@ class HealthCheckTestCase(TestApp):
         # Assert search was called with correct arguments
         self.mock_client.cluster.health.assert_called_with()
 
-        # Check the respons JSON matches the mock response
+        # Check the response JSON matches the mock response
         self.assertTrue(hasattr(response, "json"), "response should contain JSON property")
         response_json = response.json
         self.assertIsNotNone(response_json, "response json should not be none")

@@ -36,6 +36,6 @@ async def health_check(request: ONSRequest):
     except Exception as e:
         logger.error(request, "Unable to get Elasticsearch cluster health", exc_info=e)
         body = {
-            "elasticsearch": "unavaialable"
+            "elasticsearch": "unavailable"
         }
         return json(request, body, 500)
