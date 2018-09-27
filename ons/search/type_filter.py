@@ -13,7 +13,7 @@ class TypeFilter(object):
         self.content_type_filters = content_type_filters
 
     def get_content_types(self) -> List[AvailableContentTypes]:
-        return [content_type.value for content_type in self.content_type_filters]
+        return self.content_type_filters
 
 
 class AvailableTypeFilters(Enum):
