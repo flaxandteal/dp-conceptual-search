@@ -88,12 +88,12 @@ class Paginator(object):
                 float(number_of_results) /
                 float(results_per_page)))
 
-    def get_page_list(self) -> range:
+    def get_page_list(self) -> list:
         """
         Returns a list of page numbers to be shown at the bottom of the SERP
         :return:
         """
-        page_list = range(self.start, self.end + 1)
+        page_list = [p for p in range(self.start, self.end + 1)]
         return page_list
 
     def to_dict(self) -> dict:
