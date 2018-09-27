@@ -59,7 +59,7 @@ class ONSResponse(Response):
                                       "field '%s', fragments: %s" % (highlight_field, highlight_dict[highlight_field])
                             logging.debug(message)
             # Remap type field
-            hit_dict["_type"] = hit_dict.pop("type")
+            hit_dict["_type"] = hit_dict.pop("type", None)
             # Add the hit to the list
             highlighted_hits.append(hit_dict)
 
