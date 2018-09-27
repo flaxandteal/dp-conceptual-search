@@ -6,19 +6,23 @@ from sanic.log import logger
 from sanic import Sanic
 
 from api.request.ons_request import ONSRequest
+from app.error_handlers import ErrorHandlers
 from app.elasticsearch_client_service import ElasticsearchClientService
 
 
-class SanicElasticsearch(Sanic):
+class SanicSearch(Sanic):
     def __init__(self, *args, **kwargs):
         # Initialise APP with custom ONSRequest class
-        super(SanicElasticsearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
+        super(SanicSearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
         self._elasticsearch = None
 
+        # Register error handlers
+        ErrorHandlers.register(self)
+
         @self.listener("after_server_start")
-        async def init(app: SanicElasticsearch, loop):
+        async def init(app: SanicSearch, loop):
             """
             Initialise the ES client after api start (when the ioloop exists)
             :param app:
@@ -38,7 +42,7 @@ class SanicElasticsearch(Sanic):
             logger.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
         @self.listener("after_server_stop")
-        async def shutdown(app: SanicElasticsearch, loop):
+        async def shutdown(app: SanicSearch, loop):
             """
             Trigger clean shutdown of ES client
             :param app:
