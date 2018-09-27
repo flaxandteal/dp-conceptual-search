@@ -42,6 +42,9 @@ class ONSResponse(Response):
             if hasattr(hit, "meta") and isinstance(hit.meta, HitMeta):
                 hit_meta: HitMeta = hit.meta
 
+                # Remap type field
+                hit_dict["_type"] = hit_meta.to_dict().get("doc_type", None)
+
                 # Check if highlighting results in the hit meta
                 if hasattr(hit_meta, "highlight") and hasattr(hit_meta.highlight, "to_dict"):
                     highlight_dict = hit_meta.highlight.to_dict()
@@ -58,8 +61,6 @@ class ONSResponse(Response):
                             message = "Got multiple highlighted fragments, cowardly refusing to overwrite _source for " \
                                       "field '%s', fragments: %s" % (highlight_field, highlight_dict[highlight_field])
                             logging.debug(message)
-            # Remap type field
-            hit_dict["_type"] = hit_dict.pop("type", None)
             # Add the hit to the list
             highlighted_hits.append(hit_dict)
 

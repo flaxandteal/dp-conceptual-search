@@ -53,9 +53,11 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         :return:
         """
         type_filter_list = []
+
+        content_type: AvailableContentTypes
         for type_filter in type_filters:
             for content_type in type_filter.get_content_types():
-                type_filter_list.append(content_type.name)
+                type_filter_list.append(content_type.value.name)
 
         return self.filter("terms", type=type_filter_list)
 
