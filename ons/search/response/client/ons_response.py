@@ -1,4 +1,6 @@
 import logging
+from typing import List
+
 from elasticsearch_dsl.response import Response
 from elasticsearch_dsl.response import Hit, HitMeta
 
@@ -27,7 +29,7 @@ class DotDict(dict):
 
 class ONSResponse(Response):
 
-    def highlight_hits(self):
+    def highlight_hits(self) -> List[DotDict]:
         """
         Checks response for highlighter fragments and applies them to each hit
         :return:
@@ -61,7 +63,7 @@ class ONSResponse(Response):
 
         return highlighted_hits
 
-    def hits_to_json(self) -> list:
+    def hits_to_json(self) -> List[DotDict]:
         """
         Converts the search hits to a list of JSON, with highlighting applied
         :return:
