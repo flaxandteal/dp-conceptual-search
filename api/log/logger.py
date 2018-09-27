@@ -20,6 +20,8 @@ def _log(level: str, request: ONSRequest, msg: str, *args, **kwargs):
         fn = getattr(logger, level)
         if 'extra' not in kwargs:
             kwargs['extra'] = {}
+        elif not isinstance(kwargs['extra'], dict):
+            logger.error("Incorrect usage of logger: argument 'extra' must be instanceof dict")
 
         kwargs['extra'] = {
             ONSRequest.request_id_log_key: request.request_id,

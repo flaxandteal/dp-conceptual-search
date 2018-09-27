@@ -54,6 +54,8 @@ class ONSRequest(Request):
         """
         search_term = self.args.get("q", None)
         if search_term is None:
+            from api.log import logger
+            logger.error(self, "Search term not specified", extra={"status": 400})
             raise InvalidUsage("Search term not specified")
         return search_term
 
