@@ -3,9 +3,8 @@ Class for registering ML models
 """
 from enum import Enum
 
-from config.config_ml import SUPERVISED_MODEL_FILENAME, UNSUPERVISED_MODEL_FILENAME
+from config.config_ml import UNSUPERVISED_MODEL_FILENAME
 
 
 class Models(Enum):
-    ONS_SUPERVISED_MODEL = SUPERVISED_MODEL_FILENAME
     ONS_UNSUPERVISED_MODEL = UNSUPERVISED_MODEL_FILENAME
