@@ -4,6 +4,7 @@ from ons.search.sort_fields import SortField
 from ons.search.content_type import AvailableContentTypes
 from ons.search.type_filter import TypeFilter
 from ons.search.client.search_engine import SearchEngine
+from ons.search.fields import get_highlighted_fields, Field
 
 from unit.utils.elasticsearch_test_case import ElasticsearchTestCase
 
@@ -88,6 +89,32 @@ class SearchTestCase(ElasticsearchTestCase):
 
         return expected
 
+    def expected_highlight_query(self):
+        """
+        Builds the expected highlight query dict
+        :return:
+        """
+        # Build highlight fields
+        highlight_fields: List[Field] = get_highlighted_fields()
+
+        # Get the field names
+        field_names = [field.name for field in highlight_fields]
+
+        # Build highlight query object
+        field_highlight_queries = {}
+        for field_name in field_names:
+            field_highlight_queries[field_name] = {
+                'number_of_fragments': 0,
+                'pre_tags': ['<strong>'],
+                'post_tags': ['</strong>']
+            }
+
+        highlight_query = {
+            "fields": field_highlight_queries
+        }
+
+        return highlight_query
+
     def expected_content_query(self, from_start: int, size: int, query_dict: dict, sort_by: SortField, type_filters: List[TypeFilter]) -> dict:
         """
         Returns the expected query body for the given query dictionary
@@ -104,6 +131,9 @@ class SearchTestCase(ElasticsearchTestCase):
         content_types: List[AvailableContentTypes] = []
         for type_filter in type_filters:
             content_types.extend(type_filter.get_content_types())
+
+        # Build the highlight query
+        highlight_query = self.expected_highlight_query()
 
         expected = {
             "from": from_start,
@@ -122,6 +152,7 @@ class SearchTestCase(ElasticsearchTestCase):
                 }
             },
             "size": size,
+            "highlight": highlight_query,
             "sort": query_sort(sort_by)
         }
 
@@ -170,6 +201,9 @@ class SearchTestCase(ElasticsearchTestCase):
         from_start = 0
         size = 1
 
+        # Build the highlight query
+        highlight_query = self.expected_highlight_query()
+
         expected = {
             "from": from_start,
             "query": {
@@ -187,6 +221,7 @@ class SearchTestCase(ElasticsearchTestCase):
                 }
             },
             "size": size,
+            "highlight": highlight_query,
             "sort": query_sort(SortField.relevance)
         }
 
