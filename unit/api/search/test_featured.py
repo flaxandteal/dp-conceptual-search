@@ -86,7 +86,7 @@ class SearchFeaturedApiTestCase(TestApp):
         content_type_filters = []
         for type_filter in type_filters:
             for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.name)
+                content_type_filters.append(content_type.value.name)
         filter_query = [
             {
                 "terms": {

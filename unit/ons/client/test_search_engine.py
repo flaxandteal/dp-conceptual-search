@@ -1,9 +1,12 @@
 """
 Tests the ONS search engine functionality
 """
+from typing import List
+
 from unit.utils.async_test import AsyncTestCase
 from unit.elasticsearch.elasticsearch_test_case import ElasticsearchTestCase
 
+from ons.search.fields import get_highlighted_fields, Field
 from ons.search.queries import content_query, type_counts_query
 from ons.search.type_filter import AvailableTypeFilters
 from ons.search.sort_fields import query_sort, SortField
@@ -36,6 +39,26 @@ class SearchEngineTestCase(AsyncTestCase, ElasticsearchTestCase):
         """
         engine = SearchEngine(using=self.mock_client, index=self.index)
         return engine
+
+    @property
+    def highlight_dict(self):
+        """
+        Builds the expected highlight query dict
+        :return:
+        """
+        highlight_fields: List[Field] = get_highlighted_fields()
+
+        highlight_query = {
+            "fields": {
+                highlight_field.name: {
+                    "number_of_fragments": 0,
+                    "pre_tags": ["<strong>"],
+                    "post_tags": ["</strong>"]
+                } for highlight_field in highlight_fields
+            }
+        }
+
+        return highlight_query
 
     @staticmethod
     def paginate():
@@ -171,7 +194,7 @@ class SearchEngineTestCase(AsyncTestCase, ElasticsearchTestCase):
         content_type_filters = []
         for type_filter in type_filters:
             for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.name)
+                content_type_filters.append(content_type.value.name)
         filter_query = [
             {
                 "terms": {
@@ -192,7 +215,8 @@ class SearchEngineTestCase(AsyncTestCase, ElasticsearchTestCase):
                 }
             },
             "size": size,
-            "sort": query_sort(SortField.relevance)
+            "sort": query_sort(SortField.relevance),
+            "highlight": self.highlight_dict
         }
 
         # Call departments_query
@@ -227,7 +251,7 @@ class SearchEngineTestCase(AsyncTestCase, ElasticsearchTestCase):
         content_type_filters = []
         for type_filter in type_filters:
             for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.name)
+                content_type_filters.append(content_type.value.name)
         filter_query = [
             {
                 "terms": {
@@ -291,7 +315,7 @@ class SearchEngineTestCase(AsyncTestCase, ElasticsearchTestCase):
         content_type_filters = []
         for type_filter in type_filters:
             for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.name)
+                content_type_filters.append(content_type.value.name)
         filter_query = [
             {
                 "terms": {

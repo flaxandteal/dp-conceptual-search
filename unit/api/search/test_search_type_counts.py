@@ -2,6 +2,7 @@
 Tests the ONS type counts search API
 """
 from json import dumps
+from typing import List
 from unit.utils.test_app import TestApp
 
 from api.search.list_type import ListType
@@ -85,7 +86,7 @@ class SearchTypeCountsApiTestCase(TestApp):
             content_type_filters = []
             for type_filter in type_filters:
                 for content_type in type_filter.get_content_types():
-                    content_type_filters.append(content_type.name)
+                    content_type_filters.append(content_type.value.name)
             filter_query = [
                 {
                     "terms": {

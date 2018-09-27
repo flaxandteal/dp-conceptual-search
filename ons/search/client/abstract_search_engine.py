@@ -94,6 +94,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     @abc.abstractmethod
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField=SortField.relevance,
+                      highlight: bool=True,
                       filter_functions: List[AvailableContentTypes]=None,
                       type_filters: List[TypeFilter]=None,
                       **kwargs):
@@ -103,6 +104,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         :param current_page:
         :param size:
         :param sort_by:
+        :param highlight:
         :param filter_functions:
         :param type_filters:
         :param kwargs:

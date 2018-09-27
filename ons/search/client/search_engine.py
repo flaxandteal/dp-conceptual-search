@@ -31,6 +31,7 @@ class SearchEngine(AbstractSearchEngine):
 
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField=SortField.relevance,
+                      highlight: bool=True,
                       filter_functions: List[AvailableContentTypes]=None,
                       type_filters: List[TypeFilter]=None,
                       **kwargs):
@@ -40,6 +41,7 @@ class SearchEngine(AbstractSearchEngine):
         :param current_page:
         :param size:
         :param sort_by:
+        :param highlight:
         :param filter_functions:
         :param type_filters:
         :param kwargs:
@@ -61,8 +63,10 @@ class SearchEngine(AbstractSearchEngine):
             .paginate(current_page, size) \
             .sort_by(sort_by) \
             .type_filter(type_filters) \
-            .search_type(SearchType.DFS_QUERY_THEN_FETCH) \
-            .apply_highlight_fields()
+            .search_type(SearchType.DFS_QUERY_THEN_FETCH)
+
+        if highlight:
+            s: SearchEngine = s.apply_highlight_fields()
 
         return s
 
@@ -82,7 +86,7 @@ class SearchEngine(AbstractSearchEngine):
 
         # Build the content query with no type filters, function scores or sorting
         s: SearchEngine = self.content_query(search_term, self.default_page_number, RESULTS_PER_PAGE,
-                                             type_filters=type_filters)
+                                             type_filters=type_filters, highlight=False)
 
         # Build the aggregations
         aggregations = type_counts_query()
@@ -108,4 +112,5 @@ class SearchEngine(AbstractSearchEngine):
                                   self.default_page_number,
                                   page_size,
                                   filter_functions=None,
-                                  type_filters=type_filters)
+                                  type_filters=type_filters,
+                                  highlight=False)

@@ -2,6 +2,7 @@
 Tests the ONS content search API
 """
 from json import dumps
+from typing import List
 from unit.utils.test_app import TestApp
 
 from api.search.list_type import ListType
@@ -9,8 +10,10 @@ from api.search.list_type import ListType
 from search.search_type import SearchType
 
 from ons.search.index import Index
+from ons.search.queries import content_query, function_score_content_query
+from ons.search.content_type import AvailableContentTypes
 from ons.search.sort_fields import query_sort, SortField
-from ons.search.queries import content_query
+from ons.search.fields import get_highlighted_fields, Field
 
 
 class SearchContentApiTestCase(TestApp):
@@ -41,6 +44,26 @@ class SearchContentApiTestCase(TestApp):
         :return:
         """
         return "Zuul"
+
+    @property
+    def highlight_dict(self):
+        """
+        Builds the expected highlight query dict
+        :return:
+        """
+        highlight_fields: List[Field] = get_highlighted_fields()
+
+        highlight_query = {
+            "fields": {
+                highlight_field.name: {
+                    "number_of_fragments": 0,
+                    "pre_tags": ["<strong>"],
+                    "post_tags": ["</strong>"]
+                } for highlight_field in highlight_fields
+            }
+        }
+
+        return highlight_query
 
     def test_content_query_search_called(self):
         """
@@ -82,7 +105,7 @@ class SearchContentApiTestCase(TestApp):
             content_type_filters = []
             for type_filter in type_filters:
                 for content_type in type_filter.get_content_types():
-                    content_type_filters.append(content_type.name)
+                    content_type_filters.append(content_type.value.name)
             filter_query = [
                 {
                     "terms": {
@@ -91,6 +114,11 @@ class SearchContentApiTestCase(TestApp):
                 }
             ]
 
+            # Build function scores
+            function_scores: List[AvailableContentTypes] = []
+            for type_filter in type_filters:
+                function_scores.extend(type_filter.get_content_types())
+
             # Build the expected query dict - note this should not change
             expected = {
                 "from": from_start,
@@ -98,12 +126,13 @@ class SearchContentApiTestCase(TestApp):
                     "bool": {
                         "filter": filter_query,
                         "must": [
-                            content_query(self.search_term).to_dict(),
+                            function_score_content_query(content_query(self.search_term), function_scores).to_dict(),
                         ]
                     }
                 },
                 "size": size,
-                "sort": query_sort(SortField.relevance)
+                "sort": query_sort(SortField.relevance),
+                "highlight": self.highlight_dict
             }
 
             # Assert search was called with correct arguments
