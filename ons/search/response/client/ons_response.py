@@ -58,6 +58,8 @@ class ONSResponse(Response):
                             message = "Got multiple highlighted fragments, cowardly refusing to overwrite _source for " \
                                       "field '%s', fragments: %s" % (highlight_field, highlight_dict[highlight_field])
                             logging.debug(message)
+            # Remap type field
+            hit_dict["_type"] = hit_dict.pop("type")
             # Add the hit to the list
             highlighted_hits.append(hit_dict)
 
