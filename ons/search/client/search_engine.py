@@ -61,7 +61,8 @@ class SearchEngine(AbstractSearchEngine):
             .paginate(current_page, size) \
             .sort_by(sort_by) \
             .type_filter(type_filters) \
-            .search_type(SearchType.DFS_QUERY_THEN_FETCH)
+            .search_type(SearchType.DFS_QUERY_THEN_FETCH) \
+            .apply_highlight_fields()
 
         return s
 
