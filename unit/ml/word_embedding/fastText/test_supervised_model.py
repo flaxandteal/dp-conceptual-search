@@ -17,17 +17,10 @@ class SupervisedModelTestCase(TestCase):
         fname = "{data_dir}/{model_dir}/{model_fname}".format(data_dir=ML_DATA_DIR, model_dir=SUPERVISED_MODELS_DIR,
                                                               model_fname=SUPERVISED_MODEL_NAME)
 
-        self.assertTrue(isfile(fname), "must be able to locate default model at path {0}".format(fname))
+        if not isfile(fname):
+            raise FileNotFoundError("must be able to locate default model at path {0}".format(fname))
 
         self.model = SupervisedModel(filename=fname)
-
-    @property
-    def text(self):
-        """
-        Returns text for testing
-        :return:
-        """
-        return "rpi"
 
     def test_predict(self):
         """
@@ -36,14 +29,14 @@ class SupervisedModelTestCase(TestCase):
         """
         k = 10
         threshold = 0.0
-        parsed_labels, probabilities = self.model.predict(self.text, k=k, threshold=threshold)
+        parsed_labels, probabilities = self.model.predict("rpi", k=k, threshold=threshold)
 
         self.assertEqual(len(parsed_labels), k,
                          "expected {k} parsed_results, got {actual}".format(k=k, actual=len(parsed_labels)))
         self.assertEqual(len(probabilities), k,
                          "expected {k} probabilities, got {actual}".format(k=k, actual=len(probabilities)))
 
-        # Assert model label isn't in parsed_labels
+        # Assert model label prefix isn't in parsed_labels
         for parsed_label in parsed_labels:
             self.assertNotIn(parsed_label, self.model.label_prefix, "prefix '{0}' should not be in parsed label '{1}'"
                              .format(self.model.label_prefix, parsed_label))

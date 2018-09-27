@@ -18,7 +18,9 @@ class SupervisedModelTestCase(TestCase):
         fname = "{data_dir}/{model_dir}/{model_fname}".format(data_dir=ML_DATA_DIR, model_dir=UNSUPERVISED_MODELS_DIR,
                                                               model_fname=UNSUPERVISED_MODEL_NAME)
 
-        self.assertTrue(isfile(fname), "must be able to locate default model at path {0}".format(fname))
+        if not isfile(fname):
+            raise FileNotFoundError("must be able to locate default model at path {0}".format(fname))
+
         gensim_model = KeyedVectors.load_word2vec_format(fname)
 
         self.model = UnsupervisedModel(gensim_model)
@@ -31,7 +33,7 @@ class SupervisedModelTestCase(TestCase):
         word = "homicide"
         topn = 10
 
-        similar_words = self.model.similar_by_word(word, topn=topn, ret_sim=True)
+        similar_words = self.model.similar_by_word(word, top_n=topn, return_similarity=True)
 
         self.assertIsNotNone(similar_words, "similar_words should not be none")
         self.assertEqual(len(similar_words), topn, "expected {topn} results, got {actual}"
@@ -56,7 +58,7 @@ class SupervisedModelTestCase(TestCase):
         word_vector = self.model.word_vec(word, use_norm=False)
         topn = 10
 
-        similar_words = self.model.similar_by_vector(word_vector, topn=topn, ret_sim=True)
+        similar_words = self.model.similar_by_vector(word_vector, top_n=topn, return_similarity=True)
 
         self.assertIsNotNone(similar_words, "similar_words should not be none")
         self.assertEqual(len(similar_words), topn, "expected {topn} results, got {actual}"
