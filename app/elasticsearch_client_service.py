@@ -23,7 +23,7 @@ class ElasticsearchClientService(object):
         """
         from unittest.mock import MagicMock
         from unit.mocks.mock_es_client import MockElasticsearchClient
-        from unit.utils.elasticsearch_test_case import ElasticsearchTestCase
+        from unit.elasticsearch.elasticsearch_test_case import ElasticsearchTestCase
 
         test_utils = ElasticsearchTestCase()
 

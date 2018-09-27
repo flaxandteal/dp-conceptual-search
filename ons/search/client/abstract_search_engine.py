@@ -5,6 +5,7 @@ from search.client.search_client import SearchClient
 
 from ons.search.response.client.ons_response import ONSResponse
 from ons.search import AvailableContentTypes, SortField, TypeFilter
+from ons.search.fields import get_highlighted_fields, Field
 
 
 class AbstractSearchEngine(SearchClient, abc.ABC):
@@ -13,6 +14,25 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     """
     def __init__(self, **kwargs):
         super(AbstractSearchEngine, self).__init__(response_class=ONSResponse, **kwargs)
+
+    def apply_highlight_fields(self):
+        """
+        Applies highlight options to the Elasticsearch query
+        :param fields:
+        :param kwargs:
+        :return:
+        """
+        highlight_fields: List[Field] = get_highlighted_fields()
+
+        # Get the field names
+        field_names = [field.name for field in highlight_fields]
+
+        # Apply to query
+        return self.highlight(
+            *field_names,
+            number_of_fragments=0,  # return whole field with highlighting
+            pre_tags=["<strong>"],
+            post_tags=["</strong>"])
 
     def sort_by(self, sort_by: SortField):
         """
@@ -33,9 +53,11 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         :return:
         """
         type_filter_list = []
+
+        content_type: AvailableContentTypes
         for type_filter in type_filters:
             for content_type in type_filter.get_content_types():
-                type_filter_list.append(content_type.name)
+                type_filter_list.append(content_type.value.name)
 
         return self.filter("terms", type=type_filter_list)
 
@@ -72,6 +94,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     @abc.abstractmethod
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField=SortField.relevance,
+                      highlight: bool=True,
                       filter_functions: List[AvailableContentTypes]=None,
                       type_filters: List[TypeFilter]=None,
                       **kwargs):
@@ -81,6 +104,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         :param current_page:
         :param size:
         :param sort_by:
+        :param highlight:
         :param filter_functions:
         :param type_filters:
         :param kwargs:
