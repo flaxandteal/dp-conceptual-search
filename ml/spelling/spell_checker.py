@@ -4,6 +4,9 @@ Implementation of a spellchecker using word embedding models
 from typing import Generator, List
 from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
+# Constant
+_letters = 'abcdefghijklmnopqrstuvwxyz'
+
 
 class SpeckCheckSuggestion(object):
     def __init__(self, input_token, correction, probability):
@@ -43,24 +46,25 @@ class SpellChecker(object):
             terms = [terms]
         for term in terms:
             correction = self.correction(term)
-            P = self.P(correction)
+            P = self.probability(correction)
             if P > 0:
                 result.append(SpeckCheckSuggestion(term, correction, P))
         return result
 
-    def P(self, word) -> float:
+    def probability(self, word) -> float:
         """
         Probability of `word`.
         Returns 0 if the word isn't in the dictionary
         """
         if word not in self.words:
             return 0.
-        return float(len(self.words)) / \
-            (float(self.words.get(word, 0)) + float(len(self.words)))
+        num_words = float(len(self.words))
+        word_idx = float(self.words.get(word, 0))
+        return num_words / (word_idx + num_words)
 
     def correction(self, word) -> str:
         """ Most probable spelling correction for word. """
-        return max(self.candidates(word), key=self.P)
+        return max(self.candidates(word), key=self.probability)
 
     def candidates(self, word) -> set:
         """ Generate possible spelling corrections for word. """
@@ -75,12 +79,16 @@ class SpellChecker(object):
 
     def edits1(self, word) -> set:
         """ All edits that are one edit away from `word`. """
-        letters = 'abcdefghijklmnopqrstuvwxyz'
         splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
-        deletes = [L + R[1:] for L, R in splits if R]
-        transposes = [L + R[1] + R[0] + R[2:] for L, R in splits if len(R) > 1]
-        replaces = [L + c + R[1:] for L, R in splits if R for c in letters]
-        inserts = [L + c + R for L, R in splits for c in letters]
+        # All words one deletion away from work
+        deletes = [left + right[1:] for left, right in splits if right]
+        # All words one transposition away from word
+        transposes = [left + right[1] + right[0] + right[2:] for left, right in splits if len(right) > 1]
+        # All words with one character replacement from word
+        replaces = [left + char + right[1:] for left, right in splits if right for char in _letters]
+        # All words one character insert away from word
+        inserts = [left + char + right for left, right in splits for char in _letters]
+        # Return set of all of the above
         return set(deletes + transposes + replaces + inserts)
 
     def edits2(self, word) -> Generator:

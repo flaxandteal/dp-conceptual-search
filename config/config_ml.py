@@ -3,11 +3,8 @@ ML specific configs
 """
 import os
 
-ML_DATA_DIR = os.environ.get("ML_DATA_DIR", "./ml/data/")
-SUPERVISED_MODELS_DIR = os.environ.get("SUPERVISED_MODELS_DIR", "supervised_models/")
-UNSUPERVISED_MODELS_DIR = os.environ.get("UNSUPERVISED_MODELS_DIR", "word2vec/")
-SUPERVISED_MODEL_NAME = os.environ.get("SUPERVISED_MODEL_NAME", "ons_supervised.bin")
-UNSUPERVISED_MODEL_NAME = os.environ.get("UNSUPERVISED_MODEL_NAME", "ons_supervised.vec")
+SUPERVISED_MODEL_FILENAME = os.environ.get("SUPERVISED_MODEL_FILENAME",
+                                           "./unit/ml/test_data/supervised_models/ons_supervised.bin")
 
-SUPERVISED_MODEL_FILENAME = os.path.join(ML_DATA_DIR, SUPERVISED_MODELS_DIR, SUPERVISED_MODEL_NAME)
-UNSUPERVISED_MODEL_FILENAME = os.path.join(ML_DATA_DIR, UNSUPERVISED_MODELS_DIR, UNSUPERVISED_MODEL_NAME)
+UNSUPERVISED_MODEL_FILENAME = os.environ.get("UNSUPERVISED_MODEL_FILENAME",
+                                             "./ml/data/word2vec/ons_supervised.vec")

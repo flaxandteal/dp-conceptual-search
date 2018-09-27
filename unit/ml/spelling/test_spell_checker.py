@@ -5,7 +5,7 @@ from os.path import isfile
 from unittest import TestCase
 
 from config.config_ml import UNSUPERVISED_MODEL_FILENAME
-from ml.spelling.spell_checker import SpellChecker, SpeckCheckSuggestion
+from ml.spelling.spell_checker import SpellChecker
 from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
 
