@@ -11,6 +11,7 @@ from sanic.exceptions import ServerError, InvalidUsage
 
 from ons.search.index import Index
 from ons.search.sort_fields import SortField
+from ons.search.content_type import AvailableContentTypes
 from ons.search.type_filter import AvailableTypeFilters, TypeFilter
 from ons.search.response.search_result import SearchResult
 from ons.search.response.client.ons_response import ONSResponse
@@ -131,8 +132,16 @@ class SanicSearchEngine(object):
         sort_by: SortField = request.get_sort_by()
         type_filters: List[TypeFilter] = request.get_type_filters(list_type)
 
+        # Build filter functions
+        filter_functions: List[AvailableContentTypes] = []
+        for type_filter in type_filters:
+            filter_functions.extend(
+                type_filter.get_content_types()
+            )
+
         try:
             response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by,
+                                                               filter_functions=filter_functions,
                                                                type_filters=type_filters).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform content query request"

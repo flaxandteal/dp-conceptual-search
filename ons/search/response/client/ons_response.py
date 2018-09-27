@@ -1,3 +1,6 @@
+import logging
+from typing import List
+
 from elasticsearch_dsl.response import Response
 from elasticsearch_dsl.response import Hit, HitMeta
 
@@ -6,14 +9,69 @@ from ons.search.response import SearchResult, ContentQueryResult, TypeCountsQuer
 from ons.search.paginator import Paginator
 
 
+class DotDict(dict):
+    """
+    Simple class which wraps a dictionary and supports dot notation for setting values
+    """
+    def __init__(self, *args, **kwargs):
+        super(DotDict, self).__init__(*args, **kwargs)
+
+    def set_value(self, field_name, value):
+        if field_name in self:
+            self[field_name] = value
+        elif "." in field_name:
+            parts = field_name.split(".")
+            if parts[0] == "description" and len(parts) <= 2:
+                self["description"][parts[1]] = value
+        else:
+            raise Exception("Unable to set field %s" % field_name)
+
+
 class ONSResponse(Response):
 
-    def hits_to_json(self) -> list:
+    def highlight_hits(self) -> List[DotDict]:
         """
-        Converts the search hits to a list of JSON
+        Checks response for highlighter fragments and applies them to each hit
         :return:
         """
-        return [hit.to_dict() for hit in self.hits]
+        highlighted_hits = []
+
+        hit: Hit
+        for hit in self.hits:
+            hit_dict = DotDict(hit.to_dict())
+            if hasattr(hit, "meta") and isinstance(hit.meta, HitMeta):
+                hit_meta: HitMeta = hit.meta
+
+                # Remap type field
+                hit_dict["_type"] = hit_meta.to_dict().get("doc_type", None)
+
+                # Check if highlighting results in the hit meta
+                if hasattr(hit_meta, "highlight") and hasattr(hit_meta.highlight, "to_dict"):
+                    highlight_dict = hit_meta.highlight.to_dict()
+
+                    # Iterate over highlighted fields
+                    for highlight_field in highlight_dict:
+                        # Replace the _source field with the highlighted fragment, provided there is only one
+                        if len(highlight_dict[highlight_field]) == 1:
+                            highlighted_field = highlight_dict[highlight_field][0]
+
+                            # Overwrite the _source field
+                            hit_dict.set_value(highlight_field, highlighted_field)
+                        else:
+                            message = "Got multiple highlighted fragments, cowardly refusing to overwrite _source for " \
+                                      "field '%s', fragments: %s" % (highlight_field, highlight_dict[highlight_field])
+                            logging.debug(message)
+            # Add the hit to the list
+            highlighted_hits.append(hit_dict)
+
+        return highlighted_hits
+
+    def hits_to_json(self) -> List[DotDict]:
+        """
+        Converts the search hits to a list of JSON, with highlighting applied
+        :return:
+        """
+        return self.highlight_hits()
 
     def to_type_counts_query_search_result(self) -> SearchResult:
         """
