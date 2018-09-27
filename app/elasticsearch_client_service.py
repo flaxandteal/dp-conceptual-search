@@ -28,10 +28,14 @@ class ElasticsearchClientService(object):
         test_utils = ElasticsearchTestCase()
 
         response = test_utils.mock_response
+        health_response = test_utils.mock_health_response
 
         # Mock the search client
         self._client = MockElasticsearchClient()
         self._client.search = MagicMock(return_value=response)
+
+        # Mock the cluster health API
+        self._client.cluster.health = MagicMock(return_value=health_response)
 
     def _init_client(self):
         """

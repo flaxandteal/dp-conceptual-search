@@ -7,10 +7,13 @@ import uvloop
 from sanic.log import logger
 
 from config.config_core import SEARCH_CONFIG
-from api.search.routes import search_blueprint
-from api.suggest.routes import suggest_blueprint
 from app.log_config import log_config
 from app.sanic_search import SanicSearch
+
+# Import blueprints
+from api.search.routes import search_blueprint
+from api.suggest.routes import suggest_blueprint
+from api.healthcheck.routes import healthcheck_blueprint
 
 
 def create_app() -> SanicSearch:
@@ -30,5 +33,6 @@ def create_app() -> SanicSearch:
     # Register blueprints
     app.blueprint(search_blueprint)
     app.blueprint(suggest_blueprint)
+    app.blueprint(healthcheck_blueprint)
 
     return app
