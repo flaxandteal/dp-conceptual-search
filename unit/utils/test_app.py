@@ -7,7 +7,7 @@ from urllib import parse as urllib_parse
 
 from app.app import create_app
 from api.request.ons_request import ONSRequest
-from app.sanic_elasticsearch import SanicElasticsearch
+from app.sanic_search import SanicSearch
 
 
 class TestApp(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestApp(unittest.TestCase):
         Initialises the Sanic app and test client
         :return:
         """
-        self._app: SanicElasticsearch = create_app()
+        self._app: SanicSearch = create_app()
         self._client = self._app.test_client
 
     @property

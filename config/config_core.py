@@ -33,7 +33,6 @@ API_DESCRIPTION = 'Dedicated search API for digital publishing.'
 # General
 
 LOGO = None  # Disable printing of the Sanic logo
-RESPONSE_TIMEOUT = 600
 SEARCH_CONFIG = os.environ.get('SEARCH_CONFIG', 'development')
 
 # Elasticsearch

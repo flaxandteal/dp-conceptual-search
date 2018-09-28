@@ -20,11 +20,11 @@ from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilte
 
 from api.request.ons_request import ONSRequest
 from api.search.list_type import ListType
-from app.sanic_elasticsearch import SanicElasticsearch
+from app.sanic_search import SanicSearch
 
 
 class SanicSearchEngine(object):
-    def __init__(self, app: SanicElasticsearch, search_engine_cls: ClassVar[AbstractSearchEngine], index: Index):
+    def __init__(self, app: SanicSearch, search_engine_cls: ClassVar[AbstractSearchEngine], index: Index):
         """
         Helper class for working with abstract search engine instances
         :param app:
