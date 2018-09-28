@@ -27,7 +27,7 @@ class SupervisedModelTestCase(TestCase):
         word = "homicide"
         topn = 10
 
-        similar_words = self.model.similar_by_word(word, topn=topn, ret_sim=True)
+        similar_words = self.model.similar_by_word(word, top_n=topn, return_similarity=True)
 
         self.assertIsNotNone(similar_words, "similar_words should not be none")
         self.assertEqual(len(similar_words), topn, "expected {topn} results, got {actual}"
@@ -52,7 +52,7 @@ class SupervisedModelTestCase(TestCase):
         word_vector = self.model.word_vec(word, use_norm=False)
         topn = 10
 
-        similar_words = self.model.similar_by_vector(word_vector, topn=topn, ret_sim=True)
+        similar_words = self.model.similar_by_vector(word_vector, top_n=topn, return_similarity=True)
 
         self.assertIsNotNone(similar_words, "similar_words should not be none")
         self.assertEqual(len(similar_words), topn, "expected {topn} results, got {actual}"

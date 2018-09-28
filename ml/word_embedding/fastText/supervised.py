@@ -4,7 +4,7 @@ This file defines classes and methods for working with supervised fastText model
 import fastText
 import numpy as np
 
-from ml.word_embedding.utils import cosine_sim
+from ml.word_embedding.utils import cosine_similarity
 
 
 class SupervisedModel(fastText.FastText._FastText):
@@ -79,4 +79,4 @@ class SupervisedModel(fastText.FastText._FastText):
         :param vec2:
         :return:
         """
-        return cosine_sim(vec1, vec2)
+        return cosine_similarity(vec1, vec2)

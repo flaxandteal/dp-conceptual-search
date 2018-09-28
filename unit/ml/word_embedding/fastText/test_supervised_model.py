@@ -19,14 +19,6 @@ class SupervisedModelTestCase(TestCase):
 
         self.model = SupervisedModel(filename=SUPERVISED_MODEL_FILENAME)
 
-    @property
-    def text(self):
-        """
-        Returns text for testing
-        :return:
-        """
-        return "rpi"
-
     def test_predict(self):
         """
         Test the predict method returns the correct number of predictions, with the label prefix removed
@@ -34,14 +26,14 @@ class SupervisedModelTestCase(TestCase):
         """
         k = 10
         threshold = 0.0
-        parsed_labels, probabilities = self.model.predict(self.text, k=k, threshold=threshold)
+        parsed_labels, probabilities = self.model.predict("rpi", k=k, threshold=threshold)
 
         self.assertEqual(len(parsed_labels), k,
                          "expected {k} parsed_results, got {actual}".format(k=k, actual=len(parsed_labels)))
         self.assertEqual(len(probabilities), k,
                          "expected {k} probabilities, got {actual}".format(k=k, actual=len(probabilities)))
 
-        # Assert model label isn't in parsed_labels
+        # Assert model label prefix isn't in parsed_labels
         for parsed_label in parsed_labels:
             self.assertNotIn(parsed_label, self.model.label_prefix, "prefix '{0}' should not be in parsed label '{1}'"
                              .format(self.model.label_prefix, parsed_label))

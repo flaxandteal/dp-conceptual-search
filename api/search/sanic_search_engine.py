@@ -163,10 +163,9 @@ class SanicSearchEngine(object):
 
         # Perform the query
         search_term = request.get_search_term()
-        type_filters: List[TypeFilter] = request.get_type_filters(list_type)
 
         try:
-            response: ONSResponse = await engine.type_counts_query(search_term, type_filters=type_filters).execute()
+            response: ONSResponse = await engine.type_counts_query(search_term).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
             logger.error(request, message, exc_info=e)
