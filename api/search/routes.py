@@ -22,6 +22,7 @@ search_blueprint = Blueprint('search', url_prefix='/search')
 async def proxy_query(request: ONSRequest) -> HTTPResponse:
     """
     Proxy an Elasticsearch query through the APP over HTTP.
+    TODO: Setup authentication for this route
     :param request:
     :return:
     """
