@@ -3,7 +3,6 @@ This file contains all routes for the /search API
 """
 from sanic import Blueprint
 from sanic.response import HTTPResponse
-from sanic.exceptions import NotFound
 
 from api.log import logger
 from api.response import json
@@ -22,6 +21,7 @@ search_blueprint = Blueprint('search', url_prefix='/search')
 async def proxy_query(request: ONSRequest) -> HTTPResponse:
     """
     Proxy an Elasticsearch query through the APP over HTTP.
+    TODO: Setup authentication for this route
     :param request:
     :return:
     """
@@ -73,7 +73,7 @@ async def ons_content_query(request: ONSRequest, list_type: str) -> HTTPResponse
         # Log and return 404
         message = "Received content query request for unknown list type: '{0}'".format(list_type)
         logger.error(request, message)
-        raise NotFound(message)
+        return json(request, message, 404)
 
 
 @search_blueprint.route('/<list_type>/counts', methods=['GET', 'POST'], strict_slashes=True)
@@ -98,7 +98,7 @@ async def ons_counts_query(request: ONSRequest, list_type: str) -> HTTPResponse:
         # Log and return 404
         message = "Received type counts request for unknown list type: '{0}'".format(list_type)
         logger.error(request, message)
-        raise NotFound(message)
+        return json(request, message, 404)
 
 
 @search_blueprint.route('/ons/featured', methods=['GET', 'POST'], strict_slashes=True)
