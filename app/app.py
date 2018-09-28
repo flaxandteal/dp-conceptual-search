@@ -7,8 +7,9 @@ import uvloop
 from sanic.log import logger
 
 from config.config_core import SEARCH_CONFIG
-from app.log_config import log_config
+from app.logging.log_config import log_config
 from app.sanic_search import SanicSearch
+from app.exceptions.error_handlers import ErrorHandlers
 
 # Import blueprints
 from api.search.routes import search_blueprint
@@ -34,5 +35,8 @@ def create_app() -> SanicSearch:
     app.blueprint(search_blueprint)
     app.blueprint(suggest_blueprint)
     app.blueprint(healthcheck_blueprint)
+
+    # Register error handlers
+    ErrorHandlers.register(app)
 
     return app

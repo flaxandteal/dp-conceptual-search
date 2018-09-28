@@ -8,9 +8,9 @@ from sanic import Sanic
 from config.config_ml import UNSUPERVISED_MODEL_FILENAME
 
 from app.ml.ml_models import Models
-from app.elasticsearch_client_service import ElasticsearchClientService
 from ml.word_embedding.fastText import UnsupervisedModel
 from ml.spelling.spell_checker import SpellChecker
+from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SanicSearch(Sanic):
