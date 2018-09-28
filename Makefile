@@ -6,7 +6,7 @@ build: requirements fastText
 
 requirements:
 	pip install -r requirements.txt
-	cd scripts && ./download_nltk_stopwords.py
+	python scripts/download_nltk_stopwords.py
 
 test_requirements:
 	pip install -r requirements_test.txt
