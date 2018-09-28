@@ -8,8 +8,9 @@ from sanic.log import logger
 
 from config.config_core import SEARCH_CONFIG
 from api.search.routes import search_blueprint
-from app.log_config import log_config
+from app.logging.log_config import log_config
 from app.sanic_search import SanicSearch
+from app.exceptions.error_handlers import ErrorHandlers
 
 
 def create_app() -> SanicSearch:
@@ -28,5 +29,8 @@ def create_app() -> SanicSearch:
 
     # Register blueprints
     app.blueprint(search_blueprint)
+
+    # Register error handlers
+    ErrorHandlers.register(app)
 
     return app

@@ -9,8 +9,8 @@ from config.config_ml import UNSUPERVISED_MODEL_FILENAME
 
 from api.request.ons_request import ONSRequest
 from app.ml.ml_models import Models
-from app.elasticsearch_client_service import ElasticsearchClientService
 from ml.word_embedding.fastText import UnsupervisedModel
+from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SanicSearch(Sanic):
