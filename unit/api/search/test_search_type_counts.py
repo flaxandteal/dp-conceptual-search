@@ -13,6 +13,7 @@ from ons.search.index import Index
 from ons.search.paginator import RESULTS_PER_PAGE
 from ons.search.sort_fields import query_sort, SortField
 from ons.search.queries import content_query, type_counts_query
+from ons.search.type_filter import AvailableTypeFilters, TypeFilter
 
 
 class SearchTypeCountsApiTestCase(TestApp):
@@ -81,8 +82,9 @@ class SearchTypeCountsApiTestCase(TestApp):
             # Make the request
             request, response = self.post(target, 200, data=dumps(data))
 
-            # Build the filter query
-            type_filters = list_type.to_type_filters()
+            # Build the filter query - Note, for type counts we use all available type filters (not those
+            # specified in the list type)
+            type_filters: List[TypeFilter] = AvailableTypeFilters.all()
             content_type_filters = []
             for type_filter in type_filters:
                 for content_type in type_filter.get_content_types():
