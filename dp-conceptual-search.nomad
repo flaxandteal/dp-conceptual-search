@@ -86,7 +86,7 @@ job "dp-conceptual-search" {
 
     constraint {
       attribute = "${node.class}"
-      value     = "publishing
+      value     = "publishing"
     }
 
     restart {
