@@ -31,8 +31,13 @@ class HealthCheckTestCase(TestApp):
 
         # Check the response JSON matches the mock response
         self.assertTrue(hasattr(response, "json"), "response should contain JSON property")
+
         response_json = response.json
         self.assertIsNotNone(response_json, "response json should not be none")
         self.assertIsInstance(response_json, dict, "response json should be instanceof dict")
+        
+        expected_response = {
+            "elasticsearch": self.mock_response
+        }
 
-        self.assertEqual(response_json, self.mock_response, "returned JSON should match mock response")
+        self.assertEqual(response_json, expected_response, "returned JSON should match mock response")
