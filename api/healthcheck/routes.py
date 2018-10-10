@@ -32,7 +32,11 @@ async def health_check(request: ONSRequest):
         health = client.cluster.health()
         if isawaitable(health):
             health = await health
-        return json(request, health, 200)
+
+        body = {
+            "elasticsearch": health
+        }
+        return json(request, body, 200)
     except Exception as e:
         logger.error(request, "Unable to get Elasticsearch cluster health", exc_info=e)
         body = {
