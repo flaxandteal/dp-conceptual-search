@@ -6,7 +6,7 @@ import uvloop
 
 from sanic.log import logger
 
-from config.config_core import SEARCH_CONFIG
+from config.config_sanic import SEARCH_CONFIG
 from app.logging.log_config import log_config
 from app.sanic_search import SanicSearch
 from app.exceptions.error_handlers import ErrorHandlers
@@ -29,7 +29,7 @@ def create_app() -> SanicSearch:
     app = SanicSearch(log_config=log_config)
 
     logger.info("Using config '%s'" % SEARCH_CONFIG)
-    app.config.from_pyfile('config/config_%s.py' % SEARCH_CONFIG)
+    app.config.from_pyfile('config/config_sanic.py')
 
     # Register blueprints
     app.blueprint(search_blueprint)
