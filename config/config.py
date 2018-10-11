@@ -5,11 +5,10 @@ from config.utils import bool_env
 # API
 
 API_CONFIG = Section("API specific config")
-API_CONFIG.version = '1.0.1'
+API_CONFIG.app_version = '1.0.1'
 API_CONFIG.title = 'dp-conceptual-search'
 API_CONFIG.description = 'Dedicated search API for digital publishing.'
 API_CONFIG.enabled_prometheus_metrics = bool_env('ENABLE_PROMETHEUS_METRICS', False)
-API_CONFIG.search_config = os.environ.get("SEARCH_CONFIG", "sanic")
 API_CONFIG.testing = bool_env("TESTING", False)
 
 # ML
