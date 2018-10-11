@@ -4,9 +4,10 @@ Code for creating HTTP api app
 import asyncio
 import uvloop
 
+from config import API_CONFIG
+
 from sanic.log import logger
 
-from config.config_sanic import SEARCH_CONFIG
 from app.logging.log_config import log_config
 from app.sanic_search import SanicSearch
 from app.exceptions.error_handlers import ErrorHandlers
@@ -28,8 +29,8 @@ def create_app() -> SanicSearch:
     # Now initialise the APP config, logger and ONSRequest handler
     app = SanicSearch(log_config=log_config)
 
-    logger.info("Using config '%s'" % SEARCH_CONFIG)
-    app.config.from_pyfile('config/config_sanic.py')
+    logger.info("Using config '%s'" % API_CONFIG.search_config)
+    app.config.from_pyfile('config/config_%s.py' % API_CONFIG.search_config)
 
     # Register blueprints
     app.blueprint(search_blueprint)

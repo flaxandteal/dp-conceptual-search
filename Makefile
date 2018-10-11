@@ -16,7 +16,7 @@ fastText:
 	cd lib/fastText && python setup.py install
 
 test: test_requirements
-	SEARCH_CONFIG=testing python manager.py test
+	SEARCH_CONFIG=sanic_testing python manager.py test
 
 pep8:
 	autopep8 --in-place --aggressive --aggressive -r ./
