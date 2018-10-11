@@ -2,16 +2,24 @@ import os
 from config.section import Section
 from config.utils import bool_env
 
-
 # API
 
-API_CONFIG = Section("APi specific config")
+API_CONFIG = Section("API specific config")
 API_CONFIG.version = '1.0.1'
 API_CONFIG.title = 'dp-conceptual-search'
 API_CONFIG.description = 'Dedicated search API for digital publishing.'
 API_CONFIG.enabled_prometheus_metrics = bool_env('ENABLE_PROMETHEUS_METRICS', False)
 API_CONFIG.search_config = os.environ.get("SEARCH_CONFIG", "sanic")
+API_CONFIG.testing = bool_env("TESTING", False)
 
+# ML
+
+
+ML_CONFIG = Section("Machine Learning specific config")
+ML_CONFIG.supervised_model_filename = os.environ.get("SUPERVISED_MODEL_FILENAME",
+                                                     "./unit/ml/test_data/supervised_models/ons_supervised.bin")
+ML_CONFIG.unsupervised_model_filename = os.environ.get("UNSUPERVISED_MODEL_FILENAME",
+                                                       "./ml/data/word2vec/ons_supervised.vec")
 
 # Elasticsearch
 

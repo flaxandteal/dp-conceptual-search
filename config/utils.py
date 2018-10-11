@@ -15,7 +15,7 @@ def bool_env(var_name, default=False):
                  environment.
     Returns: `var_name` or `default` coerced to a boolean using the following
         rules:
-            "False", "false" or "" => False
+            "False", "false", "" or 0 => False
             Any other non-empty string => True
     """
     test_val = os.environ.get(var_name, default)

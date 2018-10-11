@@ -4,7 +4,7 @@ Tests our UnsupervisedModel class
 from os.path import isfile
 from unittest import TestCase
 
-from config.config_ml import UNSUPERVISED_MODEL_FILENAME
+from config import CONFIG
 from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
 
@@ -14,10 +14,11 @@ class SupervisedModelTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        self.assertTrue(isfile(UNSUPERVISED_MODEL_FILENAME),
-                        "must be able to locate default model at path {0}".format(UNSUPERVISED_MODEL_FILENAME))
+        fname = CONFIG.ML.unsupervised_model_filename
+        self.assertTrue(isfile(fname),
+                        "must be able to locate default model at path {0}".format(fname))
 
-        self.model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+        self.model = UnsupervisedModel(fname)
 
     def test_similar_by_word(self):
         """

@@ -5,7 +5,7 @@ from sanic.log import logger
 
 from sanic import Sanic
 
-from config.config_ml import UNSUPERVISED_MODEL_FILENAME
+from config import CONFIG
 
 from app.ml.ml_models import Models
 from ml.word_embedding.fastText import UnsupervisedModel
@@ -48,9 +48,9 @@ class SanicSearch(Sanic):
             logger.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
             # Now initialise the ML models essential to the APP
-            self._models[Models.ONS_UNSUPERVISED_MODEL] = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+            self._models[Models.ONS_UNSUPERVISED_MODEL] = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
 
-            logger.info("Initialised unsupervised fastText model: {fname}".format(fname=UNSUPERVISED_MODEL_FILENAME))
+            logger.info("Initialised unsupervised fastText model: {fname}".format(fname=CONFIG.ML.unsupervised_model_filename))
 
             # Initialise spell checker
             self._spell_checker = SpellChecker(self._models[Models.ONS_UNSUPERVISED_MODEL])
