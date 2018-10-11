@@ -1,11 +1,15 @@
 import os
 from config.section import Section
 from config.utils import bool_env
+import git
+
+repo = git.Repo(search_parent_directories=True)
+sha = repo.head.object.hexsha
 
 # API
 
 API_CONFIG = Section("API specific config")
-API_CONFIG.app_version = '1.0.1'
+API_CONFIG.app_version = sha
 API_CONFIG.title = 'dp-conceptual-search'
 API_CONFIG.description = 'Dedicated search API for digital publishing.'
 API_CONFIG.enabled_prometheus_metrics = bool_env('ENABLE_PROMETHEUS_METRICS', False)
