@@ -26,7 +26,7 @@ async def spell_check(request: ONSRequest):
     tokens = search_term.split()
 
     # Get the result
-    result = spell_checker.correct_terms(tokens)
+    result = spell_checker.correct_spelling(tokens)
 
     # Return the json response
     return json(request, result, 200)
