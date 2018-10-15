@@ -37,9 +37,9 @@ class SpellChecker(object):
     def words(self) -> dict:
         return self.model.words
 
-    def correct_terms(self, terms) -> List[SpellCheckSuggestion]:
+    def correct_spelling(self, terms) -> List[SpellCheckSuggestion]:
         """
-        Returns a list of potential corrections, with their probabilities
+        Returns a list of potential (best candidate) corrections, with their probabilities.
         :param terms:
         :return:
         """
@@ -73,14 +73,14 @@ class SpellChecker(object):
         """ Generate possible spelling corrections for word. """
         return self.known(
             [word]) or self.known(
-            self.edits1(word)) or self.known(
-            self.edits2(word)) or [word]
+            self.single_edit_candidates(word)) or self.known(
+            self.double_edit_candidates(word)) or [word]
 
     def known(self, words) -> set:
-        """ The subset of `words` that appear in the dictionary of WORDS. """
+        """ The subset of `words` that appear in the dictionary. """
         return set(w for w in words if w in self.words)
 
-    def edits1(self, word) -> set:
+    def single_edit_candidates(self, word) -> set:
         """ All edits that are one edit away from `word`. """
         splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
         # All words one deletion away from word
@@ -94,6 +94,6 @@ class SpellChecker(object):
         # Return set of all of the above
         return set(deletes + transposes + replaces + inserts)
 
-    def edits2(self, word) -> Generator:
+    def double_edit_candidates(self, word) -> Generator:
         """ All edits that are two edits away from `word`. """
-        return (e2 for e1 in self.edits1(word) for e2 in self.edits1(e1))
+        return (e2 for e1 in self.single_edit_candidates(word) for e2 in self.single_edit_candidates(e1))
