@@ -36,8 +36,8 @@ Use ```python manager.py``` to use the internal Sanic server, or  ```./run_gunic
 gunicorn server (supports multi-processing for multiple workers and threads per worker). By default, the service 
 provides APIs which only mimic the search functionality of babbage. To enable conceptual search (vector scoring), you
 will need to set the environment variable ```CONCEPTUAL_SEARCH_ENABLED=true``` and have the appropriate models available
-on disk. This repository comes with the [full word2vec embeddings model](word2vec/ons_supervised.vec) and a 
-*placeholder* [supervised model](supervised_models/ons_supervised.bin).
+on disk. This repository comes with the [full word2vec embeddings model](ml/data/word2vec/ons_supervised.vec) and a 
+*test* [supervised model](unit/ml/test_data/supervised_models/ons_supervised.bin).
 
 # Swagger
 
