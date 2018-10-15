@@ -1,5 +1,6 @@
 import os
 import git
+import logging
 from typing import Optional
 
 
@@ -14,7 +15,6 @@ def git_sha() -> Optional[str]:
 
         return sha
     except Exception as e:
-        import logging
         logging.error("Unable to get git commit sha", exc_info=e)
     return None
 

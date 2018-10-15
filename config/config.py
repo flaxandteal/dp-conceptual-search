@@ -1,4 +1,5 @@
 import os
+import logging
 from config.section import Section
 from config.utils import bool_env, git_sha
 
@@ -34,12 +35,16 @@ ELASTIC_SEARCH_CONFIG.timeout = int(os.environ.get("ELASTIC_SEARCH_TIMEOUT", 100
 # Search
 
 SEARCH_CONFIG = Section("Search API config")
+SEARCH_CONFIG.default_search_index = "ons"
+SEARCH_CONFIG.search_index = os.environ.get("SEARCH_INDEX", SEARCH_CONFIG.default_search_index)
+SEARCH_CONFIG.departments_search_index = "departments"
 SEARCH_CONFIG.results_per_page = int(os.getenv("RESULTS_PER_PAGE", 10))
 SEARCH_CONFIG.max_visible_paginator_link = int(os.getenv("MAX_VISIBLE_PAGINATOR_LINK", 5))
 
 # Logging
 
 LOGGING_CONFIG = Section("Logging config")
+LOGGING_CONFIG.default_level = logging.INFO
 LOGGING_CONFIG.coloured_logging = bool_env('COLOURED_LOGGING_ENABLED', False)
 LOGGING_CONFIG.pretty_logging = bool_env('PRETTY_LOGGING', False)
 LOGGING_CONFIG.json_logger_indent = 4 if LOGGING_CONFIG.pretty_logging else None
