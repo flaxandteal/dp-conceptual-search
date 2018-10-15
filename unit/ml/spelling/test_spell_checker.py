@@ -60,7 +60,7 @@ class SpellCheckerTestCase(TestCase):
         sample_words = self.sample_words
         keys = list(sample_words.keys())
 
-        corrections = self.spell_checker.correct_terms(keys)
+        corrections = self.spell_checker.correct_spelling(keys)
         for correction in corrections:
             self.assertEqual(correction.correction, sample_words[correction.input_token],
                              "expected {expected} for key {key}, but got {actual}".format(
