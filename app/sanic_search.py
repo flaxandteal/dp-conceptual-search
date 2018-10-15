@@ -1,15 +1,14 @@
 """
 This file defines our custom Sanic app class
 """
-from sanic.log import logger
-
 from sanic import Sanic
+from sanic.log import logger
 
 from config.config_ml import UNSUPERVISED_MODEL_FILENAME
 
-from app.ml.ml_models import Models
 from ml.word_embedding.fastText import UnsupervisedModel
 from ml.spelling.spell_checker import SpellChecker
+
 from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -23,8 +22,8 @@ class SanicSearch(Sanic):
         self._elasticsearch = None
         self._spell_checker = None
 
-        # Create cache for ML models
-        self._models = {}
+        # Initialise unsupervised model member
+        self._unsupervised_model = None
 
         @self.listener("after_server_start")
         async def init(app: SanicSearch, loop):
@@ -48,12 +47,12 @@ class SanicSearch(Sanic):
             logger.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
             # Now initialise the ML models essential to the APP
-            self._models[Models.ONS_UNSUPERVISED_MODEL] = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+            self._unsupervised_model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
 
             logger.info("Initialised unsupervised fastText model: {fname}".format(fname=UNSUPERVISED_MODEL_FILENAME))
 
             # Initialise spell checker
-            self._spell_checker = SpellChecker(self._models[Models.ONS_UNSUPERVISED_MODEL])
+            self._spell_checker = SpellChecker(self._unsupervised_model)
 
             logger.info("Initialised spell checker")
 
@@ -88,4 +87,4 @@ class SanicSearch(Sanic):
         Returns the cached unsupervised model
         :return:
         """
-        return self._models.get(Models.ONS_UNSUPERVISED_MODEL)
+        return self.__unsupervised_model

@@ -14,9 +14,6 @@ class SupervisedModelTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        self.assertTrue(isfile(SUPERVISED_MODEL_FILENAME),
-                        "must be able to locate default model at path {0}".format(SUPERVISED_MODEL_FILENAME))
-
         self.model = SupervisedModel(filename=SUPERVISED_MODEL_FILENAME)
 
     def test_predict(self):
