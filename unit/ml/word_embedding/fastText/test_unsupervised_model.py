@@ -1,7 +1,6 @@
 """
 Tests our UnsupervisedModel class
 """
-from os.path import isfile
 from unittest import TestCase
 
 from config.config_ml import UNSUPERVISED_MODEL_FILENAME
@@ -14,9 +13,6 @@ class SupervisedModelTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        self.assertTrue(isfile(UNSUPERVISED_MODEL_FILENAME),
-                        "must be able to locate default model at path {0}".format(UNSUPERVISED_MODEL_FILENAME))
-
         self.model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
 
     def test_similar_by_word(self):

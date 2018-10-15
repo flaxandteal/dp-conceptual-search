@@ -5,10 +5,13 @@ from typing import Generator, List
 from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
 # Constant
-_letters = 'abcdefghijklmnopqrstuvwxyz'
+LETTERS = 'abcdefghijklmnopqrstuvwxyz'
 
 
-class SpeckCheckSuggestion(object):
+class SpellCheckSuggestion(object):
+    """
+    Useful class for defining a single suggested spelling correction
+    """
     def __init__(self, input_token, correction, probability):
         self.input_token = input_token
         self.correction = correction
@@ -34,7 +37,7 @@ class SpellChecker(object):
     def words(self) -> dict:
         return self.model.words
 
-    def correct_terms(self, terms) -> List[SpeckCheckSuggestion]:
+    def correct_terms(self, terms) -> List[SpellCheckSuggestion]:
         """
         Returns a list of potential corrections, with their probabilities
         :param terms:
@@ -46,14 +49,14 @@ class SpellChecker(object):
             terms = [terms]
         for term in terms:
             correction = self.correction(term)
-            P = self.probability(correction)
-            if P > 0:
-                result.append(SpeckCheckSuggestion(term, correction, P))
+            probability = self.probability(correction)
+            if probability != 0:
+                result.append(SpellCheckSuggestion(term, correction, probability))
         return result
 
     def probability(self, word) -> float:
         """
-        Probability of `word`.
+        Probability of `word` being the correct substitution.
         Returns 0 if the word isn't in the dictionary
         """
         if word not in self.words:
@@ -80,14 +83,14 @@ class SpellChecker(object):
     def edits1(self, word) -> set:
         """ All edits that are one edit away from `word`. """
         splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
-        # All words one deletion away from work
+        # All words one deletion away from word
         deletes = [left + right[1:] for left, right in splits if right]
         # All words one transposition away from word
         transposes = [left + right[1] + right[0] + right[2:] for left, right in splits if len(right) > 1]
         # All words with one character replacement from word
-        replaces = [left + char + right[1:] for left, right in splits if right for char in _letters]
+        replaces = [left + char + right[1:] for left, right in splits if right for char in LETTERS]
         # All words one character insert away from word
-        inserts = [left + char + right for left, right in splits for char in _letters]
+        inserts = [left + char + right for left, right in splits for char in LETTERS]
         # Return set of all of the above
         return set(deletes + transposes + replaces + inserts)
 
