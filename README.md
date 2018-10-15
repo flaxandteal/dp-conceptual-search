@@ -22,6 +22,7 @@ dp-conceptual-search
 | USER_RECOMMENDATION_ENABLED  | false                     | Enable/disable mongoDB and user recommendation engine.
 | COLOURED_LOGGING_ENABLED     | false                     | Enable/disable coloured logging.
 | PRETTY_LOGGING               | false                     | Enable/disable JSON formatting for logging.
+| SEARCH_LOG_LEVEL             | INFO                      | Log level (INFO, DEBUG, or ERROR)
 
 # Install
 
@@ -42,23 +43,24 @@ will need to set the environment variable ```CONCEPTUAL_SEARCH_ENABLED=true``` a
 on disk. This repository comes with the [full word2vec embeddings model](word2vec/ons_supervised.vec) and a 
 *placeholder* [supervised model](supervised_models/ons_supervised.bin).
 
+# Swagger
+
+The swagger spec can be found in ```swagger.yaml```
+
 # Testing
 
 To run the unit tests, use: ```make test```.
 
-# Integration
-
-To run the integration tests, use  ```make integration-test```.
-
 # Structure
 
-The code is organised into three main modules:
+The code is organised into four main modules:
 
-* ```core```
+* ```search```
 * ```ons```
-* ```server```
+* ```app```
+* ```api```
 
-The ```core``` module implements common functionality for search, working with mongoDB, 
+The ```search``` module implements common functionality for search, working with mongoDB, 
 loading (un)supervised word embedding modules, spell checking, and user / session tracking. The core recommendation
 engine is also implemented here, and is responsible for updating user session vectors using the supplied models.
 
@@ -79,8 +81,7 @@ indexed embedding vectors (see ```ons/search/conceptual/queries.py``` and ```ons
 As such, all the core logic for pagination, field highlighting, aggregations, sorting and type filtering need only be implemented once
 in ```ons/search/search_engine.AbstractSearchClient```.
 
-Finally, the ```server``` module hosts the ```sanic``` asynchronous HTTP server and all routes. Details of which routes are
-registered and various app configurations can be found in ```server/app.py```.
+Finally, the ```app``` and ```api``` modules host the ```sanic``` asynchronous HTTP server and all routes. Details of which routes are registered and various app configurations can be found in ```app/app.py```.
 
 ### Licence
 

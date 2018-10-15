@@ -1,0 +1,3 @@
+pygments
+structlog
+python-json-logger
