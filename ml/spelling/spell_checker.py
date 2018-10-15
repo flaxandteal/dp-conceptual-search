@@ -81,7 +81,7 @@ class SpellChecker(object):
         return set(w for w in words if w in self.words)
 
     def single_edit_candidates(self, word) -> set:
-        """ All edits that are one edit away from `word`. """
+        """ All candidate words that are one edit away from `word`. """
         splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
         # All words one deletion away from word
         deletes = [left + right[1:] for left, right in splits if right]
@@ -95,5 +95,5 @@ class SpellChecker(object):
         return set(deletes + transposes + replaces + inserts)
 
     def double_edit_candidates(self, word) -> Generator:
-        """ All edits that are two edits away from `word`. """
+        """ All candidate words that are two edits away from `word`. """
         return (e2 for e1 in self.single_edit_candidates(word) for e2 in self.single_edit_candidates(e1))
