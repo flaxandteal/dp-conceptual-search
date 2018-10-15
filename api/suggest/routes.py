@@ -5,6 +5,7 @@ from sanic import Blueprint
 
 from api.response import json
 from api.request import ONSRequest
+from api.log import logger
 from ml.spelling.spell_checker import SpellChecker
 
 suggest_blueprint = Blueprint('suggest', url_prefix='/suggest')
@@ -24,9 +25,14 @@ async def spell_check(request: ONSRequest):
 
     # Generate the tokens
     tokens = search_term.split()
+    if len(tokens) > 0:
+        # Get the result
+        result = spell_checker.correct_spelling(tokens)
 
-    # Get the result
-    result = spell_checker.correct_spelling(tokens)
+        # Return the json response
+        return json(request, result, 200)
 
-    # Return the json response
-    return json(request, result, 200)
+    # No input tokens - raise a 400 BAD_REQUEST
+    message = "Found no input tokens in query: %s" % search_term
+    logger.error(request, message)
+    return json(request, message, 400)

@@ -75,3 +75,17 @@ class SpellCheckTestCase(TestApp):
 
         # Make the request and assert a 400 BAD_REQUEST response
         request, response = self.get(target, 400)
+
+    def test_spell_check_no_tokens(self):
+        """
+        Tests that a 400 BAD_REQUEST is raised for a query with no input tokens (i.e whitespace)
+        :return:
+        """
+        params = {
+            "q": " ",
+        }
+        url_encoded_params = self.url_encode(params)
+        target = "/suggest/spelling?{0}".format(url_encoded_params)
+
+        # Make the request and assert a 400 BAD_REQUEST response
+        request, response = self.get(target, 400)
