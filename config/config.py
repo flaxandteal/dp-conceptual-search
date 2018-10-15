@@ -31,15 +31,6 @@ ELASTIC_SEARCH_CONFIG.server = os.environ.get("ELASTIC_SEARCH_SERVER", "http://l
 ELASTIC_SEARCH_CONFIG.async_enabled = bool_env("ELASTIC_SEARCH_ASYNC_ENABLED", True)
 ELASTIC_SEARCH_CONFIG.timeout = int(os.environ.get("ELASTIC_SEARCH_TIMEOUT", 1000))
 
-# mongoDB
-
-MONGO_CONFIG = Section("mongoDB specific config")
-MONGO_CONFIG.db = os.environ.get('MONGO_SEARCH_DATABASE', 'local')
-MONGO_CONFIG.host = os.environ.get("MONGO_DEFAULT_HOST", "localhost")
-MONGO_CONFIG.port = os.environ.get("MONGO_DEFAULT_PORT", 27017)
-MONGO_CONFIG.bind_addr = 'mongodb://{host}:{port}'.format(
-    host=MONGO_CONFIG.host, port=MONGO_CONFIG.port)
-
 # Search
 
 SEARCH_CONFIG = Section("Search specific config")
