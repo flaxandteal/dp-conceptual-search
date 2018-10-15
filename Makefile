@@ -13,13 +13,10 @@ test_requirements:
 
 fastText:
 	pip install Cython==0.27.3 pybind11==2.2.3
-	cd lib/fastText && python setup.py install
+	pip install fasttextmirror==0.8.22
 
 test: test_requirements
 	SEARCH_CONFIG=testing python manager.py test
 
 pep8:
 	autopep8 --in-place --aggressive --aggressive -r ./
-
-clean:
-	cd lib/fastText && python setup.py clean --all
