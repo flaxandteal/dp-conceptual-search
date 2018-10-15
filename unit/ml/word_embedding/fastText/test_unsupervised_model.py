@@ -1,12 +1,10 @@
 """
 Tests our UnsupervisedModel class
 """
-from os.path import isfile
 from unittest import TestCase
-from gensim.models import KeyedVectors
 
+from config.config_ml import UNSUPERVISED_MODEL_FILENAME
 from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
-from config.config_core import ML_DATA_DIR, UNSUPERVISED_MODELS_DIR, UNSUPERVISED_MODEL_NAME
 
 
 class SupervisedModelTestCase(TestCase):
@@ -15,15 +13,7 @@ class SupervisedModelTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        fname = "{data_dir}/{model_dir}/{model_fname}".format(data_dir=ML_DATA_DIR, model_dir=UNSUPERVISED_MODELS_DIR,
-                                                              model_fname=UNSUPERVISED_MODEL_NAME)
-
-        if not isfile(fname):
-            raise FileNotFoundError("must be able to locate default model at path {0}".format(fname))
-
-        gensim_model = KeyedVectors.load_word2vec_format(fname)
-
-        self.model = UnsupervisedModel(gensim_model)
+        self.model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
 
     def test_similar_by_word(self):
         """
