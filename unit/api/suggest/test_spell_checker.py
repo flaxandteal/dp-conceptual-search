@@ -61,3 +61,17 @@ class SpellCheckTestCase(TestApp):
 
             self.assertGreater(suggestion['probability'], 0.0, "expected probability > 0, got {0}"
                                .format(suggestion['probability']))
+
+    def test_spell_check_empty_query(self):
+        """
+        Tests that a 400 BAD_REQUEST is raised for an empty query
+        :return:
+        """
+        params = {
+            "q": "",
+        }
+        url_encoded_params = self.url_encode(params)
+        target = "/suggest/spelling?{0}".format(url_encoded_params)
+
+        # Make the request and assert a 400 BAD_REQUEST response
+        request, response = self.get(target, 400)
