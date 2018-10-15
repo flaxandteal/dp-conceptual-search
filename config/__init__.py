@@ -1,7 +1,8 @@
 from config.config import *
 from config.section import Section
 
-CONFIG = Section("APP Config")
+CONFIG = Section("Global App Config")
+CONFIG.APP = APP_CONFIG
 CONFIG.API = API_CONFIG
 CONFIG.ML = ML_CONFIG
 CONFIG.ELASTIC_SEARCH = ELASTIC_SEARCH_CONFIG

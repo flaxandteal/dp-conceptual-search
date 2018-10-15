@@ -1,4 +1,22 @@
 import os
+import git
+from typing import Optional
+
+
+def git_sha() -> Optional[str]:
+    """
+    Returns the sha of the latest git commit
+    :return:
+    """
+    try:
+        repo = git.Repo(search_parent_directories=True)
+        sha = repo.head.object.hexsha
+
+        return sha
+    except Exception as e:
+        import logging
+        logging.error("Unable to get git commit sha", exc_info=e)
+    return None
 
 
 def bool_env(var_name, default=False):

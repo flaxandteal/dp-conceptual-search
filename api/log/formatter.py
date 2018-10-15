@@ -1,7 +1,7 @@
 """
 Add namespace to all log messages
 """
-from config import API_CONFIG, LOGGING_CONFIG
+from config import APP_CONFIG, LOGGING_CONFIG
 from dp.log.formatters import CustomJsonFormatter
 
 
@@ -12,4 +12,4 @@ class SearchJsonFormatter(CustomJsonFormatter):
 
     def add_fields(self, log_record, record, message_dict):
         super(SearchJsonFormatter, self).add_fields(log_record, record, message_dict)
-        log_record['namespace'] = API_CONFIG.title
+        log_record['namespace'] = APP_CONFIG.title
