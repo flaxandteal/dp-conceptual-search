@@ -1,5 +1,5 @@
 """
-Tests the suggest spell checker API
+Tests the spellcheck spell checker API
 """
 from unit.utils.test_app import TestApp
 
@@ -33,7 +33,7 @@ class SpellCheckTestCase(TestApp):
                 "q": sample_word,
             }
             url_encoded_params = self.url_encode(params)
-            target = "/suggest/spelling?{0}".format(url_encoded_params)
+            target = "/spellcheck?{0}".format(url_encoded_params)
 
             # Make the request
             request, response = self.get(target, 200)
@@ -71,7 +71,7 @@ class SpellCheckTestCase(TestApp):
             "q": "",
         }
         url_encoded_params = self.url_encode(params)
-        target = "/suggest/spelling?{0}".format(url_encoded_params)
+        target = "/spellcheck?{0}".format(url_encoded_params)
 
         # Make the request and assert a 400 BAD_REQUEST response
         request, response = self.get(target, 400)
@@ -85,7 +85,7 @@ class SpellCheckTestCase(TestApp):
             "q": " ",
         }
         url_encoded_params = self.url_encode(params)
-        target = "/suggest/spelling?{0}".format(url_encoded_params)
+        target = "/spellcheck?{0}".format(url_encoded_params)
 
         # Make the request and assert a 400 BAD_REQUEST response
         request, response = self.get(target, 400)

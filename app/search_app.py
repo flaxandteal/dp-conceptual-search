@@ -6,27 +6,30 @@ from sanic.log import logger
 
 from config.config_ml import UNSUPERVISED_MODEL_FILENAME
 
-from ml.word_embedding.fastText import UnsupervisedModel
 from ml.spelling.spell_checker import SpellChecker
+from ml.word_embedding.fastText import UnsupervisedModel
+
+from api.request.ons_request import ONSRequest
 
 from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
-class SanicSearch(Sanic):
+class SearchApp(Sanic):
     def __init__(self, *args, **kwargs):
-        from api.request.ons_request import ONSRequest
         # Initialise APP with custom ONSRequest class
-        super(SanicSearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
+        super(SearchApp, self).__init__(*args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
         self._elasticsearch = None
-        self._spell_checker = None
 
         # Initialise unsupervised model member
         self._unsupervised_model = None
 
+        # Initialise spell check member
+        self._spell_checker = None
+
         @self.listener("after_server_start")
-        async def init(app: SanicSearch, loop):
+        async def init(app: SearchApp, loop):
             """
             Initialise the ES client and ML models after api start (when the ioloop exists)
             :param app:
@@ -57,7 +60,7 @@ class SanicSearch(Sanic):
             logger.info("Initialised spell checker")
 
         @self.listener("after_server_stop")
-        async def shutdown(app: SanicSearch, loop):
+        async def shutdown(app: SearchApp, loop):
             """
             Trigger clean shutdown of ES client
             :param app:
@@ -87,4 +90,4 @@ class SanicSearch(Sanic):
         Returns the cached unsupervised model
         :return:
         """
-        return self.__unsupervised_model
+        return self._unsupervised_model

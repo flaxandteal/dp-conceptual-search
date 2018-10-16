@@ -1,17 +1,20 @@
 """
-This file contains all routes for the /suggest API
+This file contains all routes for the /spellcheck API
 """
 from sanic import Blueprint
 
 from api.response import json
 from api.request import ONSRequest
 from api.log import logger
+
+from app.search_app import SearchApp
+
 from ml.spelling.spell_checker import SpellChecker
 
-suggest_blueprint = Blueprint('suggest', url_prefix='/suggest')
+spell_check_blueprint = Blueprint('spellcheck', url_prefix='/spellcheck')
 
 
-@suggest_blueprint.route('/spelling', methods=['GET'], strict_slashes=True)
+@spell_check_blueprint.route('/', methods=['GET'], strict_slashes=False)
 async def spell_check(request: ONSRequest):
     """
     API for spell checking
@@ -21,7 +24,8 @@ async def spell_check(request: ONSRequest):
     search_term = request.get_search_term()
 
     # Get spell checker
-    spell_checker: SpellChecker = request.get_app().spell_checker
+    app: SearchApp = request.app
+    spell_checker: SpellChecker = app.spell_checker
 
     # Generate the tokens
     tokens = search_term.split()

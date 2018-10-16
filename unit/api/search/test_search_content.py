@@ -3,6 +3,11 @@ Tests the ONS content search API
 """
 from json import dumps
 from typing import List
+
+from unittest import mock
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
+from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+
 from unit.utils.test_app import TestApp
 
 from api.search.list_type import ListType
@@ -10,10 +15,10 @@ from api.search.list_type import ListType
 from search.search_type import SearchType
 
 from ons.search.index import Index
-from ons.search.queries import content_query, function_score_content_query
-from ons.search.content_type import AvailableContentTypes
 from ons.search.sort_fields import query_sort, SortField
+from ons.search.content_type import AvailableContentTypes
 from ons.search.fields import get_highlighted_fields, Field
+from ons.search.queries import content_query, function_score_content_query
 
 
 class SearchContentApiTestCase(TestApp):
@@ -65,6 +70,7 @@ class SearchContentApiTestCase(TestApp):
 
         return highlight_query
 
+    @mock.patch.object(ElasticsearchClientService, '_init_client', mock_search_client)
     def test_content_query_search_called(self):
         """
         Tests that the search method is called properly by the api for a content query

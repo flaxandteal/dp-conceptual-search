@@ -10,7 +10,6 @@ from ons.search.paginator import RESULTS_PER_PAGE
 from ons.search.type_filter import TypeFilter, AvailableTypeFilters
 from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
 
-from app.sanic_search import SanicSearch
 from api.search.list_type import ListType
 
 
@@ -39,13 +38,6 @@ class ONSRequest(Request):
         else:
             # Generate a random uuid4
             self.request_id = str(uuid4())
-
-    def get_app(self) -> SanicSearch:
-        """
-        Returns the Sanic app with type hinting
-        :return:
-        """
-        return self.app
 
     def get_search_term(self) -> str:
         """

@@ -2,6 +2,11 @@
 Tests the ONS featured result search API
 """
 from json import dumps
+
+from unittest import mock
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
+from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+
 from unit.utils.test_app import TestApp
 
 from api.search.list_type import ListType
@@ -43,6 +48,7 @@ class SearchFeaturedApiTestCase(TestApp):
         """
         return "Zuul"
 
+    @mock.patch.object(ElasticsearchClientService, '_init_client', mock_search_client)
     def test_featured_query_search_called(self):
         """
         Tests that the search method is called properly by the api for a featured result query

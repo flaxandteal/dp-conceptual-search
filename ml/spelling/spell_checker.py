@@ -27,7 +27,7 @@ class SpellCheckSuggestion(object):
 
 class SpellChecker(object):
     """
-    Uses word embedding models to check the spelling of words and suggest corrections.
+    Uses word embedding models to check the spelling of words and spellcheck corrections.
     """
 
     def __init__(self, model: UnsupervisedModel):
