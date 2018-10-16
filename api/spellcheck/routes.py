@@ -38,5 +38,5 @@ async def spell_check(request: ONSRequest):
 
     # No input tokens - raise a 400 BAD_REQUEST
     message = "Found no input tokens in query: %s" % search_term
-    logger.error(request, message)
+    logger.error(request.request_id, message)
     return json(request, message, 400)

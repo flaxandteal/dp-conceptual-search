@@ -3,10 +3,8 @@ Custom logger class for API routes which wraps the Sanic logger and injects addi
 """
 from sanic.log import logger
 
-from api.request.ons_request import ONSRequest
 
-
-def _log(level: str, request: ONSRequest, msg: str, *args, **kwargs):
+def _log(level: str, context: str, msg: str, *args, **kwargs):
     """
     Log the given message with additional info from the request
     :param level:
@@ -24,7 +22,7 @@ def _log(level: str, request: ONSRequest, msg: str, *args, **kwargs):
             logger.error("Incorrect usage of logger: argument 'extra' must be instanceof dict")
 
         kwargs['extra'] = {
-            ONSRequest.request_id_log_key: request.request_id,
+            "context": context,
             **kwargs['extra']
         }
         fn(msg, *args, **kwargs)
@@ -32,61 +30,61 @@ def _log(level: str, request: ONSRequest, msg: str, *args, **kwargs):
         logger.error("Unknown log level: '{0}'".format(level))
 
 
-def info(request: ONSRequest, msg: str, *args, **kwargs):
+def info(context: str, msg: str, *args, **kwargs):
     """
     Log at INFO level
-    :param request:
+    :param context:
     :param msg:
     :param args:
     :param kwargs:
     :return:
     """
-    _log('info', request, msg, *args, **kwargs)
+    _log('info', context, msg, *args, **kwargs)
 
 
-def debug(request: ONSRequest, msg: str, *args, **kwargs):
+def debug(context: str, msg: str, *args, **kwargs):
     """
     Log at DEBUG level
-    :param request:
+    :param context:
     :param msg:
     :param args:
     :param kwargs:
     :return:
     """
-    _log('debug', request, msg, *args, **kwargs)
+    _log('debug', context, msg, *args, **kwargs)
 
 
-def error(request: ONSRequest, msg: str, *args, **kwargs):
+def error(context: str, msg: str, *args, **kwargs):
     """
     Log at ERROR level
-    :param request:
+    :param context:
     :param msg:
     :param args:
     :param kwargs:
     :return:
     """
-    _log('error', request, msg, *args, **kwargs)
+    _log('error', context, msg, *args, **kwargs)
 
 
-def warning(request: ONSRequest, msg: str, *args, **kwargs):
+def warning(context: str, msg: str, *args, **kwargs):
     """
     Log at WARN level
-    :param request:
+    :param context:
     :param msg:
     :param args:
     :param kwargs:
     :return:
     """
-    _log('warning', request, msg, *args, **kwargs)
+    _log('warning', context, msg, *args, **kwargs)
 
 
-def warn(request: ONSRequest, msg: str, *args, **kwargs):
+def warn(context: str, msg: str, *args, **kwargs):
     """
     Shorthand for warning
-    :param request:
+    :param context:
     :param msg:
     :param args:
     :param kwargs:
     :return:
     """
-    warning(request, msg, *args, **kwargs)
+    warning(context, msg, *args, **kwargs)
