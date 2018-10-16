@@ -10,7 +10,7 @@ from ons.search.paginator import RESULTS_PER_PAGE
 from ons.search.type_filter import TypeFilter, AvailableTypeFilters
 from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
 
-from app.sanic_search import SanicSearch
+from api.log import logger
 from api.search.list_type import ListType
 
 
@@ -18,8 +18,6 @@ class ONSRequest(Request):
     """
     Custom ONS request class which implements some useful methods for request parsing
     """
-
-    request_id_log_key = "context"
     request_id_header = "X-Request-Id"
 
     def __init__(self, *args, **kwargs):
@@ -40,13 +38,6 @@ class ONSRequest(Request):
             # Generate a random uuid4
             self.request_id = str(uuid4())
 
-    def get_app(self) -> SanicSearch:
-        """
-        Returns the Sanic app with type hinting
-        :return:
-        """
-        return self.app
-
     def get_search_term(self) -> str:
         """
         Parses the request to extract a search term
@@ -54,8 +45,7 @@ class ONSRequest(Request):
         """
         search_term = self.args.get("q", None)
         if search_term is None:
-            from api.log import logger
-            logger.error(self, "Search term not specified", extra={"status": 400})
+            logger.error(self.request_id, "Search term not specified", extra={"status": 400})
             raise InvalidUsage("Search term not specified")
         return search_term
 
@@ -107,10 +97,8 @@ class ONSRequest(Request):
                     return type_filters
                 except UnknownTypeFilter as e:
                     # Import logger here to prevent circular dependency on module import
-                    from api.log import logger
-
                     message = "Received unknown type filter: '{0}'".format(e.unknown_type_filter)
-                    logger.error(self, message, exc_info=e)
+                    logger.error(self.request_id, message, exc_info=e)
                     raise InvalidUsage(message)
 
         return list_type.to_type_filters()
@@ -127,8 +115,6 @@ class ONSRequest(Request):
         else:
             # Raise InvalidUsage (400) and log error
             # Import logger here to prevent circular dependency on module import
-            from api.log import logger
-
             message = "Invalid request body whilst trying to parse for Elasticsearch query"
-            logger.error(self, message, extra={"body": body})
+            logger.error(self.request_id, message, extra={"body": body})
             raise InvalidUsage(message)

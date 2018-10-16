@@ -6,7 +6,7 @@ from inspect import isawaitable
 
 from elasticsearch import Elasticsearch
 
-from app.sanic_search import SanicSearch
+from app.search_app import SearchApp
 
 from api.log import logger
 from api.response import json
@@ -23,7 +23,7 @@ async def health_check(request: ONSRequest):
     :return:
     """
     # Ping elasticsearch to get cluster health
-    app: SanicSearch = request.get_app()
+    app: SearchApp = request.app
 
     client: Elasticsearch = app.elasticsearch.client
 
@@ -33,12 +33,13 @@ async def health_check(request: ONSRequest):
         if isawaitable(health):
             health = await health
 
-        body = {
-            "elasticsearch": health
-        }
-        return json(request, body, 200)
+        code = 200 if 'status' in health and health['status'] in ['yellow', 'green'] else 500
+
+        if code != 200:
+            logger.error(request.request_id, "Healthcheck results in non-200 response", extra={"health": health})
+        return json(request, health, code)
     except Exception as e:
-        logger.error(request, "Unable to get Elasticsearch cluster health", exc_info=e)
+        logger.error(request.request_id, "Unable to get Elasticsearch cluster health", exc_info=e)
         body = {
             "elasticsearch": "unavailable"
         }

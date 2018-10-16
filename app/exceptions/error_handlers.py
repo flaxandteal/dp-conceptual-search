@@ -5,7 +5,7 @@ import sanic.exceptions
 from sanic.response import json
 from sanic.log import logger as sanic_logger
 
-from app.sanic_search import SanicSearch
+from app.search_app import SearchApp
 from api.log import logger
 from api.request import ONSRequest
 
@@ -13,7 +13,7 @@ from api.request import ONSRequest
 class ErrorHandlers(object):
 
     @staticmethod
-    def register(app: SanicSearch):
+    def register(app: SearchApp):
         # Explicitly handle RequestTimeouts -> These are logged out as Errors by default (unwanted)
         @app.exception(sanic.exceptions.RequestTimeout)
         def timeout(request: ONSRequest, exception: sanic.exceptions.SanicException):

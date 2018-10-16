@@ -4,6 +4,10 @@ Tests the ONS proxy search API
 from json import dumps
 from unit.utils.test_app import TestApp
 
+from unittest import mock
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
+from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+
 from ons.search.index import Index
 
 
@@ -28,6 +32,7 @@ class SearchProxyApiTestCase(TestApp):
 
         return from_start, current_page, size
 
+    @mock.patch.object(ElasticsearchClientService, '_init_client', mock_search_client)
     def test_proxy_api_raises_400(self):
         """
         Tests that the proxy search API raises a 400 when no query body is specified (or the 'query' key doesn't exist)
@@ -62,6 +67,7 @@ class SearchProxyApiTestCase(TestApp):
         # Make the request
         request, response = self.post(target, 400, data=dumps(post_params))
 
+    @mock.patch.object(ElasticsearchClientService, '_init_client', mock_search_client)
     def test_proxy_query_search_called(self):
         """
         Tests that the search method is called properly by the api for a proxy query

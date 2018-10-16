@@ -3,6 +3,6 @@ FROM python:3.6
 COPY . /dp-conceptual-search
 WORKDIR /dp-conceptual-search
 
-RUN make build clean
+RUN make build
 
 CMD python manager.py

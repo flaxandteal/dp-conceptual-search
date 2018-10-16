@@ -5,10 +5,13 @@ from typing import Generator, List
 from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
 # Constant
-_letters = 'abcdefghijklmnopqrstuvwxyz'
+LETTERS = 'abcdefghijklmnopqrstuvwxyz'
 
 
-class SpeckCheckSuggestion(object):
+class SpellCheckSuggestion(object):
+    """
+    Useful class for defining a single suggested spelling correction
+    """
     def __init__(self, input_token, correction, probability):
         self.input_token = input_token
         self.correction = correction
@@ -24,7 +27,7 @@ class SpeckCheckSuggestion(object):
 
 class SpellChecker(object):
     """
-    Uses word embedding models to check the spelling of words and suggest corrections.
+    Uses word embedding models to check the spelling of words and suggested corrections.
     """
 
     def __init__(self, model: UnsupervisedModel):
@@ -34,9 +37,9 @@ class SpellChecker(object):
     def words(self) -> dict:
         return self.model.words
 
-    def correct_terms(self, terms) -> List[SpeckCheckSuggestion]:
+    def correct_spelling(self, terms) -> List[SpellCheckSuggestion]:
         """
-        Returns a list of potential corrections, with their probabilities
+        Returns a list of potential (best candidate) corrections, with their probabilities.
         :param terms:
         :return:
         """
@@ -46,14 +49,14 @@ class SpellChecker(object):
             terms = [terms]
         for term in terms:
             correction = self.correction(term)
-            P = self.probability(correction)
-            if P > 0:
-                result.append(SpeckCheckSuggestion(term, correction, P))
+            probability = self.probability(correction)
+            if probability != 0:
+                result.append(SpellCheckSuggestion(term, correction, probability))
         return result
 
     def probability(self, word) -> float:
         """
-        Probability of `word`.
+        Probability of `word` being the correct substitution.
         Returns 0 if the word isn't in the dictionary
         """
         if word not in self.words:
@@ -70,27 +73,27 @@ class SpellChecker(object):
         """ Generate possible spelling corrections for word. """
         return self.known(
             [word]) or self.known(
-            self.edits1(word)) or self.known(
-            self.edits2(word)) or [word]
+            self.single_edit_candidates(word)) or self.known(
+            self.double_edit_candidates(word)) or [word]
 
     def known(self, words) -> set:
-        """ The subset of `words` that appear in the dictionary of WORDS. """
+        """ The subset of `words` that appear in the dictionary. """
         return set(w for w in words if w in self.words)
 
-    def edits1(self, word) -> set:
-        """ All edits that are one edit away from `word`. """
+    def single_edit_candidates(self, word) -> set:
+        """ All candidate words that are one edit away from `word`. """
         splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
-        # All words one deletion away from work
+        # All words one deletion away from word
         deletes = [left + right[1:] for left, right in splits if right]
         # All words one transposition away from word
         transposes = [left + right[1] + right[0] + right[2:] for left, right in splits if len(right) > 1]
         # All words with one character replacement from word
-        replaces = [left + char + right[1:] for left, right in splits if right for char in _letters]
+        replaces = [left + char + right[1:] for left, right in splits if right for char in LETTERS]
         # All words one character insert away from word
-        inserts = [left + char + right for left, right in splits for char in _letters]
+        inserts = [left + char + right for left, right in splits for char in LETTERS]
         # Return set of all of the above
         return set(deletes + transposes + replaces + inserts)
 
-    def edits2(self, word) -> Generator:
-        """ All edits that are two edits away from `word`. """
-        return (e2 for e1 in self.edits1(word) for e2 in self.edits1(e1))
+    def double_edit_candidates(self, word) -> Generator:
+        """ All candidate words that are two edits away from `word`. """
+        return (e2 for e1 in self.single_edit_candidates(word) for e2 in self.single_edit_candidates(e1))

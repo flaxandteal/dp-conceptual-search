@@ -12,7 +12,7 @@ host: localhost:5000
 tags:
   - name: "search"
   - name: "conceptual_search"
-  - name: "suggest"
+  - name: "spellcheck"
   - name: "healthcheck"
   - name: "users"
   - name: "sessions"
@@ -202,7 +202,7 @@ paths:
   /suggest/spelling:
     get:
       tags:
-        - suggest
+        - spellcheck
       summary: "Query the spell checker API"
       description: "Query the spell checker API"
       parameters:
