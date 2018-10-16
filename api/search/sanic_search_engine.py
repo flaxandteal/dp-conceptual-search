@@ -20,11 +20,11 @@ from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilte
 
 from api.request.ons_request import ONSRequest
 from api.search.list_type import ListType
-from app.sanic_search import SanicSearch
+from app.search_app import SearchApp
 
 
 class SanicSearchEngine(object):
-    def __init__(self, app: SanicSearch, search_engine_cls: ClassVar[AbstractSearchEngine], index: Index):
+    def __init__(self, app: SearchApp, search_engine_cls: ClassVar[AbstractSearchEngine], index: Index):
         """
         Helper class for working with abstract search engine instances
         :param app:
@@ -108,7 +108,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.departments_query(search_term, page, page_size).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform departments query request"
-            logger.error(request, message, e)
+            logger.error(request, message, exc_info=e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_departments_query_search_result(page, page_size)
@@ -145,7 +145,7 @@ class SanicSearchEngine(object):
                                                                type_filters=type_filters).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform content query request"
-            logger.error(request, message, e)
+            logger.error(request, message, exc_info=e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
@@ -168,7 +168,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.type_counts_query(search_term).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
-            logger.error(request, message, e)
+            logger.error(request, message, exc_info=e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_type_counts_query_search_result()
@@ -190,7 +190,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.featured_result_query(search_term).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform featured result query request"
-            logger.error(request, message, e)
+            logger.error(request, message, exc_info=e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_featured_result_query_search_result()

@@ -6,23 +6,27 @@ import unittest
 from urllib import parse as urllib_parse
 
 from app.app import create_app
+from app.search_app import SearchApp
+
 from api.request.ons_request import ONSRequest
-from app.sanic_search import SanicSearch
 
 
 class TestApp(unittest.TestCase):
+
     def setUp(self):
         """
         Initialises the Sanic app and test client
         :return:
         """
-        self._app: SanicSearch = create_app()
+        super(TestApp, self).setUp()
+
+        self._app: SearchApp = create_app()
         self._client = self._app.test_client
 
     @property
     def mock_client(self):
         """
-        Returns a handle on the mock Elasticsearch client
+        Returns a handle on the mock client object
         :return:
         """
         return self._app.elasticsearch.client

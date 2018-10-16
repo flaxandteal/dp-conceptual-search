@@ -1,11 +1,17 @@
 import asyncio
+from unittest import TestCase
 
 from search.client.search_client import SearchClient
 
-from unit.elasticsearch.elasticsearch_test_case import ElasticsearchTestCase
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 
-class SearchClientTestCase(ElasticsearchTestCase):
+class SearchClientTestCase(TestCase):
+
+    def setUp(self):
+        super(SearchClientTestCase, self).setUp()
+
+        self.mock_client = mock_search_client()
 
     @property
     def get_body(self):

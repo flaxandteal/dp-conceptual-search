@@ -1,7 +1,6 @@
 """
 Tests our SupervisedModel class
 """
-from os.path import isfile
 from unittest import TestCase
 
 from config.config_ml import SUPERVISED_MODEL_FILENAME

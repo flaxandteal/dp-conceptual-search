@@ -5,6 +5,10 @@ from json import dumps
 from typing import List
 from unit.utils.test_app import TestApp
 
+from unittest import mock
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
+from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+
 from api.search.list_type import ListType
 
 from search.search_type import SearchType
@@ -45,6 +49,7 @@ class SearchTypeCountsApiTestCase(TestApp):
         """
         return "Zuul"
 
+    @mock.patch.object(ElasticsearchClientService, '_init_client', mock_search_client)
     def test_type_counts_query_search_called(self):
         """
         Tests that the search method is called properly by the api for a type counts query

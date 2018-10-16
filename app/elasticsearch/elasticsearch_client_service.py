@@ -1,8 +1,6 @@
 """
 Parses config options and sets up Elasticsearch client
 """
-from sanic.log import logger
-
 from sanic import Sanic
 from elasticsearch import Elasticsearch
 
@@ -13,49 +11,27 @@ class ElasticsearchClientService(object):
         self.app = app
         self.loop = loop
 
-        self._client = None
-        self._init_client()
+        self.client: Elasticsearch = self._init_client()
 
-    def _mock_client(self):
-        """
-        Mocks an Elasticsearch client for testing
-        :return:
-        """
-        from unittest.mock import MagicMock
-        from unit.mocks.mock_es_client import MockElasticsearchClient
-        from unit.elasticsearch.elasticsearch_test_case import ElasticsearchTestCase
-
-        test_utils = ElasticsearchTestCase()
-
-        response = test_utils.mock_response
-
-        # Mock the search client
-        self._client = MockElasticsearchClient()
-        self._client.search = MagicMock(return_value=response)
-
-    def _init_client(self):
+    def _init_client(self) -> Elasticsearch:
         """
         Initialises the correct Elasticsearch client for the Sanic app
         :return:
         """
-        if self.app.config.get("TESTING", False):
-            logger.warning("Test environment active, using MockElasticSearch client")
-            self._mock_client()
+        es_host = self.elasticsearch_host
+
+        if self.elasticsearch_async_enabled:
+            from elasticsearch_async import AsyncElasticsearch
+
+            client = AsyncElasticsearch(
+                es_host, loop=self.loop, timeout=self.elasticsearch_timeout
+            )
         else:
-            es_host = self.elasticsearch_host
+            client = Elasticsearch(
+                es_host, timeout=self.elasticsearch_timeout
+            )
 
-            if self.elasticsearch_async_enabled:
-                from elasticsearch_async import AsyncElasticsearch
-
-                client = AsyncElasticsearch(
-                    es_host, loop=self.loop, timeout=self.elasticsearch_timeout
-                )
-            else:
-                client = Elasticsearch(
-                    es_host, timeout=self.elasticsearch_timeout
-                )
-
-            self._client = client
+        return client
 
     @property
     def elasticsearch_host(self) -> str:
@@ -81,17 +57,6 @@ class ElasticsearchClientService(object):
         """
         return int(self.app.config.get("ELASTIC_SEARCH_TIMEOUT"))
 
-    @property
-    def client(self) -> Elasticsearch:
-        """
-        Parse config options and return correct client
-        :return:
-        """
-        if self._client is None:
-            self._init_client()
-
-        return self._client
-
     async def shutdown(self):
         """
         Triggers clean shutdown of async client
@@ -101,10 +66,10 @@ class ElasticsearchClientService(object):
 
         from elasticsearch_async import AsyncElasticsearch
 
-        if isinstance(self._client, AsyncElasticsearch):
+        if isinstance(self.client, AsyncElasticsearch):
             logging.info("Triggering clean shutdown of async Elasticsearch client")
             # Manually shutdown ES connections (await if async)
-            await self._client.transport.close()
+            await self.client.transport.close()
             logging.info("Shutdown complete")
         else:
             logging.info("Elasticsearch client is synchronous, no shutdown tasks")
