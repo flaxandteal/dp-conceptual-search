@@ -36,7 +36,7 @@ async def health_check(request: ONSRequest):
         code = 200 if 'status' in health and health['status'] in ['yellow', 'green'] else 500
 
         if code != 200:
-            logger.error(request.request_id, "Healthcheck results in non-200 respons", extra={"health": health})
+            logger.error(request.request_id, "Healthcheck results in non-200 response", extra={"health": health})
         return json(request, health, code)
     except Exception as e:
         logger.error(request.request_id, "Unable to get Elasticsearch cluster health", exc_info=e)
