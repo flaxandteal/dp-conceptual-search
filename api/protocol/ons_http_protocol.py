@@ -24,7 +24,7 @@ class ONSHttpProtocol(HttpProtocol):
             if self.request is not None:
                 if isinstance(self.request, ONSRequest):
                     # Add request ID to logs
-                    extra[ONSRequest.request_id_log_key] = self.request.request_id
+                    extra["context"] = self.request.request_id
                 if self.request.ip:
                     extra['host'] = '{0}:{1}'.format(self.request.ip,
                                                      self.request.port)
