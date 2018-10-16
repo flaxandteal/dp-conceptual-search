@@ -229,9 +229,7 @@ paths:
         200:
           description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/HealthCheck'
+            $ref: '#/definitions/HealthCheck'
 
   /users/create:
     put:
@@ -546,16 +544,71 @@ definitions:
   HealthCheck:
     type: object
     properties:
-      service:
+      elasticsearch:
+        $ref: '#/definitions/ElasticsearchHealth'
+  ElasticsearchHealth:
+    type: object
+    properties:
+      cluster_name:
         type: string
-        description: "Service for which healthcheck was carried out"
+        description: "Name of the Elasticsearch cluster"
         example: "elasticsearch"
-      health:
+      status:
         type: string
-        description: "Availability of service"
-        enum:
-          - "available"
-          - "unavailable"
+        description: "Status of the cluster"
+        example: "yellow"
+      timed_out:
+        type: boolean
+        description: "Whether the request timed out"
+        example: false
+      number_of_nodes:
+        type: integer
+        description: "Number of nodes in cluster"
+        example: 1
+      number_of_data_nodes:
+        type: integer
+        description: "Number of data nodes in the cluster"
+        example: 1
+      active_primary_shards:
+        type: integer
+        description: "Number of active primary shards"
+        example: 9
+      active_shards:
+        type: integer
+        description: "Total number of active shards"
+        example: 9
+      relocating_shards:
+        type: integer
+        description: "Number of shards in relocating state"
+        example: 0
+      initializing_shards:
+        type: integer
+        description: "Number of shards in initializing state"
+        example: 0
+      unassigned_shards:
+        type: integer
+        description: "Number of unassaigned shards"
+        example: 5
+      delayed_unassigned_shards:
+        type: integer
+        description: "Number of nodes delayed in being assigned"
+        example: 0
+      number_of_pending_tasks:
+        type: integer
+        description: "Number of pending tasks"
+        example: 0
+      number_of_in_flight_fetch:
+        type: integer
+        description: "Number of shards in flight fetch"
+        example: 0
+      task_max_waiting_in_queue_millis:
+        type: integer
+        description: "Max task queue waiting time in ms"
+        example: 0
+      active_shards_percent_as_number:
+        type: number
+        description: "Number of active shards as a percentage of the total"
+        example: 64.2857142857
   User:
     type: object
     properties:
