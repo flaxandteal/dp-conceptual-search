@@ -37,7 +37,7 @@ class SpellChecker(object):
     def words(self) -> dict:
         return self.model.words
 
-    def correct_spelling(self, terms) -> List[SpellCheckSuggestion]:
+    def correct_spelling(self, terms: List[str]) -> List[SpellCheckSuggestion]:
         """
         Returns a list of potential (best candidate) corrections, with their probabilities.
         :param terms:
@@ -45,13 +45,12 @@ class SpellChecker(object):
         """
         result = []
 
-        if not isinstance(terms, list):
-            terms = [terms]
         for term in terms:
             correction = self.correction(term)
-            probability = self.probability(correction)
-            if probability != 0:
-                result.append(SpellCheckSuggestion(term, correction, probability))
+            if correction.lower() != term.lower():
+                probability = self.probability(correction)
+                if probability != 0:
+                    result.append(SpellCheckSuggestion(term, correction, probability))
         return result
 
     def probability(self, word) -> float:
