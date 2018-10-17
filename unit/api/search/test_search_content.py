@@ -5,7 +5,7 @@ from json import dumps
 from typing import List
 
 from unittest import mock
-from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
 from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 from unit.utils.test_app import TestApp
@@ -22,6 +22,8 @@ from ons.search.queries import content_query, function_score_content_query
 
 
 class SearchContentApiTestCase(TestApp):
+
+    maxDiff = None
 
     @staticmethod
     def paginate():
@@ -144,3 +146,12 @@ class SearchContentApiTestCase(TestApp):
             # Assert search was called with correct arguments
             self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
                                                        search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+
+            data = response.json
+            results = data['results']
+
+            expected_hits_highlighted = mock_hits_highlighted()
+            self.assertEqual(results, expected_hits_highlighted, "returned hits should match expected")
+
+
+
