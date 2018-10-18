@@ -25,6 +25,7 @@ class DotDict(dict):
                 if isinstance(self["description"][parts[1]], list):
                     # Find the index of the element to replace then replace it
                     idx = self["description"][parts[1]].index(original_value)
+
                     self["description"][parts[1]][idx] = new_value
                 else:
                     self["description"][parts[1]] = new_value
@@ -45,7 +46,7 @@ class ONSResponse(Response):
         close_tag = "</{tag}>".format(tag=tag)
 
         hit: Hit
-        for hit in self.hits:
+        for i, hit in enumerate(self.hits):
             hit_dict = DotDict(hit.to_dict())
             if hasattr(hit, "meta") and isinstance(hit.meta, HitMeta):
                 hit_meta: HitMeta = hit.meta
@@ -60,22 +61,16 @@ class ONSResponse(Response):
                     # Iterate over highlighted fields
                     for highlight_field in highlight_dict:
                         # Replace the _source field with the highlighted fragment, provided there is only one
-                        if len(highlight_dict[highlight_field]) == 1:
-                            highlighted_value = highlight_dict[highlight_field][0]
-
+                        for highlighted_value in highlight_dict[highlight_field]:
                             if isinstance(highlighted_value, str) and open_tag in highlighted_value \
                                     and close_tag in highlighted_value:
                                 # Get the original value
                                 idx_start = highlighted_value.index(open_tag) + len(open_tag)
                                 idx_end = highlighted_value.index(close_tag)
-                                original_value = highlighted_value[idx_start:idx_end]
+                                original_value = highlighted_value[idx_start:idx_end].strip()
 
                                 # Overwrite the _source field
                                 hit_dict.set_value(highlight_field, original_value, highlighted_value)
-                        else:
-                            message = "Got multiple highlighted fragments, cowardly refusing to overwrite _source for " \
-                                      "field '%s', fragments: %s" % (highlight_field, highlight_dict[highlight_field])
-                            logging.debug(message)
             # Add the hit to the list
             highlighted_hits.append(hit_dict)
 
