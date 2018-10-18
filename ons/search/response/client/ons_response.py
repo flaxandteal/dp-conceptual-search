@@ -92,7 +92,7 @@ class ONSResponse(Response):
         close_tag = "</{tag}>".format(tag=tag)
 
         hit: Hit
-        for i, hit in enumerate(self.hits):
+        for hit in self.hits:
             hit_dict = DotDict(hit.to_dict())
             if hasattr(hit, "meta") and isinstance(hit.meta, HitMeta):
                 hit_meta: HitMeta = hit.meta
