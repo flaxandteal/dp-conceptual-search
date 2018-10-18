@@ -101,8 +101,11 @@ def mock_hits() -> list:
             "_source": {
                 "name": "Egon Spengler",
                 "occupation": "Ghostbuster",
-                "location": "New York City, New York"
-            }
+                "location": "New York City, New York",
+                "description": {
+                    "keywords": ["Test"]
+                }
+            },
         },
         {
             "_id": "test 2",
@@ -110,7 +113,10 @@ def mock_hits() -> list:
             "_source": {
                 "name": "Peter Venkman",
                 "occupation": "Ghostbuster",
-                "location": "New York City, New York"
+                "location": "New York City, New York",
+                "description.keywords": {
+                    "keywords": ["Test"]
+                }
             }
         },
         {
@@ -119,7 +125,52 @@ def mock_hits() -> list:
             "_source": {
                 "name": "Zuul",
                 "occupation": "Not a Ghostbuster",
-                "location": "New York City, New York"
+                "location": "New York City, New York",
+                "description": {
+                    "keywords": ["Zuul", "Test"]
+                }
+            },
+            "highlight": {
+                "description.keywords": [
+                    "<strong>Zuul</strong>"
+                ]
+            }
+        }
+    ]
+    return hits
+
+
+def mock_hits_highlighted() -> list:
+    """
+    Returns the list of mock hits to be used for tests
+    :return:
+    """
+    hits = [
+        {
+            "name": "Egon Spengler",
+            "occupation": "Ghostbuster",
+            "location": "New York City, New York",
+            "_type": "ghostbuster",
+            "description": {
+                "keywords": ["Test"]
+            }
+        },
+        {
+            "name": "Peter Venkman",
+            "occupation": "Ghostbuster",
+            "location": "New York City, New York",
+            "_type": "ghostbuster",
+            "description.keywords": {
+                "keywords": ["Test"]
+            }
+        },
+        {
+            "name": "Zuul",
+            "occupation": "Not a Ghostbuster",
+            "location": "New York City, New York",
+            "_type": "not_a_ghostbuster",
+            "description": {
+                "keywords": ["<strong>Zuul</strong>", "Test"]
             }
         }
     ]
