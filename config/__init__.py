@@ -1,5 +1,5 @@
 from config.config import *
-from config.section import Section
+from dp.config.section import Section
 
 CONFIG = Section("Global App Config")
 CONFIG.APP = APP_CONFIG

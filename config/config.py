@@ -1,7 +1,7 @@
 import os
 import logging
-from config.section import Section
-from config.utils import bool_env, git_sha
+from dp.config.section import Section
+from dp.config.utils import bool_env, git_sha
 
 # APP
 
