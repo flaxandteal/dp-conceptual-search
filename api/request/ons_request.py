@@ -7,8 +7,8 @@ from sanic.exceptions import InvalidUsage
 
 from ons.search.sort_fields import SortField
 from ons.search.paginator import RESULTS_PER_PAGE
+from ons.search.exceptions import UnknownTypeFilter
 from ons.search.type_filter import TypeFilter, AvailableTypeFilters
-from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
 
 from api.log import logger
 from api.search.list_type import ListType

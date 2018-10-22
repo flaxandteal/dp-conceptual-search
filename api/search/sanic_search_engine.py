@@ -16,7 +16,8 @@ from ons.search.type_filter import AvailableTypeFilters, TypeFilter
 from ons.search.response.search_result import SearchResult
 from ons.search.response.client.ons_response import ONSResponse
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
-from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
+
+from ons.search.exceptions import UnknownTypeFilter
 
 from api.request.ons_request import ONSRequest
 from api.search.list_type import ListType

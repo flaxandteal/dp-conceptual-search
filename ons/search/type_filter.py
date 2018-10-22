@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import List, Iterable
+from typing import List
 
 from ons.search.content_type import AvailableContentTypes
-from ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
+from ons.search.exceptions import UnknownTypeFilter
 
 
 class TypeFilter(object):
