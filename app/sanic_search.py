@@ -26,6 +26,9 @@ class SanicSearch(Sanic):
         # Create cache for ML models
         self._models = {}
 
+        # Set Logo to None
+        self.config.logo = None
+
         @self.listener("after_server_start")
         async def init(app: SanicSearch, loop):
             """

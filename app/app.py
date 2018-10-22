@@ -30,7 +30,6 @@ def create_app() -> SanicSearch:
     app = SanicSearch(log_config=log_config)
 
     logger.info("Using config:", extra={"config": CONFIG.to_dict()})
-    app.config.from_pyfile('config/config_sanic.py')
 
     # Register blueprints
     app.blueprint(search_blueprint)
