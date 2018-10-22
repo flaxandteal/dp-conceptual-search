@@ -1,36 +1,38 @@
 """
 This file defines our custom Sanic app class
 """
-from sanic.log import logger
-
 from sanic import Sanic
+from sanic.log import logger
 
 from config import CONFIG
 
-from app.ml.ml_models import Models
-from ml.word_embedding.fastText import UnsupervisedModel
 from ml.spelling.spell_checker import SpellChecker
+from ml.word_embedding.fastText import UnsupervisedModel
+
+from api.request.ons_request import ONSRequest
+
 from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
-class SanicSearch(Sanic):
+class SearchApp(Sanic):
     def __init__(self, *args, **kwargs):
-        from api.request.ons_request import ONSRequest
         # Initialise APP with custom ONSRequest class
-        super(SanicSearch, self).__init__(*args, request_class=ONSRequest, **kwargs)
+        super(SearchApp, self).__init__(*args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
         self._elasticsearch = None
-        self._spell_checker = None
 
-        # Create cache for ML models
-        self._models = {}
+        # Initialise unsupervised model member
+        self._unsupervised_model = None
+
+        # Initialise spell check member
+        self._spell_checker = None
 
         # Set Logo to None
         self.config.logo = None
 
         @self.listener("after_server_start")
-        async def init(app: SanicSearch, loop):
+        async def init(app: SearchApp, loop):
             """
             Initialise the ES client and ML models after api start (when the ioloop exists)
             :param app:
@@ -51,17 +53,17 @@ class SanicSearch(Sanic):
             logger.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
             # Now initialise the ML models essential to the APP
-            self._models[Models.ONS_UNSUPERVISED_MODEL] = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
+            self._unsupervised_model = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
 
             logger.info("Initialised unsupervised fastText model: {fname}".format(fname=CONFIG.ML.unsupervised_model_filename))
 
             # Initialise spell checker
-            self._spell_checker = SpellChecker(self._models[Models.ONS_UNSUPERVISED_MODEL])
+            self._spell_checker = SpellChecker(self._unsupervised_model)
 
             logger.info("Initialised spell checker")
 
         @self.listener("after_server_stop")
-        async def shutdown(app: SanicSearch, loop):
+        async def shutdown(app: SearchApp, loop):
             """
             Trigger clean shutdown of ES client
             :param app:
@@ -91,4 +93,4 @@ class SanicSearch(Sanic):
         Returns the cached unsupervised model
         :return:
         """
-        return self._models.get(Models.ONS_UNSUPERVISED_MODEL)
+        return self._unsupervised_model

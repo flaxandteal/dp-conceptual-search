@@ -1,7 +1,6 @@
 """
 Tests the custom spell checker class
 """
-from os.path import isfile
 from unittest import TestCase
 
 from config import CONFIG
@@ -16,11 +15,7 @@ class SpellCheckerTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        fname = CONFIG.ML.unsupervised_model_filename
-        self.assertTrue(isfile(fname),
-                        "must be able to locate default model at path {0}".format(fname))
-
-        model = UnsupervisedModel(fname)
+        model = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
         self.spell_checker: SpellChecker = SpellChecker(model)
 
     @property
@@ -61,7 +56,7 @@ class SpellCheckerTestCase(TestCase):
         sample_words = self.sample_words
         keys = list(sample_words.keys())
 
-        corrections = self.spell_checker.correct_terms(keys)
+        corrections = self.spell_checker.correct_spelling(keys)
         for correction in corrections:
             self.assertEqual(correction.correction, sample_words[correction.input_token],
                              "expected {expected} for key {key}, but got {actual}".format(

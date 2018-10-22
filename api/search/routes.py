@@ -72,7 +72,7 @@ async def ons_content_query(request: ONSRequest, list_type: str) -> HTTPResponse
     else:
         # Log and return 404
         message = "Received content query request for unknown list type: '{0}'".format(list_type)
-        logger.error(request, message)
+        logger.error(request.request_id, message)
         return json(request, message, 404)
 
 
@@ -97,7 +97,7 @@ async def ons_counts_query(request: ONSRequest, list_type: str) -> HTTPResponse:
     else:
         # Log and return 404
         message = "Received type counts request for unknown list type: '{0}'".format(list_type)
-        logger.error(request, message)
+        logger.error(request.request_id, message)
         return json(request, message, 404)
 
 

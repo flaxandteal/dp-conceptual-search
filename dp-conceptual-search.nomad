@@ -6,7 +6,7 @@ job "dp-conceptual-search" {
   update {
     stagger          = "60s"
     min_healthy_time = "30s"
-    healthy_deadline = "2m"
+    healthy_deadline = "3m"
     max_parallel     = 1
     auto_revert      = true
   }
@@ -16,7 +16,6 @@ job "dp-conceptual-search" {
 
     constraint {
       attribute = "${node.class}"
-      operator  = "regexp"
       value     = "web"
     }
 
@@ -87,7 +86,6 @@ job "dp-conceptual-search" {
 
     constraint {
       attribute = "${node.class}"
-      operator  = "regexp"
       value     = "publishing"
     }
 

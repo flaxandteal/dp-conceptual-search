@@ -2,11 +2,12 @@
 Tests the ONS search engine functionality
 """
 from typing import List
+from unittest import TestCase
 
 from config import SEARCH_CONFIG
 
 from unit.utils.async_test import AsyncTestCase
-from unit.elasticsearch.elasticsearch_test_case import ElasticsearchTestCase
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 from ons.search.fields import get_highlighted_fields, Field
 from ons.search.queries import content_query, type_counts_query
@@ -15,7 +16,12 @@ from ons.search.sort_fields import query_sort, SortField
 from ons.search.client.search_engine import SearchEngine
 
 
-class SearchEngineTestCase(AsyncTestCase, ElasticsearchTestCase):
+class SearchEngineTestCase(AsyncTestCase, TestCase):
+
+    def setUp(self):
+        super(SearchEngineTestCase, self).setUp()
+
+        self.mock_client = mock_search_client()
 
     @property
     def index(self):
