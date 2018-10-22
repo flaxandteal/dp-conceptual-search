@@ -1,7 +1,9 @@
 """
 This file defines classes and methods for working with supervised fastText models
 """
+import logging
 import fastText
+
 import numpy as np
 
 from ml.word_embedding.utils import cosine_similarity
@@ -10,6 +12,15 @@ from ml.word_embedding.utils import cosine_similarity
 class SupervisedModel(fastText.FastText._FastText):
     def __init__(self, filename: str, label_prefix: str="__label__"):
         super(SupervisedModel, self).__init__(model=filename)
+        self.filename = filename
+
+        logging.info("Initialised supervised fastTet model", extra={
+            "model": {
+                "filename": filename,
+                "prefix": label_prefix,
+                "matrix": "({num_words}, {dimensions})".format(num_words=len(self.get_words()), dimensions=self.get_dimension())
+            }
+        })
 
         self.label_prefix = label_prefix
 

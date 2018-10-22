@@ -4,10 +4,10 @@ This file defines our custom Sanic app class
 from sanic import Sanic
 from sanic.log import logger
 
-from config.config_ml import UNSUPERVISED_MODEL_FILENAME
+from config.config_ml import UNSUPERVISED_MODEL_FILENAME, SUPERVISED_MODEL_FILENAME
 
 from ml.spelling.spell_checker import SpellChecker
-from ml.word_embedding.fastText import UnsupervisedModel
+from ml.word_embedding.fastText import UnsupervisedModel, SupervisedModel
 
 from api.request.ons_request import ONSRequest
 
@@ -22,8 +22,9 @@ class SearchApp(Sanic):
         # Attach an Elasticsearh client
         self._elasticsearch = None
 
-        # Initialise unsupervised model member
+        # Initialise (un)supervised model member
         self._unsupervised_model = None
+        self._supervised_model = None
 
         # Initialise spell check member
         self._spell_checker = None
@@ -50,14 +51,11 @@ class SearchApp(Sanic):
             logger.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
             # Now initialise the ML models essential to the APP
-            self._unsupervised_model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
-
-            logger.info("Initialised unsupervised fastText model: {fname}".format(fname=UNSUPERVISED_MODEL_FILENAME))
+            self._initialise_unsupervised_model()
+            self._initialise_supervised_model()
 
             # Initialise spell checker
-            self._spell_checker = SpellChecker(self._unsupervised_model)
-
-            logger.info("Initialised spell checker")
+            self._initialise_spell_checker()
 
         @self.listener("after_server_stop")
         async def shutdown(app: SearchApp, loop):
@@ -68,6 +66,64 @@ class SearchApp(Sanic):
             :return:
             """
             await app.elasticsearch.shutdown()
+
+    def _initialise_unsupervised_model(self):
+        """
+        Initialises the unsupervised fastText .vec model
+        :return:
+        """
+        logger.info("Initialising unsupervised fastText model", extra={
+            "model": {
+                "filename": UNSUPERVISED_MODEL_FILENAME
+            }
+        })
+
+        self._unsupervised_model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+
+        logger.info("Successfully initialised unsupervised fastText model", extra={
+            "model": {
+                "filename": UNSUPERVISED_MODEL_FILENAME
+            }
+        })
+
+    def _initialise_supervised_model(self):
+        """
+        Initialise the supervised fastText .bin model
+        :return:
+        """
+        logger.info("Initialising supervised fastText model", extra={
+            "model": {
+                "filename": SUPERVISED_MODEL_FILENAME
+            }
+        })
+
+        self._supervised_model = SupervisedModel(SUPERVISED_MODEL_FILENAME)
+
+        logger.info("Successfully initialised supervised fastText model", extra={
+            "model": {
+                "filename": SUPERVISED_MODEL_FILENAME
+            }
+        })
+
+    def _initialise_spell_checker(self):
+        """
+        Initialises the SpellChecker using the unsupervised fastText model
+        :return:
+        """
+        if self.get_unsupervised_model() is not None:
+            logger.info("Initialising SpellChecker", extra={
+                "model": {
+                    "filename": self._unsupervised_model.filename
+                }
+            })
+
+            self._spell_checker = SpellChecker(self._unsupervised_model)
+
+            logger.info("Successfully initialised SpellChecker", extra={
+                "model": {
+                    "filename": self._unsupervised_model.filename
+                }
+            })
 
     @property
     def elasticsearch(self) -> ElasticsearchClientService:
@@ -91,3 +147,10 @@ class SearchApp(Sanic):
         :return:
         """
         return self._unsupervised_model
+
+    def get_supervised_model(self) -> SupervisedModel:
+        """
+        Returns the cached supervised model
+        :return:
+        """
+        return self._supervised_model

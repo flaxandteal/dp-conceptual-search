@@ -6,4 +6,5 @@
 **/**/*.pyc
 
 cover/
+supervised_models/
 tests/server/**/.cache/

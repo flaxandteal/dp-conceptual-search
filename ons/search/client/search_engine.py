@@ -3,7 +3,7 @@ from typing import List
 from search.search_type import SearchType
 
 from ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
-from ons.search.queries import content_query, function_score_content_query, departments_query
+from ons.search.ons_queries import content_query, function_score_content_query, departments_query
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
 
 
@@ -78,7 +78,7 @@ class SearchEngine(AbstractSearchEngine):
         :param kwargs:
         :return:
         """
-        from ons.search.queries import type_counts_query
+        from ons.search.ons_queries import type_counts_query
         from ons.search.paginator import RESULTS_PER_PAGE
 
         if type_filters is None:

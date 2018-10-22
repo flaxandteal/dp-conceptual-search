@@ -16,7 +16,7 @@ from search.search_type import SearchType
 from ons.search.index import Index
 from ons.search.type_filter import AvailableTypeFilters
 from ons.search.sort_fields import query_sort, SortField
-from ons.search.queries import content_query
+from ons.search.ons_queries import content_query
 
 
 class SearchFeaturedApiTestCase(TestApp):

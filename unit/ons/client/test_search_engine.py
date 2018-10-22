@@ -8,7 +8,7 @@ from unit.utils.async_test import AsyncTestCase
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 from ons.search.fields import get_highlighted_fields, Field
-from ons.search.queries import content_query, type_counts_query
+from ons.search.ons_queries import content_query, type_counts_query
 from ons.search.type_filter import AvailableTypeFilters
 from ons.search.sort_fields import query_sort, SortField
 from ons.search.client.search_engine import SearchEngine
