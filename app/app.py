@@ -14,6 +14,7 @@ from app.exceptions.error_handlers import ErrorHandlers
 
 # Import blueprints
 from api.search.routes import search_blueprint
+from api.search.conceptual.routes import conceptual_search_blueprint
 from api.spellcheck.routes import spell_check_blueprint
 from api.healthcheck.routes import healthcheck_blueprint
 
@@ -35,6 +36,10 @@ def create_app() -> SearchApp:
     app.blueprint(search_blueprint)
     app.blueprint(spell_check_blueprint)
     app.blueprint(healthcheck_blueprint)
+
+    # Enable conceptual search routes?
+    if CONFIG.SEARCH.conceptual_search_enabled:
+        app.blueprint(conceptual_search_blueprint)
 
     # Register error handlers
     ErrorHandlers.register(app)

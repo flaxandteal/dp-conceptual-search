@@ -9,7 +9,6 @@ from search.search_type import SearchType
 
 from ons.search.client.search_engine import SearchEngine
 from ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
-from ons.search.ons_queries import function_score_content_query
 
 from ons.search.conceptual.queries.ons_queries import content_query
 
@@ -46,15 +45,10 @@ class ConceptualSearchEngine(SearchEngine):
         # Build the query dict
         query = content_query(search_term, model)
 
-        # Add function scores if specified
-        if filter_functions is not None:
-            query = function_score_content_query(query, filter_functions)
-
         # Build the content query
         s: ConceptualSearchEngine = self._clone() \
             .query(query) \
             .paginate(current_page, size) \
-            .sort_by(sort_by) \
             .type_filter(type_filters) \
             .search_type(SearchType.DFS_QUERY_THEN_FETCH)
 

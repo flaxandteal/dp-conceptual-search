@@ -1,8 +1,6 @@
 """
 This file contains all routes for the /search API
 """
-from config import CONFIG
-
 from sanic import Blueprint
 from sanic.response import HTTPResponse
 
@@ -14,13 +12,12 @@ from api.search.sanic_search_engine import SanicSearchEngine
 
 from ons.search.index import Index
 from ons.search.client.search_engine import SearchEngine
-from ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 from ons.search.response.search_result import SearchResult
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-search_engine_cls = SearchEngine if not CONFIG.SEARCH.conceptual_search_enabled else ConceptualSearchEngine
+search_engine_cls = SearchEngine
 
 
 @search_blueprint.route('/', methods=['POST'], strict_slashes=True)

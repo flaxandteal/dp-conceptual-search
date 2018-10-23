@@ -40,7 +40,6 @@ def word_vector_keywords_query(search_term: str, num_labels: int, threshold: flo
 
 def content_query(search_term: str, model: SupervisedModel,
                   field: Field=AvailableFields.EMBEDDING_VECTOR.value,
-                  weight: float=1.0,
                   num_labels: int=10,
                   threshold: float=0.1) -> Q.Query:
     """
@@ -48,7 +47,6 @@ def content_query(search_term: str, model: SupervisedModel,
     :param search_term:
     :param model:
     :param field:
-    :param weight:
     :param num_labels:
     :param threshold:
     :return:
@@ -64,7 +62,7 @@ def content_query(search_term: str, model: SupervisedModel,
         raise UnknownSearchVector(search_term)
 
     # Build function scores
-    script_score = VectorScriptScore(field.name, search_vector.tolist(), cosine=True, weight=weight)
+    script_score = VectorScriptScore(field.name, search_vector.tolist(), cosine=True)
     script_score_dict = script_score.to_dict()
 
     # Generate additional keywords query
