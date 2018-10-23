@@ -2,12 +2,15 @@
 
 all: build test
 
-build: requirements fastText
+build: requirements fastText version
 
 requirements:
 	pip install -r requirements.txt
 	cd dp && pip install .
 	python scripts/download_nltk_stopwords.py
+
+version:
+	python git_sha.py > app_version
 
 test_requirements:
 	pip install -r requirements_test.txt
@@ -17,7 +20,7 @@ fastText:
 	pip install fasttextmirror==0.8.22
 
 test: test_requirements
-	SEARCH_CONFIG=testing python manager.py test
+	TESTING=true python manager.py test
 
 pep8:
 	autopep8 --in-place --aggressive --aggressive -r ./

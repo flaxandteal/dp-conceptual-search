@@ -4,7 +4,7 @@ This file defines our custom Sanic app class
 from sanic import Sanic
 from sanic.log import logger
 
-from config.config_ml import UNSUPERVISED_MODEL_FILENAME
+from config import CONFIG
 
 from ml.spelling.spell_checker import SpellChecker
 from ml.word_embedding.fastText import UnsupervisedModel
@@ -28,6 +28,9 @@ class SearchApp(Sanic):
         # Initialise spell check member
         self._spell_checker = None
 
+        # Set Logo to None
+        self.config.logo = None
+
         @self.listener("after_server_start")
         async def init(app: SearchApp, loop):
             """
@@ -50,9 +53,9 @@ class SearchApp(Sanic):
             logger.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
             # Now initialise the ML models essential to the APP
-            self._unsupervised_model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+            self._unsupervised_model = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
 
-            logger.info("Initialised unsupervised fastText model: {fname}".format(fname=UNSUPERVISED_MODEL_FILENAME))
+            logger.info("Initialised unsupervised fastText model: {fname}".format(fname=CONFIG.ML.unsupervised_model_filename))
 
             # Initialise spell checker
             self._spell_checker = SpellChecker(self._unsupervised_model)
