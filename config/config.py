@@ -47,6 +47,7 @@ SEARCH_CONFIG.departments_search_index = "departments"
 SEARCH_CONFIG.results_per_page = int(os.getenv("RESULTS_PER_PAGE", 10))
 SEARCH_CONFIG.max_visible_paginator_link = int(os.getenv("MAX_VISIBLE_PAGINATOR_LINK", 5))
 SEARCH_CONFIG.conceptual_search_enabled = bool_env("CONCEPTUAL_SEARCH_ENABLED", False)
+SEARCH_CONFIG.redirect_conceptual_search = bool_env("REDIRECT_CONCEPTUAL_SEARCH", False)
 
 
 # Logging

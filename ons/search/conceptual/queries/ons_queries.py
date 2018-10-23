@@ -1,6 +1,8 @@
 """
 This file contains queries for conceptual search
 """
+import logging
+
 from numpy import ndarray
 from elasticsearch_dsl import query as Q
 
@@ -32,6 +34,11 @@ def word_vector_keywords_query(search_term: str, num_labels: int, threshold: flo
 
     # Get predicted labels and their probabilities
     labels, probabilities = model.predict(search_term, k=num_labels, threshold=threshold)
+
+    logging.debug("Generated additional keywords", extra={
+        "search_term": search_term,
+        "keywords": labels
+    })
 
     # Build the individual match queries
     match_queries = [Q.Match(**{field.name: {"query": label}}) for label in labels]

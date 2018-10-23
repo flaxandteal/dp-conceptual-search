@@ -1,6 +1,8 @@
 """
 This file contains all routes for the /search API
 """
+from config import CONFIG
+
 from sanic import Blueprint
 from sanic.response import HTTPResponse
 
@@ -13,6 +15,8 @@ from api.search.sanic_search_engine import SanicSearchEngine
 from ons.search.index import Index
 from ons.search.client.search_engine import SearchEngine
 from ons.search.response.search_result import SearchResult
+
+from api.search.conceptual import routes as conceptual_routes
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
@@ -62,6 +66,9 @@ async def ons_content_query(request: ONSRequest, list_type: str) -> HTTPResponse
     :param list_type: The list_type to query against (i.e ons, onsdata or onspublications; see api.search.list_type.py)
     :return:
     """
+    if CONFIG.SEARCH.redirect_conceptual_search:
+        return await conceptual_routes.conceptual_content_query(request, list_type)
+
     # Parse list_type to enum
     if ListType.is_list_type(list_type):
         list_type_enum: ListType = ListType.from_str(list_type)
@@ -87,6 +94,9 @@ async def ons_counts_query(request: ONSRequest, list_type: str) -> HTTPResponse:
     :param list_type: The list_type to query against (i.e ons, onsdata or onspublications; see api.search.list_type.py)
     :return:
     """
+    if CONFIG.SEARCH.redirect_conceptual_search:
+        return await conceptual_routes.conceptual_counts_query(request, list_type)
+
     # Parse list_type to enum
     if ListType.is_list_type(list_type):
         # Initialise the search engine

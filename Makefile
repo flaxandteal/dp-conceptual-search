@@ -9,6 +9,9 @@ debug: build run
 run:
 	python manager.py
 
+conceptual_search:
+	CONCEPTUAL_SEARCH_ENABLED=true REDIRECT_CONCEPTUAL_SEARCH=true python manager.py
+
 requirements:
 	pip install -r requirements.txt
 	cd dp && pip install .
