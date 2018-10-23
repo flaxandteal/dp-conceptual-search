@@ -1,12 +1,15 @@
 import os
 import logging
+
+from config.utils import read_git_sha
+
 from dp.config.section import Section
-from dp.config.utils import bool_env, git_sha
+from dp.config.utils import bool_env
 
 # APP
 
 APP_CONFIG = Section("APP config")
-APP_CONFIG.app_version = git_sha()
+APP_CONFIG.app_version = read_git_sha()
 APP_CONFIG.title = 'dp-conceptual-search'
 APP_CONFIG.description = 'Dedicated search API for digital publishing.'
 
