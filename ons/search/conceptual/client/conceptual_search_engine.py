@@ -3,7 +3,7 @@ Implementation of conceptual search client
 """
 from typing import List
 
-from config.config_ml import SUPERVISED_MODEL_FILENAME
+from config import CONFIG
 
 from search.search_type import SearchType
 
@@ -38,7 +38,7 @@ class ConceptualSearchEngine(SearchEngine):
         :param kwargs:
         :return:
         """
-        model: SupervisedModel = get_supervised_model(SUPERVISED_MODEL_FILENAME)
+        model: SupervisedModel = get_supervised_model(CONFIG.ML.supervised_model_filename)
 
         if type_filters is None:
             type_filters = AvailableTypeFilters.all()

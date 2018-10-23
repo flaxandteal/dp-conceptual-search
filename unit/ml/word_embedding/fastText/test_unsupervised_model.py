@@ -3,7 +3,7 @@ Tests our UnsupervisedModel class
 """
 from unittest import TestCase
 
-from config.config_ml import UNSUPERVISED_MODEL_FILENAME
+from config import CONFIG
 from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
 
@@ -13,7 +13,7 @@ class SupervisedModelTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        self.model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+        self.model = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
 
     def test_similar_by_word(self):
         """

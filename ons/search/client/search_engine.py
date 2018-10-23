@@ -1,5 +1,7 @@
 from typing import List
 
+from config import SEARCH_CONFIG
+
 from search.search_type import SearchType
 
 from ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
@@ -79,13 +81,12 @@ class SearchEngine(AbstractSearchEngine):
         :return:
         """
         from ons.search.ons_queries import type_counts_query
-        from ons.search.paginator import RESULTS_PER_PAGE
 
         if type_filters is None:
             type_filters = AvailableTypeFilters.all()
 
         # Build the content query with no type filters, function scores or sorting
-        s: SearchEngine = self.content_query(search_term, self.default_page_number, RESULTS_PER_PAGE,
+        s: SearchEngine = self.content_query(search_term, self.default_page_number, SEARCH_CONFIG.results_per_page,
                                              type_filters=type_filters, highlight=False)
 
         # Build the aggregations

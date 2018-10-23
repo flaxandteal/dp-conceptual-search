@@ -2,11 +2,12 @@ from uuid import uuid4
 from typing import List
 from ujson import loads
 
+from config import SEARCH_CONFIG
+
 from sanic.request import Request
 from sanic.exceptions import InvalidUsage
 
 from ons.search.sort_fields import SortField
-from ons.search.paginator import RESULTS_PER_PAGE
 from ons.search.exceptions import UnknownTypeFilter
 from ons.search.type_filter import TypeFilter, AvailableTypeFilters
 
@@ -62,7 +63,7 @@ class ONSRequest(Request):
         Returns the requested page size. Defaults to the value set by the paginator.
         :return:
         """
-        page_size = self.args.get("size", RESULTS_PER_PAGE)
+        page_size = self.args.get("size", SEARCH_CONFIG.results_per_page)
         return int(page_size)
 
     def get_sort_by(self) -> SortField:

@@ -4,7 +4,7 @@ This file defines our custom Sanic app class
 from sanic import Sanic
 from sanic.log import logger
 
-from config.config_ml import UNSUPERVISED_MODEL_FILENAME, SUPERVISED_MODEL_FILENAME
+from config import CONFIG
 
 from ml.spelling.spell_checker import SpellChecker
 from ml.word_embedding.fastText import UnsupervisedModel, SupervisedModel
@@ -30,6 +30,9 @@ class SearchApp(Sanic):
         # Initialise spell check member
         self._spell_checker = None
 
+        # Set Logo to None
+        self.config.logo = None
+
         @self.listener("after_server_start")
         async def init(app: SearchApp, loop):
             """
@@ -53,7 +56,7 @@ class SearchApp(Sanic):
 
             # Now initialise the ML models essential to the APP
             self._initialise_unsupervised_model()
-            init_supervised_models(SUPERVISED_MODEL_FILENAME)
+            init_supervised_models(CONFIG.ML.supervised_model_filename)
 
             # Initialise spell checker
             self._initialise_spell_checker()
@@ -75,15 +78,15 @@ class SearchApp(Sanic):
         """
         logger.info("Initialising unsupervised fastText model", extra={
             "model": {
-                "filename": UNSUPERVISED_MODEL_FILENAME
+                "filename": CONFIG.ML.unsupervised_model_filename
             }
         })
 
-        self._unsupervised_model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+        self._unsupervised_model = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
 
         logger.info("Successfully initialised unsupervised fastText model", extra={
             "model": {
-                "filename": UNSUPERVISED_MODEL_FILENAME
+                "filename": CONFIG.ML.unsupervised_model_filename
             }
         })
 
@@ -135,4 +138,4 @@ class SearchApp(Sanic):
         Returns the cached supervised model
         :return:
         """
-        return get_supervised_model(SUPERVISED_MODEL_FILENAME)
+        return get_supervised_model(CONFIG.ML.supervised_model_filename)

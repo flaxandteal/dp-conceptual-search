@@ -1,7 +1,7 @@
 """
 This file contains all routes for the /search API
 """
-from config.config_core import CONCEPTUAL_SEARCH_ENABLED
+from config import CONFIG
 
 from sanic import Blueprint
 from sanic.response import HTTPResponse
@@ -20,7 +20,7 @@ from ons.search.response.search_result import SearchResult
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-search_engine_cls = SearchEngine if not CONCEPTUAL_SEARCH_ENABLED else ConceptualSearchEngine
+search_engine_cls = SearchEngine if not CONFIG.SEARCH.conceptual_search_enabled else ConceptualSearchEngine
 
 
 @search_blueprint.route('/', methods=['POST'], strict_slashes=True)
