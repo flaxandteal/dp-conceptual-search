@@ -1,6 +1,8 @@
 """
 This file contains all routes for the /search API
 """
+from config.config_core import CONCEPTUAL_SEARCH_ENABLED
+
 from sanic import Blueprint
 from sanic.response import HTTPResponse
 
@@ -12,9 +14,13 @@ from api.search.sanic_search_engine import SanicSearchEngine
 
 from ons.search.index import Index
 from ons.search.client.search_engine import SearchEngine
+from ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 from ons.search.response.search_result import SearchResult
 
 search_blueprint = Blueprint('search', url_prefix='/search')
+
+
+search_engine_cls = SearchEngine if not CONCEPTUAL_SEARCH_ENABLED else ConceptualSearchEngine
 
 
 @search_blueprint.route('/', methods=['POST'], strict_slashes=True)
@@ -26,7 +32,7 @@ async def proxy_query(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.proxy(request)
@@ -43,7 +49,7 @@ async def ons_departments_query(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.departments_query(request)
@@ -63,7 +69,7 @@ async def ons_content_query(request: ONSRequest, list_type: str) -> HTTPResponse
     if ListType.is_list_type(list_type):
         list_type_enum: ListType = ListType.from_str(list_type)
         # Initialise the search engine
-        sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+        sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
 
         # Perform the request
         search_result: SearchResult = await sanic_search_engine.content_query(request, list_type_enum)
@@ -86,12 +92,11 @@ async def ons_counts_query(request: ONSRequest, list_type: str) -> HTTPResponse:
     """
     # Parse list_type to enum
     if ListType.is_list_type(list_type):
-        list_type_enum: ListType = ListType.from_str(list_type)
         # Initialise the search engine
-        sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+        sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
 
         # Perform the request
-        search_result: SearchResult = await sanic_search_engine.type_counts_query(request, list_type_enum)
+        search_result: SearchResult = await sanic_search_engine.type_counts_query(request)
 
         return json(request, search_result.to_dict(), 200)
     else:
@@ -110,7 +115,7 @@ async def ons_featured_result_query(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.featured_result_query(request)

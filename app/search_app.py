@@ -11,6 +11,7 @@ from ml.word_embedding.fastText import UnsupervisedModel, SupervisedModel
 
 from api.request.ons_request import ONSRequest
 
+from app.ml import init_supervised_models, get_supervised_model
 from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -52,7 +53,7 @@ class SearchApp(Sanic):
 
             # Now initialise the ML models essential to the APP
             self._initialise_unsupervised_model()
-            self._initialise_supervised_model()
+            init_supervised_models(SUPERVISED_MODEL_FILENAME)
 
             # Initialise spell checker
             self._initialise_spell_checker()
@@ -83,25 +84,6 @@ class SearchApp(Sanic):
         logger.info("Successfully initialised unsupervised fastText model", extra={
             "model": {
                 "filename": UNSUPERVISED_MODEL_FILENAME
-            }
-        })
-
-    def _initialise_supervised_model(self):
-        """
-        Initialise the supervised fastText .bin model
-        :return:
-        """
-        logger.info("Initialising supervised fastText model", extra={
-            "model": {
-                "filename": SUPERVISED_MODEL_FILENAME
-            }
-        })
-
-        self._supervised_model = SupervisedModel(SUPERVISED_MODEL_FILENAME)
-
-        logger.info("Successfully initialised supervised fastText model", extra={
-            "model": {
-                "filename": SUPERVISED_MODEL_FILENAME
             }
         })
 
@@ -153,4 +135,4 @@ class SearchApp(Sanic):
         Returns the cached supervised model
         :return:
         """
-        return self._supervised_model
+        return get_supervised_model(SUPERVISED_MODEL_FILENAME)

@@ -76,7 +76,7 @@ class SanicSearchEngine(object):
                 engine: AbstractSearchEngine = engine.type_filter(type_filters)
             except UnknownTypeFilter as e:
                 message = "Received unknown type filter: '{0}'".format(e.unknown_type_filter)
-                logger.error(request, message, exc_info=e)
+                logger.error(request.request_id, message, exc_info=e)
                 raise InvalidUsage(message)
 
         # Execute
@@ -84,7 +84,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform proxy query request"
-            logger.error(request, message, e)
+            logger.error(request.request_id, message, e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
@@ -109,7 +109,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.departments_query(search_term, page, page_size).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform departments query request"
-            logger.error(request, message, exc_info=e)
+            logger.error(request.request_id, message, exc_info=e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_departments_query_search_result(page, page_size)
@@ -146,14 +146,14 @@ class SanicSearchEngine(object):
                                                                type_filters=type_filters).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform content query request"
-            logger.error(request, message, exc_info=e)
+            logger.error(request.request_id, message, exc_info=e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
 
         return search_result
 
-    async def type_counts_query(self, request: ONSRequest, list_type: ListType) -> SearchResult:
+    async def type_counts_query(self, request: ONSRequest) -> SearchResult:
         """
         Executes the ONS type counts query using the given SearchEngine class
         :param request:
@@ -169,7 +169,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.type_counts_query(search_term).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
-            logger.error(request, message, exc_info=e)
+            logger.error(request.request_id, message, exc_info=e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_type_counts_query_search_result()
@@ -191,7 +191,7 @@ class SanicSearchEngine(object):
             response: ONSResponse = await engine.featured_result_query(search_term).execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform featured result query request"
-            logger.error(request, message, exc_info=e)
+            logger.error(request.request_id, message, exc_info=e)
             raise ServerError(message)
 
         search_result: SearchResult = response.to_featured_result_query_search_result()

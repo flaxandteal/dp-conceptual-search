@@ -18,7 +18,7 @@ class VectorScriptScore(ScriptScore):
         :param cosine:
         :param weight:
         """
-        super(VectorScriptScore, self).__init__(script_score = {
+        super(VectorScriptScore, self).__init__(**{
             "lang": ScriptLanguage.KNN.value,
             "params": {
                 "cosine": cosine,
