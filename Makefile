@@ -2,7 +2,7 @@
 
 all: build test
 
-build: requirements fastText version
+build: requirements fastText
 
 requirements:
 	pip install -r requirements.txt
