@@ -25,7 +25,7 @@ class DotDict(dict):
         :param new_value:
         :return:
         """
-        # First, check if the value of this fielf is a list
+        # First, check if the value of this field is a list
         if isinstance(self[self.description_field_name][field_name], list) and\
                 original_value in self[self.description_field_name][field_name]:
             # Get the index of the element in the list and replace it
