@@ -4,6 +4,11 @@ all: build test
 
 build: requirements fastText
 
+debug: build run
+
+run:
+	python manager.py
+
 requirements:
 	pip install -r requirements.txt
 	cd dp && pip install .
