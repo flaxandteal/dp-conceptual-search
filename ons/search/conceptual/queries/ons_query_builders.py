@@ -8,13 +8,13 @@ from elasticsearch_dsl import query as Q
 
 from search.boost_mode import BoostMode
 
-from ons.search.ons_queries import content_query as standard_content_query
+from ons.search.queries.ons_query_builders import content_query as standard_content_query
 
 from ons.search.fields import AvailableFields, Field
 from ons.search.exceptions import MalformedSearchTerm, UnknownSearchVector
 
-from ons.search.queries import FunctionScore
-from ons.search.conceptual.queries import VectorScriptScore
+from search.dsl.function_score import FunctionScore
+from search.dsl.vector_script_score import VectorScriptScore
 
 from ml.word_embedding.fastText.supervised import SupervisedModel
 from ml.word_embedding.utils import clean_string, replace_nouns_with_singulars

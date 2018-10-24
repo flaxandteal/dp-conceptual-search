@@ -3,10 +3,10 @@ Defines a vector score query object
 """
 from typing import List
 
-from search.queries import ScriptScore
+from search.dsl.script_score import ScriptScore
 
-from ons.search.conceptual.queries.scripts import Scripts
-from ons.search.conceptual.queries.script_language import ScriptLanguage
+from search.dsl.scripts import Scripts
+from search.dsl.script_language import ScriptLanguage
 
 
 class VectorScriptScore(ScriptScore):

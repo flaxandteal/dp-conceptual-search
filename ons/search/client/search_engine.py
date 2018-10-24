@@ -5,7 +5,7 @@ from config import SEARCH_CONFIG
 from search.search_type import SearchType
 
 from ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
-from ons.search.ons_queries import content_query, function_score_content_query, departments_query
+from ons.search.queries.ons_query_builders import content_query, function_score_content_query, departments_query
 from ons.search.client.abstract_search_engine import AbstractSearchEngine
 
 
@@ -80,7 +80,7 @@ class SearchEngine(AbstractSearchEngine):
         :param kwargs:
         :return:
         """
-        from ons.search.ons_queries import type_counts_query
+        from ons.search.queries.ons_query_builders import type_counts_query
 
         if type_filters is None:
             type_filters = AvailableTypeFilters.all()

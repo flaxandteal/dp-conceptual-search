@@ -2,7 +2,7 @@ from typing import List
 
 from elasticsearch_dsl import query as Q
 
-from search.queries import ScriptScore
+from search.dsl.script_score import ScriptScore
 
 
 def match_by_uri(uri: str) -> Q.Query:

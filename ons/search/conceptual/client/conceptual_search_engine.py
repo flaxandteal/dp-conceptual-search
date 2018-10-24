@@ -10,7 +10,7 @@ from search.search_type import SearchType
 from ons.search.client.search_engine import SearchEngine
 from ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
 
-from ons.search.conceptual.queries.ons_queries import content_query
+from ons.search.conceptual.queries.ons_query_builders import content_query
 
 from app.ml.supervised_models_cache import get_supervised_model
 

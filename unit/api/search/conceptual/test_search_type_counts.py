@@ -1,7 +1,6 @@
 """
 Tests the ONS type counts search API
 """
-from json import dumps
 from typing import List
 
 from config import SEARCH_CONFIG
@@ -17,8 +16,7 @@ from api.search.list_type import ListType
 from search.search_type import SearchType
 
 from ons.search.index import Index
-from ons.search.sort_fields import query_sort, SortField
-from ons.search.ons_queries import content_query, type_counts_query
+from ons.search.sort_fields import SortField
 from ons.search.type_filter import AvailableTypeFilters, TypeFilter
 
 from ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine

@@ -21,7 +21,7 @@ from search.search_type import SearchType
 from ons.search.index import Index
 from ons.search.content_type import AvailableContentTypes
 from ons.search.fields import get_highlighted_fields, Field
-from ons.search.conceptual.queries.ons_queries import content_query
+from ons.search.conceptual.queries.ons_query_builders import content_query
 from ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 
 

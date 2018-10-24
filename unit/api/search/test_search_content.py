@@ -18,7 +18,7 @@ from ons.search.index import Index
 from ons.search.sort_fields import query_sort, SortField
 from ons.search.content_type import AvailableContentTypes
 from ons.search.fields import get_highlighted_fields, Field
-from ons.search.ons_queries import content_query, function_score_content_query
+from ons.search.queries.ons_query_builders import content_query, function_score_content_query
 
 
 class SearchContentApiTestCase(TestApp):
