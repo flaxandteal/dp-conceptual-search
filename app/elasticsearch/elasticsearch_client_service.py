@@ -1,6 +1,10 @@
 """
 Parses config options and sets up Elasticsearch client
 """
+from sanic.log import logger
+
+from config import CONFIG
+
 from sanic import Sanic
 from elasticsearch import Elasticsearch
 
@@ -39,7 +43,7 @@ class ElasticsearchClientService(object):
         Returns the Elasticsearch hostname as set in the config
         :return:
         """
-        return self.app.config.get("ELASTIC_SEARCH_SERVER")
+        return CONFIG.ELASTIC_SEARCH.server
 
     @property
     def elasticsearch_async_enabled(self) -> bool:
@@ -47,7 +51,7 @@ class ElasticsearchClientService(object):
         Returns whether the async Elasticsearch client is enabled
         :return:
         """
-        return self.app.config.get("ELASTIC_SEARCH_ASYNC_ENABLED")
+        return CONFIG.ELASTIC_SEARCH.async_enabled
 
     @property
     def elasticsearch_timeout(self) -> int:
@@ -55,7 +59,7 @@ class ElasticsearchClientService(object):
         Returns the configured timeout value for the Elasticsearch HTTP client
         :return:
         """
-        return int(self.app.config.get("ELASTIC_SEARCH_TIMEOUT"))
+        return CONFIG.ELASTIC_SEARCH.timeout
 
     async def shutdown(self):
         """

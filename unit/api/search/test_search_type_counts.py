@@ -3,6 +3,9 @@ Tests the ONS type counts search API
 """
 from json import dumps
 from typing import List
+
+from config import SEARCH_CONFIG
+
 from unit.utils.test_app import TestApp
 
 from unittest import mock
@@ -14,7 +17,6 @@ from api.search.list_type import ListType
 from search.search_type import SearchType
 
 from ons.search.index import Index
-from ons.search.paginator import RESULTS_PER_PAGE
 from ons.search.sort_fields import query_sort, SortField
 from ons.search.queries import content_query, type_counts_query
 from ons.search.type_filter import AvailableTypeFilters, TypeFilter
@@ -59,7 +61,7 @@ class SearchTypeCountsApiTestCase(TestApp):
         # Set correct from_start and page size for type counts query
         from_start = 0
         current_page = from_start + 1
-        size = RESULTS_PER_PAGE
+        size = SEARCH_CONFIG.results_per_page
 
         # Set sort_by
         sort_by: SortField = SortField.relevance

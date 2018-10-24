@@ -3,7 +3,7 @@ Paginator class - replicates pagination functionality from babbage
 """
 import math
 
-from config.config_core import RESULTS_PER_PAGE, MAX_VISIBLE_PAGINATOR_LINK
+from config import SEARCH_CONFIG
 
 
 class Paginator(object):
@@ -12,8 +12,8 @@ class Paginator(object):
             self,
             number_of_results: int,
             current_page: int,
-            result_per_page: int=RESULTS_PER_PAGE,
-            max_visible_links: int=MAX_VISIBLE_PAGINATOR_LINK):
+            result_per_page: int = SEARCH_CONFIG.results_per_page,
+            max_visible_links: int = SEARCH_CONFIG.max_visible_paginator_link):
 
         self.current_page = current_page
         self.number_of_pages = Paginator.calculate_number_of_pages(

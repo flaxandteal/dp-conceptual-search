@@ -3,7 +3,7 @@ Tests our SupervisedModel class
 """
 from unittest import TestCase
 
-from config.config_ml import SUPERVISED_MODEL_FILENAME
+from config import CONFIG
 from ml.word_embedding.fastText.supervised import SupervisedModel
 
 
@@ -13,7 +13,7 @@ class SupervisedModelTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        self.model = SupervisedModel(filename=SUPERVISED_MODEL_FILENAME)
+        self.model = SupervisedModel(filename=CONFIG.ML.supervised_model_filename)
 
     def test_predict(self):
         """

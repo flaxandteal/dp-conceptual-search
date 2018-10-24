@@ -3,7 +3,7 @@ Tests the custom spell checker class
 """
 from unittest import TestCase
 
-from config.config_ml import UNSUPERVISED_MODEL_FILENAME
+from config import CONFIG
 from ml.spelling.spell_checker import SpellChecker
 from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
@@ -15,7 +15,7 @@ class SpellCheckerTestCase(TestCase):
         Initialise the default model
         :return:
         """
-        model = UnsupervisedModel(UNSUPERVISED_MODEL_FILENAME)
+        model = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
         self.spell_checker: SpellChecker = SpellChecker(model)
 
     @property
