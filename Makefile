@@ -10,6 +10,7 @@ requirements:
 	python scripts/download_nltk_stopwords.py
 
 version:
+	pip install gitpython==2.1.11
 	python git_sha.py > app_version
 
 test_requirements:
