@@ -60,11 +60,11 @@ class ONSRequest(Request):
 
     def get_page_size(self) -> int:
         """
-        Returns the requested page size. Defaults to the value set by the paginator.
+        Returns the requested page size (min of 1). Defaults to the value set by the paginator.
         :return:
         """
         page_size = self.args.get("size", SEARCH_CONFIG.results_per_page)
-        return int(page_size)
+        return max(int(page_size), 1)
 
     def get_sort_by(self) -> SortField:
         """
