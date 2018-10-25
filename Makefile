@@ -2,7 +2,12 @@
 
 all: build test
 
-build: requirements fastText version
+build: requirements fastText
+
+debug: build run
+
+run:
+	python manager.py
 
 debug: build run
 
@@ -14,10 +19,12 @@ conceptual_search:
 
 requirements:
 	pip install -r requirements.txt
+	pip install -r dp/requirements.txt
 	cd dp && pip install .
 	python scripts/download_nltk_stopwords.py
 
 version:
+	pip install gitpython==2.1.11
 	python git_sha.py > app_version
 
 test_requirements:

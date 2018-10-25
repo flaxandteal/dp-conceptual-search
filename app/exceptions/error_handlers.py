@@ -23,5 +23,5 @@ class ErrorHandlers(object):
             else:
                 # Cover any future API changes which could see the request preserved during timeout (also log out
                 # request context)
-                logger.debug(request, "RequestTimeout from error_handler.", exc_info=exception)
+                logger.debug(request.request_id, "RequestTimeout from error_handler.", exc_info=exception)
             return json({"message": "RequestTimeout from error_handler."}, exception.status_code)

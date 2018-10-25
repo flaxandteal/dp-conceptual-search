@@ -14,4 +14,5 @@ def read_git_sha() -> Optional[str]:
     fname = "{path}/../app_version".format(path=path)
     with open(fname, "r") as f:
         git_sha = f.read()
-        return git_sha
+        if git_sha is not None:
+            return git_sha.rstrip()
