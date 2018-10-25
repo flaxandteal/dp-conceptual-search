@@ -86,7 +86,7 @@ class Paginator(object):
         return int(
             math.ceil(
                 float(number_of_results) /
-                float(results_per_page)))
+                max(float(results_per_page), 1)))
 
     def get_page_list(self) -> list:
         """
