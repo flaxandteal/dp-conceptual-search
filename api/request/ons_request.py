@@ -64,7 +64,22 @@ class ONSRequest(Request):
         :return:
         """
         page_size = self.args.get("size", SEARCH_CONFIG.results_per_page)
-        return max(int(page_size), 1)
+        if isinstance(page_size, str):
+            if page_size.isdigit():
+                page_size = int(page_size)
+            else:
+                # Log error parsing param to int
+                message = "Unable to convert size param to int"
+                logger.error(self.request_id, message, extra={"size": page_size})
+                raise InvalidUsage(message)
+
+        if isinstance(page_size, int) and page_size > 0:
+            return page_size
+
+        # Raise InvalidUsage (400) and log error
+        message = "Invalid size request"
+        logger.error(self.request_id, message, extra={"size": page_size})
+        raise InvalidUsage(message)
 
     def get_sort_by(self) -> SortField:
         """
