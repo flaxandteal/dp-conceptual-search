@@ -1,73 +1,116 @@
 """
 Content types lifted out of Babbage
 """
+from enum import Enum
+from typing import List
+
+
+class ContentTypeWeights(Enum):
+    """
+    Enum containing content type weight constants
+    """
+    DEFAULT = 1.0
+    BULLETIN = 1.55
+    ARTICLE = 1.30
+    TIMESERIES = 1.20
+    STATIC_ADHOC = 1.25
+    DATASET_LANDING_PAGE = 1.35
 
 
 class ContentType(object):
-    def __init__(self, name, weight=1.0):
+    def __init__(self, name, weight: ContentTypeWeights=ContentTypeWeights.DEFAULT):
         self.name = name
         self.weight = weight
 
+    def __str__(self):
+        return "ContentType: {0}(weight={1})".format(self.name, self.weight.value)
 
-# Content types
-home_page = ContentType("home_page")
-home_page_census = ContentType("home_page_census")
-taxonomy_landing_page = ContentType("taxonomy_landing_page")
-product_page = ContentType("product_page")
-bulletin = ContentType("bulletin", 1.55)
-article = ContentType("article", 1.30)
-article_download = ContentType("article_download", 1.30)
-timeseries = ContentType("timeseries", 1.20)
-data_slice = ContentType("data_slice")
-compendium_landing_page = ContentType("compendium_landing_page", 1.30)
-compendium_chapter = ContentType("compendium_chapter")
-compendium_data = ContentType("compendium_data")
-static_landing_page = ContentType("static_landing_page")
-static_article = ContentType("static_article")
-static_methodology = ContentType("static_methodology")
-static_methodology_download = ContentType("static_methodology_download")
-static_page = ContentType("static_page")
-static_qmi = ContentType("static_qmi", 1.55)
-# static_foi = ContentType("static_foi", 2.25)
-static_foi = ContentType("static_foi")
-static_adhoc = ContentType("static_adhoc", 1.25)
-dataset = ContentType("dataset")
-dataset_landing_page = ContentType("dataset_landing_page", 1.35)
-timeseries_dataset = ContentType("timeseries_dataset")
-release = ContentType("release")
-reference_tables = ContentType("reference_tables")
-chart = ContentType("chart")
-table = ContentType("table")
-equation = ContentType("equation")
-departments = ContentType("departments")
+    def __repr__(self):
+        return "ContentType: {0}(weight={1})".format(self.name, self.weight.value)
 
-content_types = [
-    home_page,
-    home_page_census,
-    taxonomy_landing_page,
-    product_page,
-    bulletin,
-    article,
-    article_download,
-    timeseries,
-    data_slice,
-    compendium_landing_page,
-    compendium_chapter,
-    compendium_data,
-    static_landing_page,
-    static_article,
-    static_methodology,
-    static_methodology_download,
-    static_page,
-    static_qmi,
-    static_foi,
-    static_adhoc,
-    dataset,
-    dataset_landing_page,
-    timeseries_dataset,
-    release,
-    reference_tables,
-    chart,
-    table,
-    equation,
-    departments]
+    def filter_function(self) -> dict:
+        """
+        Generates a filter function query block for the given content type
+        :return:
+        """
+        return {
+            "filter": {
+                "term": {
+                    "_type": self.name
+                }
+            },
+            "weight": self.weight.value
+        }
+
+
+class AvailableContentTypes(Enum):
+    """
+    Enum containing all available content types
+    """
+    HOME_PAGE = ContentType("home_page")
+    HOME_PAGE_CENSUS = ContentType("home_page_census")
+    TAXONOMY_LANDING_PAGE = ContentType("taxonomy_landing_page")
+    PRODUCT_PAGE = ContentType("product_page")
+    BULLETIN = ContentType("bulletin", ContentTypeWeights.BULLETIN)
+    ARTICLE = ContentType("article", ContentTypeWeights.ARTICLE)
+    ARTICLE_DOWNLOAD = ContentType("article_download", ContentTypeWeights.ARTICLE)
+    TIMESERIES = ContentType("timeseries", ContentTypeWeights.TIMESERIES)
+    DATA_SLICE = ContentType("data_slice")
+    COMPENDIUM_LANDING_PAGE = ContentType("compendium_landing_page", ContentTypeWeights.ARTICLE)
+    COMPENDIUM_CHAPTER = ContentType("compendium_chapter")
+    COMPENDIUM_DATA = ContentType("compendium_data")
+    STATIC_LANDING_PAGE = ContentType("static_landing_page")
+    STATIC_ARTICLE = ContentType("static_article")
+    STATIC_METHODOLOGY = ContentType("static_methodology")
+    STATIC_METHODOLOGY_DOWNLOAD = ContentType("static_methodology_download")
+    STATIC_PAGE = ContentType("static_page")
+    STATIC_QMI = ContentType("static_qmi", ContentTypeWeights.BULLETIN)
+    STATIC_FOI = ContentType("static_foi")
+    STATIC_ADHOC = ContentType("static_adhoc", ContentTypeWeights.STATIC_ADHOC)
+    DATASET = ContentType("dataset")
+    DATASET_LANDING_PAGE = ContentType("dataset_landing_page", ContentTypeWeights.DATASET_LANDING_PAGE)
+    TIMESERIES_DATASET = ContentType("timeseries_dataset")
+    RELEASE = ContentType("release")
+    REFERENCE_TABLES = ContentType("reference_tables")
+    CHART = ContentType("chart")
+    TABLE = ContentType("table")
+    EQUATION = ContentType("equation")
+    DEPARTMENTS = ContentType("departments")
+
+    @staticmethod
+    def available_content_type_names() -> List[str]:
+        """
+        Returns a list of all available content type names
+        :return:
+        """
+        return [f.name for f in AvailableContentTypes]
+
+    @staticmethod
+    def available_content_types() -> List[ContentType]:
+        """
+        Returns a list of all available content types
+        :return:
+        """
+        return [f.value for f in AvailableContentTypes]
+
+    @staticmethod
+    def is_content_type(label: str) -> bool:
+        """
+        Returns True is string is a valid TypeFilter, else False. Makes case insensitive comparison.
+        :param label:
+        :return:
+        """
+        return label.upper() in AvailableContentTypes.available_content_type_names()
+
+    @staticmethod
+    def from_str(label: str) -> 'AvailableContentTypes':
+        """
+        Returns the enum type corresponding to the input string
+        :param label:
+        :return:
+        """
+
+        if AvailableContentTypes.is_content_type(label):
+            return AvailableContentTypes[label.upper()]
+        else:
+            raise NotImplementedError("No such ContentType for string: '{0}'".format(label))

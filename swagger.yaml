@@ -1,0 +1,640 @@
+swagger: "2.0"
+info:
+  description: "Dedicated search API"
+  version: "1.0.1"
+  title: "dp-conceptual-search"
+  license:
+    name: "Open Government Licence v3.0"
+    url: "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+schemes:
+  - "http"
+host: localhost:5000
+tags:
+  - name: "search"
+  - name: "conceptual_search"
+  - name: "spellcheck"
+  - name: "healthcheck"
+  - name: "users"
+  - name: "sessions"
+  - name: "recommend"
+
+paths:
+  /search:
+    post:
+      tags:
+        - search
+      summary: "Proxy an Elasticsearch query over HTTP"
+      description: "Proxy an Elasticsearch query over HTTP"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          description: The Elasticsearch query to be executed.
+          schema:
+            type: object
+            example: {match_all: {}}
+      responses:
+        200:
+          description: OK
+        400:
+          description: request body not specified
+
+  /search/{list_type}/{endpoint}:
+    get:
+      tags:
+        - search
+      summary: "Default ONS query API"
+      description: "Default ONS query API"
+      parameters:
+        - in: path
+          name: list_type
+          required: true
+          type: string
+          enum:
+            - ons
+            - onsdata
+            - onspublications
+        - in: path
+          name: endpoint
+          required: true
+          type: string
+          enum:
+            - content
+            - counts
+            - featured
+            - departments
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+      responses:
+        200:
+          description: OK
+        400:
+          description: Query term not specified
+        404:
+          description: Unknown endpoint
+    post:
+      tags:
+        - search
+      summary: "Default ONS query API"
+      description: "Default ONS query API"
+      parameters:
+        - in: path
+          name: list_type
+          required: true
+          type: string
+          enum:
+            - ons
+            - onsdata
+            - onspublications
+        - in: path
+          name: endpoint
+          required: true
+          type: string
+          enum:
+            - content
+            - counts
+            - featured
+            - departments
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        404:
+          description: Unknown endpoint
+
+  /search/uri/{path}:
+    get:
+      tags:
+        - search
+      summary: "Search for a document by it's URI"
+      description: "Search for a document by it's URI"
+      parameters:
+        - in: path
+          name: path
+          required: true
+          description: URI of the desired document
+          type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: No document with the given URI found
+
+  /search/conceptual/{list_type}/{endpoint}:
+    post:
+      tags:
+        - conceptual_search
+      summary: "ONS conceptual search API"
+      description: "ONS API for performing conceptual search (i.e non-keyword matching with ML)"
+      parameters:
+        - in: path
+          name: list_type
+          required: true
+          type: string
+          enum:
+            - ons
+            - onsdata
+            - onspublications
+        - in: path
+          name: endpoint
+          required: true
+          type: string
+          enum:
+            - content
+            - counts
+            - featured
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+
+  /suggest/spelling:
+    get:
+      tags:
+        - spellcheck
+      summary: "Query the spell checker API"
+      description: "Query the spell checker API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query term"
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SuggestResponse'
+
+  /healthcheck:
+    get:
+      tags:
+        - healthcheck
+      summary: "Healthcheck API"
+      description: "API to query the APP for current health status"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/HealthCheck'
+
+  /users/create:
+    put:
+      tags:
+        - users
+      summary: "Create a user"
+      description: "Creates a user using their _ga cookie and inserts them into mongoDB"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            $ref: '#/definitions/User'
+        400:
+          description: "Google analytics cookie (_ga) not specified"
+
+  /users/find:
+    get:
+      tags:
+        - users
+      summary: "Find a user"
+      description: "Finds a user in the database and returns it"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            $ref: '#/definitions/User'
+        400:
+          description: "Google analytics cookie (_ga) not specified"
+        404:
+          description: "User does not exist"
+
+  /users/find/{user_id}:
+    get:
+      tags:
+        - users
+      parameters:
+        - in: path
+          name: user_id
+          type: string
+          required: true
+          description: "ID of user to search for"
+      summary: "Find a user"
+      description: "Finds a user in the database and returns it"
+      responses:
+        200:
+          description: OK
+        404:
+          description: "User does not exist"
+
+  /users/delete/{user_id}:
+    delete:
+      tags:
+        - users
+      parameters:
+        - in: path
+          name: user_id
+          type: string
+          required: true
+          description: "ID of user to delete"
+      summary: "Delete a user"
+      description: "Delete the user with the given id"
+      responses:
+        200:
+          description: OK
+        404:
+          description: "User does not exist"
+
+  /sessions/create/{user_id}:
+    put:
+      tags:
+        - sessions
+      parameters:
+        - in: path
+          name: user_id
+          type: string
+          required: true
+          description: "ID of the user to attach this session to"
+      summary: "Create a user session"
+      description: "Creates a user session and attaches it to a known user"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Session'
+        400:
+          description: "Google analytics cookie (_gid) not specified"
+        404:
+          description: "User does not exist"
+
+  /recommend/update/page/{path}:
+    post:
+      tags:
+        - recommend
+      parameters:
+        - in: path
+          name: path
+          type: string
+          required: true
+          description: "Path to the page to use for user update"
+        - in: formData
+          name: sentiment
+          type: string
+          description: "Use positive or negative update"
+          default: positive
+          enum:
+            - positive
+            - negative
+      consumes:
+        - "application/json"
+        - "multipart/form-data"
+      summary: "Update a user vector using the given page"
+      description: "Update a user vector using the given page to display interest in similar content"
+      responses:
+        200:
+          description: OK
+        400:
+          description: "Unknown sentiment value or GA cookies (_ga and _gid) not supplied"
+        404:
+          description: "Page not found"
+
+  /recommend/{sentiment}/{term}:
+    post:
+      tags:
+        - recommend
+      parameters:
+        - in: path
+          name: sentiment
+          type: string
+          required: true
+          description: "Sentiment to use in update"
+          enum:
+            - positive
+            - negative
+        - in: path
+          name: term
+          type: string
+          required: true
+          description: "Term to use for vector update"
+      summary: "Update user session with term"
+      description: "Updates the users session vector using the given term and sentiment"
+      responses:
+        200:
+          description: OK
+        400:
+          description: "Google analytics cookies (_ga and _gid) not supplied"
+
+  /recommend/similarity/{term}:
+    get:
+      tags:
+        - recommend
+      parameters:
+        - in: path
+          name: term
+          type: string
+          required: true
+          description: "Term to measure similarity against"
+      summary: "Measure similarity between user and term"
+      description: "Measure similarity between user and term"
+      responses:
+        200:
+          description: OK
+        400:
+          description: "Google analytics cookies (_ga and _gid) not supplied"
+
+  /recommend/similarity/{user_id}/{term}:
+    get:
+      tags:
+        - recommend
+      parameters:
+        - in: path
+          name: user_id
+          type: string
+          required: true
+          description: "ID of the user to measure similarity against"
+        - in: path
+          name: term
+          type: string
+          required: true
+          description: "Term to measure similarity against"
+      summary: "Measure similarity between user and term"
+      description: "Measure similarity between user and term"
+      responses:
+        200:
+          description: OK
+        400:
+          description: "Google analytics cookies (_ga and _gid) not supplied"
+
+  /recommend/content/{path}:
+    get:
+      tags:
+        - recommend
+      parameters:
+        - in: path
+          name: path
+          type: string
+          required: true
+          description: "Path of the page for which similar content is wanted"
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+      summary: "Query for recommended content"
+      description: "Executes a query which returns content similar to the page at the given path. If the _ga cookie is specified, then the corresponding users session vector is also used."
+      responses:
+        200:
+          description: OK
+    post:
+      tags:
+        - recommend
+      parameters:
+        - in: path
+          name: path
+          type: string
+          required: true
+          description: "Path of the page for which similar content is wanted"
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+      summary: "Query for recommended content"
+      description: "Executes a query which returns content similar to the page at the given path. If the _ga cookie is specified, then the corresponding users session vector is also used."
+      responses:
+        200:
+          description: OK
+
+
+
+
+definitions:
+  SearchResponse:
+    type: object
+    properties:
+      numberOfResults:
+        type: number
+        description: "Number of search results which match query"
+        example: 80
+      took:
+        type: number
+        description: "Time taken to execute query in mili-seconds"
+        example: 530
+      results:
+        type: array
+        description: "List of matching documents for the current page"
+        items:
+          type: object
+      suggestions:
+        type: array
+        description: "Suggested corrections to the search term (i.e spelling)"
+        items:
+          type: string
+      docCounts:
+        $ref: '#/definitions/DocCounts'
+      paginator:
+        $ref: '#/definitions/Paginator'
+      sortBy:
+        type: string
+        description: "The chosen sort option"
+        example: "relevance"
+  DocCounts:
+    type: object
+    description: "Dictionary containing doc counts by content type"
+  Paginator:
+    type: object
+    description: "Object containing pagination information"
+    properties:
+      numberOfPages:
+        type: integer
+        description: "Total number of available pages"
+      currentPage:
+        type: integer
+        description: "Current page number"
+      start:
+        type: integer
+        description: "The first page"
+      end:
+        type: integer
+        description: "The last page"
+      pages:
+        type: array
+        description: "List of all available pages"
+        items:
+          type: integer
+  SuggestResponse:
+    type: object
+    properties:
+      input:
+        type: string
+        description: "The input token"
+        example: "rpo"
+      correction:
+        type: string
+        description: "The corrected token"
+        example: "rpi"
+      probability:
+        type: number
+        description: "Confidence of the result"
+        example: 0.85
+  HealthCheck:
+    type: object
+    properties:
+      elasticsearch:
+        $ref: '#/definitions/ElasticsearchHealth'
+  ElasticsearchHealth:
+    type: object
+    properties:
+      cluster_name:
+        type: string
+        description: "Name of the Elasticsearch cluster"
+        example: "elasticsearch"
+      status:
+        type: string
+        description: "Status of the cluster"
+        example: "yellow"
+      timed_out:
+        type: boolean
+        description: "Whether the request timed out"
+        example: false
+      number_of_nodes:
+        type: integer
+        description: "Number of nodes in cluster"
+        example: 1
+      number_of_data_nodes:
+        type: integer
+        description: "Number of data nodes in the cluster"
+        example: 1
+      active_primary_shards:
+        type: integer
+        description: "Number of active primary shards"
+        example: 9
+      active_shards:
+        type: integer
+        description: "Total number of active shards"
+        example: 9
+      relocating_shards:
+        type: integer
+        description: "Number of shards in relocating state"
+        example: 0
+      initializing_shards:
+        type: integer
+        description: "Number of shards in initializing state"
+        example: 0
+      unassigned_shards:
+        type: integer
+        description: "Number of unassaigned shards"
+        example: 5
+      delayed_unassigned_shards:
+        type: integer
+        description: "Number of nodes delayed in being assigned"
+        example: 0
+      number_of_pending_tasks:
+        type: integer
+        description: "Number of pending tasks"
+        example: 0
+      number_of_in_flight_fetch:
+        type: integer
+        description: "Number of shards in flight fetch"
+        example: 0
+      task_max_waiting_in_queue_millis:
+        type: integer
+        description: "Max task queue waiting time in ms"
+        example: 0
+      active_shards_percent_as_number:
+        type: number
+        description: "Number of active shards as a percentage of the total"
+        example: 64.2857142857
+  User:
+    type: object
+    properties:
+      _id:
+        type: object
+        description: "MongoDB object ID"
+      user_id:
+        type: string
+        description: "Salt & pepper hashed _ga ID"
+  Session:
+    type: object
+    properties:
+      _id:
+        type: object
+        description: "MongoDB object ID"
+      user_oid:
+        type: object
+        default: "MongoDB object ID of user"
+      session_id:
+        type: string
+        description: "Salt & pepper hashed _gid ID"
+      session_vector:
+        type: array
+        items:
+          type: number
+        description: "Word embedding vector which represents this session"
+
+
+    

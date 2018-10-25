@@ -7,21 +7,18 @@ dp-conceptual-search
 
 | Environment variable         | Default                   | Description
 | ---------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------
-| SEARCH_CONFIG                | development               | Specifies which config_*.py file to use.
+| TESTING                      | false                     | Configures the app for unit testing.
 | ELASTIC_SEARCH_ASYNC_ENABLED | true                      | Specify whether to use synchronous or asynchronous Elasticsearch client.
 | ELASTIC_SEARCH_SERVER        | http://localhost:9200     | URL of Elasticsearch cluster.
 | ELASTIC_SEARCH_TIMEOUT       | 1000                      | Timeout of Elasticsearch requests in seconds.
-| SEARCH_INDEX                 | ons*                      | The Elasticsearch index to be queried.
+| SEARCH_INDEX                 | ons                       | The Elasticsearch index to be queried.
 | BIND_HOST                    | 0.0.0.0                   | The host to bind to.
 | BIND_PORT                    | 5000                      | The port to bind to.
-| SEARCH_LEARNING_RATE         | 0.25                      | Rate at which search tries to learn about user interests (float, capped at 1.0).
-| MONGO_SEARCH_DATABASE        | local                     | Default database for mongoDB.
-| MONGO_BIND_ADDR              | mongodb://localhost:27017 | Default mongoDB bind address (must start with mongodb:// and end with port)
-| ENABLE_PROMETHEUS_METRICS    | False                     | Enable/disable the /metircs endpoint for prometheus.
-| CONCEPTUAL_SEARCH_ENABLED    | false                     | Enable/disable conceptual search APIs.
-| USER_RECOMMENDATION_ENABLED  | false                     | Enable/disable mongoDB and user recommendation engine.
+| SANIC_WORKERS                | 1                         | Number of Sanic worker threads.
+| ENABLE_PROMETHEUS_METRICS    | false                     | Enable/disable the /metircs endpoint for prometheus.
 | COLOURED_LOGGING_ENABLED     | false                     | Enable/disable coloured logging.
 | PRETTY_LOGGING               | false                     | Enable/disable JSON formatting for logging.
+| SEARCH_LOG_LEVEL             | INFO                      | Log level (INFO, DEBUG, or ERROR)
 
 # Install
 
@@ -39,26 +36,27 @@ Use ```python manager.py``` to use the internal Sanic server, or  ```./run_gunic
 gunicorn server (supports multi-processing for multiple workers and threads per worker). By default, the service 
 provides APIs which only mimic the search functionality of babbage. To enable conceptual search (vector scoring), you
 will need to set the environment variable ```CONCEPTUAL_SEARCH_ENABLED=true``` and have the appropriate models available
-on disk. This repository comes with the [full word2vec embeddings model](word2vec/ons_supervised.vec) and a 
-*placeholder* [supervised model](supervised_models/ons_supervised.bin).
+on disk. This repository comes with the [full word2vec embeddings model](ml/data/word2vec/ons_supervised.vec) and a 
+*test* [supervised model](unit/ml/test_data/supervised_models/ons_supervised.bin).
+
+# Swagger
+
+The swagger spec can be found in ```swagger.yaml```
 
 # Testing
 
 To run the unit tests, use: ```make test```.
 
-# Integration
-
-To run the integration tests, use  ```make integration-test```.
-
 # Structure
 
-The code is organised into three main modules:
+The code is organised into four main modules:
 
-* ```core```
+* ```search```
 * ```ons```
-* ```server```
+* ```app```
+* ```api```
 
-The ```core``` module implements common functionality for search, working with mongoDB, 
+The ```search``` module implements common functionality for search, working with mongoDB, 
 loading (un)supervised word embedding modules, spell checking, and user / session tracking. The core recommendation
 engine is also implemented here, and is responsible for updating user session vectors using the supplied models.
 
@@ -79,8 +77,7 @@ indexed embedding vectors (see ```ons/search/conceptual/queries.py``` and ```ons
 As such, all the core logic for pagination, field highlighting, aggregations, sorting and type filtering need only be implemented once
 in ```ons/search/search_engine.AbstractSearchClient```.
 
-Finally, the ```server``` module hosts the ```sanic``` asynchronous HTTP server and all routes. Details of which routes are
-registered and various app configurations can be found in ```server/app.py```.
+Finally, the ```app``` and ```api``` modules host the ```sanic``` asynchronous HTTP server and all routes. Details of which routes are registered and various app configurations can be found in ```app/app.py```.
 
 ### Licence
 

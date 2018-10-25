@@ -1,27 +1,36 @@
+from api.protocol.ons_http_protocol import ONSHttpProtocol
+
+
 def test():
+    """
+    Launches unit tests
+    :return:
+    """
     from subprocess import check_output
     print(
         check_output(['nosetests',
                       '-v',
                       '-s',
-                      '--exclude-dir=./tests/integration',
-                      '--exclude-dir=./tests/regression'])
-        # '--with-coverage',
-        # '--cover-package=server',
-        # '--cover-branches',
-        # '--cover-erase',
-        # '--cover-html',
-        # '--cover-html-dir=cover'])
+                      'unit/',
+                      '--exclude-dir=./unit/integration',
+                      '--exclude-dir=./unit/regression'])
     )
 
 
 def run(app_host: str='0.0.0.0', app_port: int=5000, app_workers: int=1):
-    from server.app import create_app
+    """
+    Runs the Sanic api on the given host and port address.
+    :param app_host:
+    :param app_port:
+    :param app_workers: Number of worker threads to use (defaults to 1)
+    :return:
+    """
+    from app.app import create_app
 
     # Create the app
     app = create_app()
-    # Run the server
-    app.run(host=app_host, port=app_port, workers=app_workers)
+    # Run the api with our custom HttpProtocol (for more control over access log)
+    app.run(host=app_host, port=app_port, workers=app_workers, protocol=ONSHttpProtocol)
 
 
 if __name__ == "__main__":
