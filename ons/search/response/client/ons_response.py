@@ -26,11 +26,11 @@ class DotDict(dict):
         :return:
         """
         # First, check if the value of this field is a list
-        if isinstance(self[self.description_field_name][field_name], list) and\
-                original_value in self[self.description_field_name][field_name]:
-            # Get the index of the element in the list and replace it
-            idx = self[self.description_field_name][field_name].index(original_value)
-            self[self.description_field_name][field_name][idx] = new_value
+        if isinstance(self[self.description_field_name][field_name], list):
+            if original_value in self[self.description_field_name][field_name]:
+                # Get the index of the element in the list and replace it
+                idx = self[self.description_field_name][field_name].index(original_value)
+                self[self.description_field_name][field_name][idx] = new_value
         else:
             # Just replace the existing value with the new one
             self[self.description_field_name][field_name] = new_value
