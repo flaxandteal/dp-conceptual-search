@@ -1,4 +1,4 @@
-from dp.config.utils import git_sha
+from dp4py_config.utils import git_sha
 
 
 def print_sha():
