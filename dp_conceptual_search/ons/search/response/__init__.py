@@ -1,0 +1,3 @@
+from dp_conceptual_search.ons.search.response.search_result import SearchResult
+from dp_conceptual_search.ons.search.response.content_query_result import ContentQueryResult
+from dp_conceptual_search.ons.search.response.type_counts_query_result import TypeCountsQueryResult

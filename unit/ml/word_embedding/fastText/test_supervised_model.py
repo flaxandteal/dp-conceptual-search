@@ -3,8 +3,8 @@ Tests our SupervisedModel class
 """
 from unittest import TestCase
 
-from config import CONFIG
-from ml.word_embedding.fastText.supervised import SupervisedModel
+from dp_conceptual_search.config import CONFIG
+from dp_conceptual_search.ml.word_embedding.fastText.supervised import SupervisedModel
 
 
 class SupervisedModelTestCase(TestCase):

@@ -5,10 +5,11 @@ from json import dumps
 from unit.utils.test_app import TestApp
 
 from unittest import mock
-from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
-from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
-from ons.search.index import Index
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
+
+from dp_conceptual_search.ons.search.index import Index
+from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SearchProxyApiTestCase(TestApp):
