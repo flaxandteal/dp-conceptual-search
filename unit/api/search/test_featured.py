@@ -5,18 +5,16 @@ from json import dumps
 
 from unittest import mock
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
-from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 from unit.utils.test_app import TestApp
 
-from api.search.list_type import ListType
-
-from search.search_type import SearchType
-
-from ons.search.index import Index
-from ons.search.type_filter import AvailableTypeFilters
-from ons.search.sort_fields import query_sort, SortField
-from ons.search.queries.ons_query_builders import content_query
+from dp_conceptual_search.ons.search.index import Index
+from dp_conceptual_search.api.search.list_type import ListType
+from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters
+from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
+from dp_conceptual_search.ons.search.queries.ons_query_builders import content_query
+from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SearchFeaturedApiTestCase(TestApp):

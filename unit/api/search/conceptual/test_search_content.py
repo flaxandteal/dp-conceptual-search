@@ -1,28 +1,21 @@
 """
 Tests the ONS content search API
 """
-from json import dumps
 from typing import List
 
-from config import CONFIG
 
 from unittest import mock
+from unit.utils.test_app import TestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
 
-from app.ml.supervised_models_cache import get_supervised_model
-from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
-
-from unit.utils.test_app import TestApp
-
-from api.search.list_type import ListType
-
-from search.search_type import SearchType
-
-from ons.search.index import Index
-from ons.search.content_type import AvailableContentTypes
-from ons.search.fields import get_highlighted_fields, Field
-from ons.search.conceptual.queries.ons_query_builders import content_query
-from ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
+from dp_conceptual_search.config import CONFIG
+from dp_conceptual_search.ons.search.index import Index
+from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.api.search.list_type import ListType
+from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
+from dp_conceptual_search.app.ml.supervised_models_cache import get_supervised_model
+from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+from dp_conceptual_search.ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 
 
 class SearchContentApiTestCase(TestApp):

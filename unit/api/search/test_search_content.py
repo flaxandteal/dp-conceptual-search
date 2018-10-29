@@ -5,20 +5,18 @@ from json import dumps
 from typing import List
 
 from unittest import mock
-from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
-from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 from unit.utils.test_app import TestApp
+from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
 
-from api.search.list_type import ListType
-
-from search.search_type import SearchType
-
-from ons.search.index import Index
-from ons.search.sort_fields import query_sort, SortField
-from ons.search.content_type import AvailableContentTypes
-from ons.search.fields import get_highlighted_fields, Field
-from ons.search.queries.ons_query_builders import content_query, function_score_content_query
+from dp_conceptual_search.ons.search.index import Index
+from dp_conceptual_search.api.search.list_type import ListType
+from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
+from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
+from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
+from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+from dp_conceptual_search.ons.search.queries.ons_query_builders import content_query, function_score_content_query
 
 
 class SearchContentApiTestCase(TestApp):
