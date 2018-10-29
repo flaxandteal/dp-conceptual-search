@@ -1,4 +1,0 @@
-pygments
-structlog
-python-json-logger
-gitpython==2.1.11

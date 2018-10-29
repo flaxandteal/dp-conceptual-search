@@ -1,9 +1,9 @@
 import asyncio
 from unittest import TestCase
 
-from search.client.search_client import SearchClient
-
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
+
+from dp_conceptual_search.search.client.search_client import SearchClient
 
 
 class SearchClientTestCase(TestCase):

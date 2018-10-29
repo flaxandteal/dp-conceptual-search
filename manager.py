@@ -1,4 +1,4 @@
-from api.protocol.ons_http_protocol import ONSHttpProtocol
+from dp_conceptual_search.api.protocol.ons_http_protocol import ONSHttpProtocol
 
 
 def test():
@@ -25,7 +25,7 @@ def run(app_host: str='0.0.0.0', app_port: int=5000, app_workers: int=1):
     :param app_workers: Number of worker threads to use (defaults to 1)
     :return:
     """
-    from app.app import create_app
+    from dp_conceptual_search.app.app import create_app
 
     # Create the app
     app = create_app()

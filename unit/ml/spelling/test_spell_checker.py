@@ -3,9 +3,9 @@ Tests the custom spell checker class
 """
 from unittest import TestCase
 
-from config import CONFIG
-from ml.spelling.spell_checker import SpellChecker
-from ml.word_embedding.fastText.unsupervised import UnsupervisedModel
+from dp_conceptual_search.config import CONFIG
+from dp_conceptual_search.ml.spelling.spell_checker import SpellChecker
+from dp_conceptual_search.ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
 
 class SpellCheckerTestCase(TestCase):
