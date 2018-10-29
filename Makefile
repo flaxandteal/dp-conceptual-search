@@ -11,8 +11,6 @@ run:
 
 requirements:
 	pip install -r requirements.txt
-	pip install -r dp/requirements.txt
-	cd dp && pip install .
 	python scripts/download_nltk_stopwords.py
 
 version:
