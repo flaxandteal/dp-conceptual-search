@@ -3,11 +3,9 @@ elasticsearch==6.3.0
 elasticsearch_async==6.1.0
 elasticsearch_dsl==6.1.0
 typing==3.6.2
-sanic==0.8.1
-sanic_prometheus==0.1.5
+# sanic_prometheus==0.1.5
 uvloop==0.11.0
-#sanic_motor==0.3.1
-python_json_logger==0.1.9
+# sanic_motor==0.3.1
 unicode==2.6
 Pygments==2.2.0
 gensim==3.4.0

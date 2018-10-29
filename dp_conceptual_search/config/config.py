@@ -1,14 +1,16 @@
 import os
-import logging
 
 from dp4py_config.section import Section
 from dp4py_config.utils import bool_env
+
+from dp4py_sanic.config import CONFIG as SANIC_CONFIG
 
 from dp_conceptual_search.config.utils import read_git_sha
 
 # APP
 
 APP_CONFIG = Section("APP config")
+APP_CONFIG.sanic = SANIC_CONFIG
 APP_CONFIG.app_version = read_git_sha()
 APP_CONFIG.title = 'dp-conceptual-search'
 APP_CONFIG.description = 'Dedicated search API for digital publishing.'
@@ -42,11 +44,3 @@ SEARCH_CONFIG.search_index = os.environ.get("SEARCH_INDEX", SEARCH_CONFIG.defaul
 SEARCH_CONFIG.departments_search_index = "departments"
 SEARCH_CONFIG.results_per_page = int(os.getenv("RESULTS_PER_PAGE", 10))
 SEARCH_CONFIG.max_visible_paginator_link = int(os.getenv("MAX_VISIBLE_PAGINATOR_LINK", 5))
-
-# Logging
-
-LOGGING_CONFIG = Section("Logging config")
-LOGGING_CONFIG.default_level = logging.INFO
-LOGGING_CONFIG.coloured_logging = bool_env('COLOURED_LOGGING_ENABLED', False)
-LOGGING_CONFIG.pretty_logging = bool_env('PRETTY_LOGGING', False)
-LOGGING_CONFIG.json_logger_indent = 4 if LOGGING_CONFIG.pretty_logging else None

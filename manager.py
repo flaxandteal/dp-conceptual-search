@@ -1,3 +1,8 @@
+import os
+import sys
+from subprocess import check_output
+
+from dp_conceptual_search.app.app import create_app
 from dp_conceptual_search.api.protocol.ons_http_protocol import ONSHttpProtocol
 
 
@@ -6,7 +11,6 @@ def test():
     Launches unit tests
     :return:
     """
-    from subprocess import check_output
     print(
         check_output(['nosetests',
                       '-v',
@@ -25,8 +29,6 @@ def run(app_host: str='0.0.0.0', app_port: int=5000, app_workers: int=1):
     :param app_workers: Number of worker threads to use (defaults to 1)
     :return:
     """
-    from dp_conceptual_search.app.app import create_app
-
     # Create the app
     app = create_app()
     # Run the api with our custom HttpProtocol (for more control over access log)
@@ -34,9 +36,6 @@ def run(app_host: str='0.0.0.0', app_port: int=5000, app_workers: int=1):
 
 
 if __name__ == "__main__":
-    import os
-    import sys
-
     if len(sys.argv) > 1 and sys.argv[1] == "test":
         test()
     else:
