@@ -15,3 +15,4 @@ nltk==3.2.5
 inflect==1.0.0
 git+https://github.com/ONSdigital/dp4py-logging.git@master#egg=dp4py_logging
 git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
+git+https://github.com/ONSdigital/dp4py-sanic.git@master#egg=dp4py_sanic
