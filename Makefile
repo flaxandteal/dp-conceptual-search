@@ -5,8 +5,6 @@ all: build test
 build: requirements fastText
 
 debug: build run
-
-run:
 	python manager.py
 
 debug: build run
