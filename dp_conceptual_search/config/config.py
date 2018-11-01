@@ -44,3 +44,4 @@ SEARCH_CONFIG.search_index = os.environ.get("SEARCH_INDEX", SEARCH_CONFIG.defaul
 SEARCH_CONFIG.departments_search_index = "departments"
 SEARCH_CONFIG.results_per_page = int(os.getenv("RESULTS_PER_PAGE", 10))
 SEARCH_CONFIG.max_visible_paginator_link = int(os.getenv("MAX_VISIBLE_PAGINATOR_LINK", 5))
+SEARCH_CONFIG.max_request_size = int(os.getenv("SEARCH_MAX_REQUEST_SIZE", 200))

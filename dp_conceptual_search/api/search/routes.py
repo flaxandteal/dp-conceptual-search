@@ -81,24 +81,16 @@ async def ons_counts_query(request: ONSRequest, list_type: str) -> HTTPResponse:
     """
     Handles type counts queries to the <list_type> API.
     :param request:
-    :param list_type: The list_type to query against (i.e ons, onsdata or onspublications; see api.search.list_type.py)
+    :param list_type: Not used for type counts query, but allows route to support multiply list_type queries
     :return:
     """
-    # Parse list_type to enum
-    if ListType.is_list_type(list_type):
-        list_type_enum: ListType = ListType.from_str(list_type)
-        # Initialise the search engine
-        sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+    # Initialise the search engine
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
-        # Perform the request
-        search_result: SearchResult = await sanic_search_engine.type_counts_query(request, list_type_enum)
+    # Perform the request
+    search_result: SearchResult = await sanic_search_engine.type_counts_query(request)
 
-        return json(request, search_result.to_dict(), 200)
-    else:
-        # Log and return 404
-        message = "Received type counts request for unknown list type: '{0}'".format(list_type)
-        logger.error(request.request_id, message)
-        return json(request, message, 404)
+    return json(request, search_result.to_dict(), 200)
 
 
 @search_blueprint.route('/ons/featured', methods=['GET', 'POST'], strict_slashes=True)
