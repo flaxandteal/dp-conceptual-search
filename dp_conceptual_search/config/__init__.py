@@ -1,0 +1,8 @@
+from dp_conceptual_search.config.config import *
+
+CONFIG = Section("Global App Config")
+CONFIG.APP = APP_CONFIG
+CONFIG.API = API_CONFIG
+CONFIG.ML = ML_CONFIG
+CONFIG.ELASTIC_SEARCH = ELASTIC_SEARCH_CONFIG
+CONFIG.SEARCH = SEARCH_CONFIG

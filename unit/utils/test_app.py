@@ -5,10 +5,10 @@ import unittest
 
 from urllib import parse as urllib_parse
 
-from app.app import create_app
-from app.search_app import SearchApp
+from dp_conceptual_search.app.app import create_app
+from dp_conceptual_search.app.search_app import SearchApp
 
-from api.request.ons_request import ONSRequest
+from dp_conceptual_search.api.request.ons_request import ONSRequest
 
 
 class TestApp(unittest.TestCase):

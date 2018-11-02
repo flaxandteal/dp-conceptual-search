@@ -12,7 +12,7 @@ from unit.elasticsearch.elasticsearch_test_utils import (
     mock_health_response
 )
 
-from app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
 class HealthCheckTestCase(TestApp):

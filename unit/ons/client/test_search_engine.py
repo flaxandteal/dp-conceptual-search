@@ -4,16 +4,16 @@ Tests the ONS search engine functionality
 from typing import List
 from unittest import TestCase
 
-from config import SEARCH_CONFIG
-
 from unit.utils.async_test import AsyncTestCase
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
-from ons.search.fields import get_highlighted_fields, Field
-from ons.search.queries import content_query, type_counts_query
-from ons.search.type_filter import AvailableTypeFilters
-from ons.search.sort_fields import query_sort, SortField
-from ons.search.client.search_engine import SearchEngine
+from dp_conceptual_search.config import SEARCH_CONFIG
+from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
+from dp_conceptual_search.ons.search.queries import content_query, type_counts_query
+from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters
+from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
+from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 
 
 class SearchEngineTestCase(AsyncTestCase, TestCase):
@@ -175,7 +175,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Define the async function to be ran
         async def async_test_function():
-            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -231,7 +230,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Define the async function to be ran
         async def async_test_function():
-            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -293,7 +291,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Define the async function to be ran
         async def async_test_function():
-            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -351,7 +348,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Define the async function to be ran
         async def async_test_function():
-            from search.search_type import SearchType
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
