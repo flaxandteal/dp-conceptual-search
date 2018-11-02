@@ -6,10 +6,10 @@ import asyncio
 import uvloop
 import logging
 
-from dp_conceptual_search.config import CONFIG, SANIC_CONFIG
+from dp4py_sanic.app.exceptions.error_handlers import ErrorHandlers
 
 from dp_conceptual_search.app.search_app import SearchApp
-from dp_conceptual_search.app.exceptions.error_handlers import ErrorHandlers
+from dp_conceptual_search.config import CONFIG, SANIC_CONFIG
 
 # Import blueprints
 from dp_conceptual_search.api.search.routes import search_blueprint

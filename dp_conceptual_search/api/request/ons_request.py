@@ -1,9 +1,9 @@
-from uuid import uuid4
 from typing import List
 from ujson import loads
 
-from sanic.request import Request
 from sanic.exceptions import InvalidUsage
+
+from dp4py_sanic.app.request import Request
 
 from dp_conceptual_search.config import SEARCH_CONFIG
 
@@ -19,26 +19,6 @@ class ONSRequest(Request):
     """
     Custom ONS request class which implements some useful methods for request parsing
     """
-    request_id_header = "X-Request-Id"
-
-    def __init__(self, *args, **kwargs):
-        """
-        Initialise the request object with a unique ID (either supplied as a header or generated)
-        :param args:
-        :param kwargs:
-        """
-        super(ONSRequest, self).__init__(*args, **kwargs)
-
-        # Init empty request ID
-        self.request_id = None
-
-        # Check for existing ID
-        if self.request_id_header in self.headers:
-            self.request_id = self.headers.get(self.request_id_header)
-        else:
-            # Generate a random uuid4
-            self.request_id = str(uuid4())
-
     def get_search_term(self) -> str:
         """
         Parses the request to extract a search term
