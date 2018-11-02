@@ -43,7 +43,7 @@ async def ons_departments_query(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.DEPARTMENTS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.departments_query(request)
