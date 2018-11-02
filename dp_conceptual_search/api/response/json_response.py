@@ -3,6 +3,7 @@ Defines a wrapper fn for a json response which sets the X-Request-Id header
 """
 from sanic.response import HTTPResponse, json_dumps
 
+from dp_conceptual_search.api.log import logger
 from dp_conceptual_search.api.request.ons_request import ONSRequest
 
 
@@ -22,6 +23,14 @@ def json(request: ONSRequest, body, status=200, headers: dict=None, dumps=json_d
         headers = {}
     if ONSRequest.request_id_header not in headers:
         headers[ONSRequest.request_id_header] = request.request_id
+
+    logger.debug(request.request_id, "returning response [status={status}]".format(status=status), extra={
+        "response": {
+            "body": body,
+            "status": status,
+            "headers": headers
+        }
+    })
 
     return HTTPResponse(dumps(body, **kwargs), headers=headers,
                         status=status, content_type=content_type)

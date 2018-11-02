@@ -29,6 +29,9 @@ def create_app() -> SearchApp:
     if "LOGGING_NAMESPACE" not in os.environ:
         SANIC_CONFIG.LOGGING.namespace = CONFIG.APP.title
 
+    # Set elasticsearch log level
+    logging.getLogger('elasticsearch').setLevel(CONFIG.ELASTIC_SEARCH.elasticsearch_log_level)
+
     # Now initialise the APP config, logger and ONSRequest handler
     app = SearchApp()
 
