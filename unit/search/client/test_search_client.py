@@ -3,7 +3,10 @@ from unittest import TestCase
 
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
+from dp_conceptual_search.config import CONFIG
+
 from dp_conceptual_search.search.client.search_client import SearchClient
+from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 
 
 class SearchClientTestCase(TestCase):
@@ -67,4 +70,18 @@ class SearchClientTestCase(TestCase):
         coro = asyncio.coroutine(run_async)
         event_loop.run_until_complete(coro())
         event_loop.close()
+
+    def test_max_size_error(self):
+        """
+        Tests that a RequestSizeExceededException is raised when the request size is higher than
+        CONFIG.SEARCH.max_request_size
+        :return:
+        """
+        client: SearchClient = self.get_client()
+        page_size = CONFIG.SEARCH.max_request_size + 1
+
+        with self.assertRaises(RequestSizeExceededException) as context:
+            client = client[0:page_size]
+
+        self.assertTrue("Max request size exceeded" in str(context.exception))
 

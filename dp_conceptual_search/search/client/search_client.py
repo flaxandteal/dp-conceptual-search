@@ -4,7 +4,10 @@ from elasticsearch_dsl import Search
 from elasticsearch_dsl.response import Response
 from elasticsearch_dsl.connections import connections
 
+from dp_conceptual_search.config import CONFIG
+
 from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 
 
 class SearchClient(Search):
@@ -23,6 +26,27 @@ class SearchClient(Search):
 
         # Define response class object
         self._response_class = response_class
+
+    def __getitem__(self, n):
+        """
+        Support slicing the `Search` instance for pagination.
+
+        Slicing equates to the from/size parameters. E.g.::
+
+            s = Search().query(...)[0:25]
+
+        is equivalent to::
+
+            s = Search().query(...).extra(from_=0, size=25)
+
+        """
+        if isinstance(n, slice):
+            size = n.stop - n.start
+            if size > CONFIG.SEARCH.max_request_size:
+                raise RequestSizeExceededException(size, CONFIG.SEARCH.max_request_size)
+
+        # Check passes, invoke super method
+        return super(SearchClient, self).__getitem__(n)
 
     def _get_elasticsearch_client(self):
         """

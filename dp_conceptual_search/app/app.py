@@ -6,10 +6,10 @@ import asyncio
 import uvloop
 import logging
 
-from dp_conceptual_search.config import CONFIG, SANIC_CONFIG
+from dp4py_sanic.app.exceptions.error_handlers import ErrorHandlers
 
 from dp_conceptual_search.app.search_app import SearchApp
-from dp_conceptual_search.app.exceptions.error_handlers import ErrorHandlers
+from dp_conceptual_search.config import CONFIG, SANIC_CONFIG
 
 # Import blueprints
 from dp_conceptual_search.api.search.routes import search_blueprint
@@ -28,6 +28,9 @@ def create_app() -> SearchApp:
     # Set logging namespace
     if "LOGGING_NAMESPACE" not in os.environ:
         SANIC_CONFIG.LOGGING.namespace = CONFIG.APP.title
+
+    # Set elasticsearch log level
+    logging.getLogger('elasticsearch').setLevel(CONFIG.ELASTIC_SEARCH.elasticsearch_log_level)
 
     # Now initialise the APP config, logger and ONSRequest handler
     app = SearchApp()
