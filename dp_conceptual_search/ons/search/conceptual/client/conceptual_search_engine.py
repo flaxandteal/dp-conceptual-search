@@ -3,11 +3,8 @@ Implementation of conceptual search client
 """
 from typing import List
 
-from dp_conceptual_search.config import CONFIG
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
-from dp_conceptual_search.app.ml.supervised_models_cache import get_supervised_model
-from dp_conceptual_search.ml.word_embedding.fastText.supervised import SupervisedModel
 from dp_conceptual_search.ons.search.conceptual.queries.ons_query_builders import content_query
 from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
 
@@ -32,13 +29,11 @@ class ConceptualSearchEngine(SearchEngine):
         :param kwargs:
         :return:
         """
-        model: SupervisedModel = get_supervised_model(CONFIG.ML.supervised_model_filename)
-
         if type_filters is None:
             type_filters = AvailableTypeFilters.all()
 
         # Build the query dict
-        query = content_query(search_term, model)
+        query = content_query(search_term)
 
         # Build the content query
         s: ConceptualSearchEngine = self._clone() \

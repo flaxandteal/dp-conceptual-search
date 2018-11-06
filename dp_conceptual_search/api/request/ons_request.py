@@ -2,42 +2,22 @@ from uuid import uuid4
 from typing import List
 from ujson import loads
 
-from sanic.request import Request
 from sanic.exceptions import InvalidUsage
 
-from dp_conceptual_search.config import SEARCH_CONFIG
-
-from dp_conceptual_search.ons.search.sort_fields import SortField
-from dp_conceptual_search.ons.search.type_filter import TypeFilter, AvailableTypeFilters
-from dp_conceptual_search.ons.search.exceptions import UnknownTypeFilter
+from dp4py_sanic.api.request import Request
 
 from dp_conceptual_search.api.log import logger
+from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.api.search.list_type import ListType
+from dp_conceptual_search.ons.search.sort_fields import SortField
+from dp_conceptual_search.ons.search.exceptions import UnknownTypeFilter
+from dp_conceptual_search.ons.search.type_filter import TypeFilter, AvailableTypeFilters
 
 
 class ONSRequest(Request):
     """
     Custom ONS request class which implements some useful methods for request parsing
     """
-    request_id_header = "X-Request-Id"
-
-    def __init__(self, *args, **kwargs):
-        """
-        Initialise the request object with a unique ID (either supplied as a header or generated)
-        :param args:
-        :param kwargs:
-        """
-        super(ONSRequest, self).__init__(*args, **kwargs)
-
-        # Init empty request ID
-        self.request_id = None
-
-        # Check for existing ID
-        if self.request_id_header in self.headers:
-            self.request_id = self.headers.get(self.request_id_header)
-        else:
-            # Generate a random uuid4
-            self.request_id = str(uuid4())
 
     def get_search_term(self) -> str:
         """

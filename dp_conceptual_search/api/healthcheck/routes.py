@@ -6,10 +6,10 @@ from inspect import isawaitable
 
 from elasticsearch import Elasticsearch
 
-from dp_conceptual_search.app.search_app import SearchApp
+from dp4py_sanic.api.response import json
 
 from dp_conceptual_search.api.log import logger
-from dp_conceptual_search.api.response import json
+from dp_conceptual_search.app.search_app import SearchApp
 from dp_conceptual_search.api.request.ons_request import ONSRequest
 
 healthcheck_blueprint = Blueprint('healthcheck', url_prefix='/healthcheck')

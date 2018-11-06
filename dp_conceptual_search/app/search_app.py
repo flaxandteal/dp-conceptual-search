@@ -8,15 +8,14 @@ from dp_conceptual_search.config import CONFIG
 
 from dp_conceptual_search.api.request.ons_request import ONSRequest
 from dp_conceptual_search.ml.spelling.spell_checker import SpellChecker
-from dp_conceptual_search.app.ml import init_supervised_models, get_supervised_model
-from dp_conceptual_search.ml.word_embedding.fastText import UnsupervisedModel, SupervisedModel
+from dp_conceptual_search.ml.word_embedding.fastText import UnsupervisedModel
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SearchApp(Server):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, log_namespace: str, *args, **kwargs):
         # Initialise APP with custom ONSRequest class
-        super(SearchApp, self).__init__(*args, request_class=ONSRequest, **kwargs)
+        super(SearchApp, self).__init__(log_namespace, *args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
         self._elasticsearch = None
@@ -54,7 +53,6 @@ class SearchApp(Server):
 
             # Now initialise the ML models essential to the APP
             self._initialise_unsupervised_model()
-            init_supervised_models(CONFIG.ML.supervised_model_filename)
 
             # Initialise spell checker
             self._initialise_spell_checker()
@@ -130,10 +128,3 @@ class SearchApp(Server):
         :return:
         """
         return self._unsupervised_model
-
-    def get_supervised_model(self) -> SupervisedModel:
-        """
-        Returns the cached supervised model
-        :return:
-        """
-        return get_supervised_model(CONFIG.ML.supervised_model_filename)

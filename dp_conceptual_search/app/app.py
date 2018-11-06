@@ -1,12 +1,11 @@
 """
 Code for creating HTTP api app
 """
-import os
 import asyncio
 import uvloop
 import logging
 
-from dp_conceptual_search.config import CONFIG, SANIC_CONFIG
+from dp_conceptual_search.config import CONFIG
 
 from dp_conceptual_search.app.search_app import SearchApp
 from dp_conceptual_search.app.exceptions.error_handlers import ErrorHandlers
@@ -26,12 +25,8 @@ def create_app() -> SearchApp:
     # First, set the ioloop event policy to use uvloop
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
-    # Set logging namespace
-    if "LOGGING_NAMESPACE" not in os.environ:
-        SANIC_CONFIG.LOGGING.namespace = CONFIG.APP.title
-
     # Now initialise the APP config, logger and ONSRequest handler
-    app = SearchApp()
+    app = SearchApp(CONFIG.APP.title)
 
     logging.info("Using config:", extra={"config": CONFIG.to_dict()})
 

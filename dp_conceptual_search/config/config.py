@@ -24,8 +24,8 @@ API_CONFIG.testing = bool_env("TESTING", False)
 # ML
 
 ML_CONFIG = Section("Machine Learning config")
-ML_CONFIG.supervised_model_filename = os.environ.get("SUPERVISED_MODEL_FILENAME",
-                                                     "./unit/ml/test_data/supervised_models/ons_supervised.bin")
+ML_CONFIG.fastText_host = os.environ.get("DP_FASTTEXT_HOST", "localhost")
+ML_CONFIG.fastText_port = int(os.environ.get("DP_FASTTEXT_PORT", 5100))
 ML_CONFIG.unsupervised_model_filename = os.environ.get("UNSUPERVISED_MODEL_FILENAME",
                                                        "./dp_conceptual_search/ml/data/word2vec/ons_supervised.vec")
 
