@@ -142,7 +142,8 @@ class SanicSearchEngine(object):
         try:
             engine: AbstractSearchEngine = await engine.content_query(search_term, page, page_size, sort_by=sort_by,
                                                                       filter_functions=filter_functions,
-                                                                      type_filters=type_filters)
+                                                                      type_filters=type_filters,
+                                                                      context=request.request_id)
             response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform content query request"

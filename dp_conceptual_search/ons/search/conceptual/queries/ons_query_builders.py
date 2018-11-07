@@ -18,20 +18,21 @@ from dp_fasttext.client import Client
 from dp_fasttext.ml.utils import clean_string, replace_nouns_with_singulars
 
 
-async def word_vector_keywords_query(search_term: str, num_labels: int, threshold: float, client: Client) -> Q.Query:
+async def word_vector_keywords_query(search_term: str, num_labels: int, threshold: float, client: Client, headers: dict=None) -> Q.Query:
     """
     Build a bool query to match against generated keyword labels
     :param search_term:
     :param num_labels:
     :param threshold:
     :param client:
+    :param headers:
     :return:
     """
     # Use the raw keywords field for matching
     field: Field = AvailableFields.KEYWORDS_RAW.value
 
     # Get predicted labels and their probabilities
-    labels, probabilities = await client.predict(search_term, num_labels, threshold)
+    labels, probabilities = await client.predict(search_term, num_labels, threshold, headers=headers)
 
     logging.debug("Generated additional keywords", extra={
         "search_term": search_term,
@@ -44,12 +45,14 @@ async def word_vector_keywords_query(search_term: str, num_labels: int, threshol
 
 
 async def content_query(search_term: str,
+                        context: str,
                         field: Field = AvailableFields.EMBEDDING_VECTOR.value,
                         num_labels: int = 10,
                         threshold: float = 0.1) -> Q.Query:
     """
     Defines the ONS conceptual search content query
     :param search_term:
+    :param context:
     :param field:
     :param num_labels:
     :param threshold:
@@ -67,9 +70,12 @@ async def content_query(search_term: str,
         if len(clean_search_term) == 0:
             raise MalformedSearchTerm(search_term)
 
-        wv_keywords_query = word_vector_keywords_query(clean_search_term, num_labels, threshold, client)
+        # Set request context
+        headers = {Client.REQUEST_ID_HEADER, context}
 
-        search_vector: ndarray = await client.get_sentence_vector(clean_search_term)
+        wv_keywords_query = word_vector_keywords_query(clean_search_term, num_labels, threshold, client, headers)
+
+        search_vector: ndarray = await client.get_sentence_vector(clean_search_term, headers=headers)
         if search_vector is None:
             raise UnknownSearchVector(search_term)
 

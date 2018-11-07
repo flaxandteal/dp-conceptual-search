@@ -1,12 +1,24 @@
 """
 Implementation of conceptual search client
 """
+import logging
 from typing import List
+
+from uuid import uuid4
 
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.conceptual.queries.ons_query_builders import content_query
 from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
+
+
+def generate_context():
+    context = str(uuid4())
+    logging.info("No request context specified, generating", extra={
+        "context": context
+    })
+
+    return context
 
 
 class ConceptualSearchEngine(SearchEngine):
@@ -29,11 +41,29 @@ class ConceptualSearchEngine(SearchEngine):
         :param kwargs:
         :return:
         """
+        context = kwargs.get("context", generate_context())
+
+        if sort_by is not SortField.relevance:
+            logging.info("SortField != relevance, conceptual search is disabled", extra={
+                "context": context,
+                "query": search_term,
+                "sort_by": sort_by.name
+            })
+
         if type_filters is None:
+            logging.info("No type filters specified, using all", extra={
+                "context": context
+            })
             type_filters = AvailableTypeFilters.all()
 
         # Build the query dict
-        query = await content_query(search_term)
+        logging.debug("Building conceptual content query", extra={
+            "context": context,
+            "query": search_term,
+            "current_page": current_page,
+            "page_size": size
+        })
+        query = await content_query(search_term, context, **kwargs)
 
         # Build the content query
         s: ConceptualSearchEngine = self._clone() \
