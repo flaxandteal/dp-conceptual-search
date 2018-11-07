@@ -35,10 +35,15 @@ async def word_vector_keywords_query(search_term: str, num_labels: int, threshol
     # Get predicted labels and their probabilities
     labels, probabilities = await client.predict(search_term, num_labels, threshold, headers=headers)
 
-    logging.debug("Generated additional keywords", extra={
+    extra = {
         "search_term": search_term,
         "keywords": labels
-    })
+    }
+
+    if Client.REQUEST_ID_HEADER in headers:
+        extra["context"] = headers[Client.REQUEST_ID_HEADER]
+
+    logging.debug("Generated additional keywords", extra=extra)
 
     # Build the individual match queries
     match_queries = [Q.Match(**{field.name: {"query": label}}) for label in labels]
