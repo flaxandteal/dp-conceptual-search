@@ -44,7 +44,7 @@ async def word_vector_keywords_query(search_term: str, num_labels: int, threshol
     return Q.Bool(should=match_queries)
 
 
-async def content_query(search_term: str,
+async def build_content_query(search_term: str,
                         context: str,
                         field: Field = AvailableFields.EMBEDDING_VECTOR.value,
                         num_labels: int = 10,
@@ -71,7 +71,7 @@ async def content_query(search_term: str,
             raise MalformedSearchTerm(search_term)
 
         # Set request context
-        headers = {Client.REQUEST_ID_HEADER, context}
+        headers = {Client.REQUEST_ID_HEADER: context}
 
         wv_keywords_query = word_vector_keywords_query(clean_search_term, num_labels, threshold, client, headers)
 
@@ -91,7 +91,7 @@ async def content_query(search_term: str,
         )
 
         # Build the original content query
-        dis_max_query = ons_query_builders.content_query(search_term)
+        dis_max_query = ons_query_builders.build_content_query(search_term)
 
         # Combine as DisMax with FunctionScore
         query = Q.DisMax(

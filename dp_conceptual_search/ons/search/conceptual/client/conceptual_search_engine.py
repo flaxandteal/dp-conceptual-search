@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
-from dp_conceptual_search.ons.search.conceptual.queries.ons_query_builders import content_query
+from dp_conceptual_search.ons.search.conceptual.queries.ons_query_builders import build_content_query
 from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
 
 
@@ -41,7 +41,7 @@ class ConceptualSearchEngine(SearchEngine):
         :param kwargs:
         :return:
         """
-        context = kwargs.get("context", generate_context())
+        context = kwargs.pop("context", generate_context())
 
         if sort_by is not SortField.relevance:
             logging.info("SortField != relevance, conceptual search is disabled", extra={
@@ -63,7 +63,7 @@ class ConceptualSearchEngine(SearchEngine):
             "current_page": current_page,
             "page_size": size
         })
-        query = await content_query(search_term, context, **kwargs)
+        query = await build_content_query(search_term, context, **kwargs)
 
         # Build the content query
         s: ConceptualSearchEngine = self._clone() \

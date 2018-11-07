@@ -5,7 +5,7 @@ from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
 from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
 from dp_conceptual_search.ons.search.queries.ons_query_builders import (
-    content_query, type_counts_query, function_score_content_query, departments_query
+    build_content_query, build_type_counts_query, build_function_score_content_query, build_departments_query
 )
 
 
@@ -25,7 +25,7 @@ class SearchEngine(AbstractSearchEngine):
         :return:
         """
         s: SearchEngine = self._clone() \
-            .query(departments_query(search_term)) \
+            .query(build_departments_query(search_term)) \
             .paginate(current_page, size) \
             .search_type(SearchType.DFS_QUERY_THEN_FETCH)
 
@@ -53,11 +53,11 @@ class SearchEngine(AbstractSearchEngine):
             type_filters = AvailableTypeFilters.all()
 
         # Build the query dict
-        query = content_query(search_term)
+        query = build_content_query(search_term)
 
         # Add function scores if specified
         if filter_functions is not None:
-            query = function_score_content_query(query, filter_functions)
+            query = build_function_score_content_query(query, filter_functions)
 
         # Build the content query
         s: SearchEngine = self._clone() \
@@ -89,7 +89,7 @@ class SearchEngine(AbstractSearchEngine):
                                                    type_filters=type_filters, highlight=False)
 
         # Build the aggregations
-        aggregations = type_counts_query()
+        aggregations = build_type_counts_query()
 
         # Setup the aggregations bucket
         s.aggs.bucket(self.agg_bucket, aggregations)
