@@ -9,6 +9,7 @@ from unittest import mock
 from unit.utils.test_app import TestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
+from dp_conceptual_search.config import CONFIG
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.api.search.list_type import ListType

@@ -1,7 +1,7 @@
 """
 Custom logger class for API routes which wraps the Sanic logger and injects additonal request info
 """
-from sanic.log import logger
+import logging
 
 
 def _log(level: str, context: str, msg: str, *args, **kwargs):
@@ -14,12 +14,12 @@ def _log(level: str, context: str, msg: str, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    if hasattr(logger, level):
-        fn = getattr(logger, level)
+    if hasattr(logging, level):
+        fn = getattr(logging, level)
         if 'extra' not in kwargs:
             kwargs['extra'] = {}
         elif not isinstance(kwargs['extra'], dict):
-            logger.error("Incorrect usage of logger: argument 'extra' must be instanceof dict")
+            logging.error("Incorrect usage of logger: argument 'extra' must be instanceof dict")
 
         kwargs['extra'] = {
             "context": context,
@@ -27,7 +27,7 @@ def _log(level: str, context: str, msg: str, *args, **kwargs):
         }
         fn(msg, *args, **kwargs)
     else:
-        logger.error("Unknown log level: '{0}'".format(level))
+        logging.error("Unknown log level: '{0}'".format(level))
 
 
 def info(context: str, msg: str, *args, **kwargs):
