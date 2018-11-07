@@ -18,7 +18,8 @@ from dp_fasttext.client import Client
 from dp_fasttext.ml.utils import clean_string, replace_nouns_with_singulars
 
 
-async def word_vector_keywords_query(search_term: str, num_labels: int, threshold: float, client: Client, headers: dict=None) -> Q.Query:
+async def word_vector_keywords_query(search_term: str, num_labels: int, threshold: float, client: Client,
+                                     headers: dict = None) -> Q.Query:
     """
     Build a bool query to match against generated keyword labels
     :param search_term:
@@ -45,10 +46,10 @@ async def word_vector_keywords_query(search_term: str, num_labels: int, threshol
 
 
 async def build_content_query(search_term: str,
-                        context: str,
-                        field: Field = AvailableFields.EMBEDDING_VECTOR.value,
-                        num_labels: int = 10,
-                        threshold: float = 0.1) -> Q.Query:
+                              context: str,
+                              field: Field = AvailableFields.EMBEDDING_VECTOR.value,
+                              num_labels: int = 10,
+                              threshold: float = 0.1) -> Q.Query:
     """
     Defines the ONS conceptual search content query
     :param search_term:
