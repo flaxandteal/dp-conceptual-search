@@ -150,9 +150,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         Tests the departments query method correctly calls the underlying Elasticsearch client
         :return:
         """
-        # Create an instance of the SearchEngine
-        engine = self.get_search_engine()
-
         # Calculate correct start page number
         from_start, current_page, size = self.paginate()
 
@@ -170,11 +167,13 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             "size": size
         }
 
-        # Call departments_query
-        engine: SearchEngine = engine.departments_query(self.search_term, current_page, size)
-
         # Define the async function to be ran
         async def async_test_function():
+            # Create an instance of the SearchEngine
+            engine = self.get_search_engine()
+
+            engine: SearchEngine = await engine.departments_query(self.search_term, current_page, size)
+
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -189,9 +188,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         Tests the content query method correctly calls the underlying Elasticsearch client
         :return:
         """
-        # Create an instance of the SearchEngine
-        engine = self.get_search_engine()
-
         # Calculate correct start page number
         from_start, current_page, size = self.paginate()
 
@@ -225,11 +221,13 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             "highlight": self.highlight_dict
         }
 
-        # Call departments_query
-        engine: SearchEngine = engine.content_query(self.search_term, current_page, size)
-
         # Define the async function to be ran
         async def async_test_function():
+            # Create an instance of the SearchEngine
+            engine = self.get_search_engine()
+
+            engine: SearchEngine = await engine.content_query(self.search_term, current_page, size)
+
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -244,9 +242,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         Tests the type counts query method correctly calls the underlying Elasticsearch client
         :return:
         """
-        # Create an instance of the SearchEngine
-        engine = self.get_search_engine()
-
         # Set correct from_start and page size for type counts query
         from_start = 0
         size = SEARCH_CONFIG.results_per_page
@@ -286,11 +281,12 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             "aggs": aggs
         }
 
-        # Call departments_query
-        engine: SearchEngine = engine.type_counts_query(self.search_term)
-
         # Define the async function to be ran
         async def async_test_function():
+            # Create an instance of the SearchEngine
+            engine = self.get_search_engine()
+
+            engine: SearchEngine = await engine.type_counts_query(self.search_term)
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -305,9 +301,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         Tests the featured query method correctly calls the underlying Elasticsearch client
         :return:
         """
-        # Create an instance of the SearchEngine
-        engine = self.get_search_engine()
-
         # Set correct from_start and page size for featured result query
         from_start = 0
         size = 1
@@ -343,11 +336,12 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             "sort": query_sort(SortField.relevance)
         }
 
-        # Call departments_query
-        engine: SearchEngine = engine.featured_result_query(self.search_term)
-
         # Define the async function to be ran
         async def async_test_function():
+            # Create an instance of the SearchEngine
+            engine = self.get_search_engine()
+
+            engine: SearchEngine = await engine.featured_result_query(self.search_term)
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 

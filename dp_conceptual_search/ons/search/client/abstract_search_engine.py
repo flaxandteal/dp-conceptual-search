@@ -76,7 +76,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         return s[from_start:end]
 
     @abc.abstractmethod
-    def departments_query(
+    async def departments_query(
             self,
             search_term: str,
             current_page: int,
@@ -91,7 +91,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def content_query(self, search_term: str, current_page: int, size: int,
+    async def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField=SortField.relevance,
                       highlight: bool=True,
                       filter_functions: List[AvailableContentTypes]=None,
@@ -112,7 +112,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def type_counts_query(self, search_term, type_filters: List[TypeFilter]=None, **kwargs):
+    async def type_counts_query(self, search_term, type_filters: List[TypeFilter]=None, **kwargs):
         """
         Builds the ONS type counts query, responsible providing counts by content type
         :param search_term:
@@ -123,7 +123,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def featured_result_query(self, search_term):
+    async def featured_result_query(self, search_term):
         """
         ONS query for featured pages
         :param search_term:

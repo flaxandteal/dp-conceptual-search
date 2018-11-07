@@ -104,7 +104,8 @@ class SanicSearchEngine(object):
         page_size = request.get_page_size()
 
         try:
-            response: ONSResponse = await engine.departments_query(search_term, page, page_size).execute()
+            engine: AbstractSearchEngine = await engine.departments_query(search_term, page, page_size)
+            response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform departments query request"
             logger.error(request.request_id, message, exc_info=e)
@@ -139,9 +140,10 @@ class SanicSearchEngine(object):
             )
 
         try:
-            response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by,
-                                                               filter_functions=filter_functions,
-                                                               type_filters=type_filters).execute()
+            engine: AbstractSearchEngine = await engine.content_query(search_term, page, page_size, sort_by=sort_by,
+                                                                      filter_functions=filter_functions,
+                                                                      type_filters=type_filters)
+            response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform content query request"
             logger.error(request.request_id, message, exc_info=e)
@@ -164,7 +166,8 @@ class SanicSearchEngine(object):
         search_term = request.get_search_term()
 
         try:
-            response: ONSResponse = await engine.type_counts_query(search_term).execute()
+            engine: AbstractSearchEngine = await engine.type_counts_query(search_term)
+            response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
             logger.error(request.request_id, message, exc_info=e)
@@ -186,7 +189,8 @@ class SanicSearchEngine(object):
         search_term = request.get_search_term()
 
         try:
-            response: ONSResponse = await engine.featured_result_query(search_term).execute()
+            engine: AbstractSearchEngine = await engine.featured_result_query(search_term)
+            response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform featured result query request"
             logger.error(request.request_id, message, exc_info=e)

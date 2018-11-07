@@ -11,12 +11,12 @@ from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, Typ
 
 class ConceptualSearchEngine(SearchEngine):
 
-    def content_query(self, search_term: str, current_page: int, size: int,
-                      sort_by: SortField=SortField.relevance,
-                      highlight: bool=True,
-                      filter_functions: List[AvailableContentTypes]=None,
-                      type_filters: List[TypeFilter]=None,
-                      **kwargs):
+    async def content_query(self, search_term: str, current_page: int, size: int,
+                            sort_by: SortField = SortField.relevance,
+                            highlight: bool = True,
+                            filter_functions: List[AvailableContentTypes] = None,
+                            type_filters: List[TypeFilter] = None,
+                            **kwargs):
         """
         Builds the ONS conceptual search content query, responsible for populating the SERP
         :param search_term:
@@ -33,7 +33,7 @@ class ConceptualSearchEngine(SearchEngine):
             type_filters = AvailableTypeFilters.all()
 
         # Build the query dict
-        query = content_query(search_term)
+        query = await content_query(search_term)
 
         # Build the content query
         s: ConceptualSearchEngine = self._clone() \
