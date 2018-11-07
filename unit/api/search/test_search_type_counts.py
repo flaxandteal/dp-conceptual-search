@@ -9,14 +9,13 @@ from unittest import mock
 from unit.utils.test_app import TestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
-from dp_conceptual_search.config import CONFIG
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
-from dp_conceptual_search.ons.search.queries.ons_query_builders import content_query, type_counts_query
+from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_type_counts_query
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -104,7 +103,7 @@ class SearchTypeCountsApiTestCase(TestApp):
 
             # Build expected aggs query
             aggs = {
-                "docCounts": type_counts_query().to_dict()
+                "docCounts": build_type_counts_query().to_dict()
             }
 
             # Build the expected query dict - note this should not change
@@ -114,7 +113,7 @@ class SearchTypeCountsApiTestCase(TestApp):
                     "bool": {
                         "filter": filter_query,
                         "must": [
-                            content_query(self.search_term).to_dict(),
+                            build_content_query(self.search_term).to_dict(),
                         ]
                     }
                 },

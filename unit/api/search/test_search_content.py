@@ -17,7 +17,7 @@ from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
-from dp_conceptual_search.ons.search.queries.ons_query_builders import content_query, function_score_content_query
+from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_function_score_content_query
 
 
 class SearchContentApiTestCase(TestApp):
@@ -133,7 +133,8 @@ class SearchContentApiTestCase(TestApp):
                     "bool": {
                         "filter": filter_query,
                         "must": [
-                            function_score_content_query(content_query(self.search_term), function_scores).to_dict(),
+                            build_function_score_content_query(
+                                build_content_query(self.search_term), function_scores).to_dict(),
                         ]
                     }
                 },

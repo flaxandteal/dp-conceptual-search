@@ -13,7 +13,7 @@ from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
-from dp_conceptual_search.ons.search.queries.ons_query_builders import content_query, type_counts_query
+from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_type_counts_query
 
 
 class SearchEngineTestCase(AsyncTestCase, TestCase):
@@ -212,7 +212,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        content_query(self.search_term).to_dict(),
+                        build_content_query(self.search_term).to_dict(),
                     ]
                 }
             },
@@ -262,7 +262,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Build expected aggs query
         aggs = {
-            "docCounts": type_counts_query().to_dict()
+            "docCounts": build_type_counts_query().to_dict()
         }
 
         # Build the expected query dict - note this should not change
@@ -272,7 +272,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        content_query(self.search_term).to_dict(),
+                        build_content_query(self.search_term).to_dict(),
                     ]
                 }
             },
@@ -328,7 +328,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        content_query(self.search_term).to_dict(),
+                        build_content_query(self.search_term).to_dict(),
                     ]
                 }
             },
