@@ -3,7 +3,7 @@ from ujson import loads
 
 from sanic.exceptions import InvalidUsage
 
-from dp4py_sanic.app.request import Request
+from dp4py_sanic.api.request import Request
 
 from dp_conceptual_search.config import SEARCH_CONFIG
 

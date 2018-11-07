@@ -1,7 +1,6 @@
 """
 Code for creating HTTP api app
 """
-import os
 import asyncio
 import uvloop
 import logging
@@ -25,15 +24,11 @@ def create_app() -> SearchApp:
     # First, set the ioloop event policy to use uvloop
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
-    # Set logging namespace
-    if "LOGGING_NAMESPACE" not in os.environ:
-        SANIC_CONFIG.LOGGING.namespace = CONFIG.APP.title
-
     # Set elasticsearch log level
     logging.getLogger('elasticsearch').setLevel(CONFIG.ELASTIC_SEARCH.elasticsearch_log_level)
 
     # Now initialise the APP config, logger and ONSRequest handler
-    app = SearchApp()
+    app = SearchApp(CONFIG.APP.title)
 
     logging.info("Using config:", extra={"config": CONFIG.to_dict()})
 

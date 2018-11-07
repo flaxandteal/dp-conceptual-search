@@ -15,9 +15,9 @@ from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import 
 
 
 class SearchApp(Server):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, log_namespace: str, *args, **kwargs):
         # Initialise APP with custom ONSRequest class
-        super(SearchApp, self).__init__(*args, request_class=ONSRequest, **kwargs)
+        super(SearchApp, self).__init__(log_namespace, *args, request_class=ONSRequest, **kwargs)
 
         # Attach an Elasticsearh client
         self._elasticsearch = None
