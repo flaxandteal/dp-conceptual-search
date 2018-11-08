@@ -4,6 +4,8 @@ from elasticsearch_dsl import Search
 from elasticsearch_dsl.response import Response
 from elasticsearch_dsl.connections import connections
 
+from dp4py_logging.time import timeit
+
 from dp_conceptual_search.config import CONFIG
 
 from dp_conceptual_search.search.search_type import SearchType
@@ -84,6 +86,7 @@ class SearchClient(Search):
         """
         return self.params(search_type=search_type.value)
 
+    @timeit
     async def execute(self, ignore_cache=False):
         """
         Wraps the Elasticsearch response in the given response class

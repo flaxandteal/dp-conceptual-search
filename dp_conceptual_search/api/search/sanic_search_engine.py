@@ -115,7 +115,7 @@ class SanicSearchEngine(object):
 
         # Execute
         try:
-            logger.debug(request.request_id, "Executing proxy query", extra={
+            logger.trace(request.request_id, "Executing proxy query", extra={
                 "query": engine.to_dict()
             })
             response: ONSResponse = await engine.execute()
@@ -185,7 +185,7 @@ class SanicSearchEngine(object):
         try:
             engine: AbstractSearchEngine = engine.departments_query(search_term, page, page_size)
 
-            logger.debug(request.request_id, "Executing departments query", extra={
+            logger.trace(request.request_id, "Executing departments query", extra={
                 "query": engine.to_dict()
             })
             response: ONSResponse = await engine.execute()
@@ -231,7 +231,7 @@ class SanicSearchEngine(object):
                                                                 type_filters=type_filters,
                                                                 **kwargs)
 
-            logger.debug(request.request_id, "Executing content query", extra={
+            logger.trace(request.request_id, "Executing content query", extra={
                 "query": engine.to_dict()
             })
             response: ONSResponse = await engine.execute()
@@ -270,7 +270,7 @@ class SanicSearchEngine(object):
 
             engine: AbstractSearchEngine = engine.type_counts_query(search_term, **kwargs)
 
-            logger.debug(request.request_id, "Executing type counts query", extra={
+            logger.trace(request.request_id, "Executing type counts query", extra={
                 "query": engine.to_dict()
             })
             response: ONSResponse = await engine.execute()
@@ -303,7 +303,7 @@ class SanicSearchEngine(object):
         try:
             engine: AbstractSearchEngine = engine.featured_result_query(search_term)
 
-            logger.debug(request.request_id, "Executing featured result query", extra={
+            logger.trace(request.request_id, "Executing featured result query", extra={
                 "query": engine.to_dict()
             })
             response: ONSResponse = await engine.execute()
