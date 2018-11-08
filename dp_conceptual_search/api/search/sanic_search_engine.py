@@ -14,6 +14,7 @@ from dp_fasttext.client import Client
 from dp_fasttext.ml.utils import clean_string, replace_nouns_with_singulars
 
 from dp_conceptual_search.log import logger
+from dp_conceptual_search.config.config import FASTTEXT_CONFIG
 
 from dp_conceptual_search.app.search_app import SearchApp
 
@@ -23,7 +24,6 @@ from dp_conceptual_search.api.request.ons_request import ONSRequest
 from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 
 from dp_conceptual_search.ons.search.index import Index
-from dp_conceptual_search.config.config import FASTTEXT_CONFIG
 from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.exceptions import UnknownTypeFilter
 from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
