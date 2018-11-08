@@ -11,7 +11,6 @@ unicode==2.6
 Pygments==2.2.0
 gensim==3.4.0
 nltk==3.2.5
-inflect==1.0.0
 git+https://github.com/ONSdigital/dp4py-logging.git@master#egg=dp4py_logging
 git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
 git+https://github.com/ONSdigital/dp4py-sanic.git@master#egg=dp4py_sanic
