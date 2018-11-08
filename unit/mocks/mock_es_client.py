@@ -1,5 +1,5 @@
 """
-Mock Elasticsearch client for unit
+Mock Elasticsearch client for unit testing
 """
 from elasticsearch import Elasticsearch
 from elasticsearch.client import ClusterClient

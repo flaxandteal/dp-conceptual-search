@@ -30,9 +30,9 @@ from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
+from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import FastTextClientService
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
 from dp_conceptual_search.ons.search.exceptions import MalformedSearchTerm, UnknownSearchVector
-from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import get_fasttext_client
 from dp_conceptual_search.ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 
 
@@ -138,7 +138,7 @@ class SanicSearchEngine(object):
         """
         # Initialise dp-fastText client
         client: Client
-        async with get_fasttext_client() as client:
+        async with FastTextClientService.get_fasttext_client() as client:
             # Set request context header
 
             headers = {
