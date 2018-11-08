@@ -6,7 +6,7 @@ from sanic.response import HTTPResponse
 
 from dp4py_sanic.api.response import json
 
-from dp_conceptual_search.api.log import logger
+from dp_conceptual_search.log import logger
 from dp_conceptual_search.api.request import ONSRequest
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.api.search.list_type import ListType

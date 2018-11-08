@@ -27,9 +27,6 @@ class SearchApp(Server):
         # Initialise spell check member
         self._spell_checker = None
 
-        # Set Logo to None
-        self.config.logo = None
-
         @self.listener("after_server_start")
         async def init(app: SearchApp, loop):
             """
@@ -49,7 +46,7 @@ class SearchApp(Server):
                 }
             }
 
-            logging.info("Initialised Elasticsearch client", extra=elasticsearch_log_data)
+            logging.debug("Initialised Elasticsearch client", extra=elasticsearch_log_data)
 
             # Now initialise the ML models essential to the APP
             self._initialise_unsupervised_model()
@@ -72,15 +69,19 @@ class SearchApp(Server):
         Initialises the unsupervised fastText .vec model
         :return:
         """
-        logging.info("Initialising unsupervised fastText model", extra={
+        logging.debug("Initialising unsupervised fastText model", extra={
             "model": {
                 "filename": CONFIG.ML.unsupervised_model_filename
             }
         })
 
-        self._unsupervised_model = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
+        try:
+            self._unsupervised_model = UnsupervisedModel(CONFIG.ML.unsupervised_model_filename)
+        except Exception as e:
+            logging.error("Error initialising unsupervised model", exc_info=e)
+            raise SystemExit()
 
-        logging.info("Successfully initialised unsupervised fastText model", extra={
+        logging.debug("Successfully initialised unsupervised fastText model", extra={
             "model": {
                 "filename": CONFIG.ML.unsupervised_model_filename
             }
@@ -92,7 +93,7 @@ class SearchApp(Server):
         :return:
         """
         if self.get_unsupervised_model() is not None:
-            logging.info("Initialising SpellChecker", extra={
+            logging.debug("Initialising SpellChecker", extra={
                 "model": {
                     "filename": self._unsupervised_model.filename
                 }
@@ -100,11 +101,14 @@ class SearchApp(Server):
 
             self._spell_checker = SpellChecker(self._unsupervised_model)
 
-            logging.info("Successfully initialised SpellChecker", extra={
+            logging.debug("Successfully initialised SpellChecker", extra={
                 "model": {
                     "filename": self._unsupervised_model.filename
                 }
             })
+        else:
+            logging.error("Unsupervised model doesn't exist")
+            raise SystemExit()
 
     @property
     def elasticsearch(self) -> ElasticsearchClientService:

@@ -31,7 +31,7 @@ def create_app() -> SearchApp:
     # Now initialise the APP config, logger and ONSRequest handler
     app = SearchApp(CONFIG.APP.title)
 
-    logging.info("Using config:", extra={"config": CONFIG.to_dict()})
+    logging.info("Using config", extra={"config": CONFIG.to_dict()})
 
     # Register blueprints
     app.blueprint(search_blueprint)

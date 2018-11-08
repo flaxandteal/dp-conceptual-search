@@ -16,7 +16,7 @@ class SearchEngine(AbstractSearchEngine):
     default_page_number = 1
     agg_bucket = "docCounts"
 
-    async def departments_query(self, search_term: str, current_page: int, size: int):
+    def departments_query(self, search_term: str, current_page: int, size: int):
         """
         Builds the ONS departments query with pagination
         :param search_term:
@@ -31,12 +31,12 @@ class SearchEngine(AbstractSearchEngine):
 
         return s
 
-    async def content_query(self, search_term: str, current_page: int, size: int,
-                            sort_by: SortField = SortField.relevance,
-                            highlight: bool = True,
-                            filter_functions: List[AvailableContentTypes] = None,
-                            type_filters: List[TypeFilter] = None,
-                            **kwargs):
+    def content_query(self, search_term: str, current_page: int, size: int,
+                      sort_by: SortField = SortField.relevance,
+                      highlight: bool = True,
+                      filter_functions: List[AvailableContentTypes] = None,
+                      type_filters: List[TypeFilter] = None,
+                      **kwargs):
         """
         Builds the ONS content query, responsible for populating the SERP
         :param search_term:
@@ -72,7 +72,7 @@ class SearchEngine(AbstractSearchEngine):
 
         return s
 
-    async def type_counts_query(self, search_term, type_filters: List[TypeFilter] = None, **kwargs):
+    def type_counts_query(self, search_term, type_filters: List[TypeFilter] = None, **kwargs):
         """
         Builds the ONS type counts query, responsible providing counts by content type
         :param search_term:
@@ -84,9 +84,9 @@ class SearchEngine(AbstractSearchEngine):
             type_filters = AvailableTypeFilters.all()
 
         # Build the content query with no type filters, function scores or sorting
-        s: SearchEngine = await self.content_query(search_term, self.default_page_number,
-                                                   SEARCH_CONFIG.results_per_page,
-                                                   type_filters=type_filters, highlight=False)
+        s: SearchEngine = self.content_query(search_term, self.default_page_number,
+                                             SEARCH_CONFIG.results_per_page,
+                                             type_filters=type_filters, highlight=False)
 
         # Build the aggregations
         aggregations = build_type_counts_query()
@@ -96,7 +96,7 @@ class SearchEngine(AbstractSearchEngine):
 
         return s
 
-    async def featured_result_query(self, search_term):
+    def featured_result_query(self, search_term):
         """
         Builds the ONS featured result query (content query with specific type filters)
         :param search_term:
@@ -108,9 +108,9 @@ class SearchEngine(AbstractSearchEngine):
 
         page_size = 1  # Only want one hit
 
-        return await self.content_query(search_term,
-                                        self.default_page_number,
-                                        page_size,
-                                        filter_functions=None,
-                                        type_filters=type_filters,
-                                        highlight=False)
+        return self.content_query(search_term,
+                                  self.default_page_number,
+                                  page_size,
+                                  filter_functions=None,
+                                  type_filters=type_filters,
+                                  highlight=False)

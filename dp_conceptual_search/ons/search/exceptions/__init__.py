@@ -1,3 +1,7 @@
+class InvalidUsage(Exception):
+    pass
+
+
 class MalformedSearchTerm(Exception):
     def __init__(self, search_term: str):
         super(MalformedSearchTerm, self).__init__("Malformed search term: '{0}'".format(search_term))

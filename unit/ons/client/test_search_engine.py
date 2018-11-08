@@ -172,7 +172,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             # Create an instance of the SearchEngine
             engine = self.get_search_engine()
 
-            engine: SearchEngine = await engine.departments_query(self.search_term, current_page, size)
+            engine: SearchEngine = engine.departments_query(self.search_term, current_page, size)
 
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
@@ -226,7 +226,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             # Create an instance of the SearchEngine
             engine = self.get_search_engine()
 
-            engine: SearchEngine = await engine.content_query(self.search_term, current_page, size)
+            engine: SearchEngine = engine.content_query(self.search_term, current_page, size)
 
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
@@ -286,7 +286,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             # Create an instance of the SearchEngine
             engine = self.get_search_engine()
 
-            engine: SearchEngine = await engine.type_counts_query(self.search_term)
+            engine: SearchEngine = engine.type_counts_query(self.search_term)
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -341,7 +341,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             # Create an instance of the SearchEngine
             engine = self.get_search_engine()
 
-            engine: SearchEngine = await engine.featured_result_query(self.search_term)
+            engine: SearchEngine = engine.featured_result_query(self.search_term)
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
