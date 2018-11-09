@@ -13,10 +13,10 @@ run:
 	python manager.py
 
 conceptual_search:
-	python scripts/download_nltk_stopwords.py
 	CONCEPTUAL_SEARCH_ENABLED=true REDIRECT_CONCEPTUAL_SEARCH=true python manager.py
 
 requirements:
+	python scripts/download_nltk_stopwords.py
 	pip install -r requirements.txt
 
 version:
