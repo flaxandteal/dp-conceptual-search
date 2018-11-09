@@ -16,8 +16,8 @@ conceptual_search:
 	CONCEPTUAL_SEARCH_ENABLED=true REDIRECT_CONCEPTUAL_SEARCH=true python manager.py
 
 requirements:
-	python scripts/download_nltk_stopwords.py
 	pip install -r requirements.txt
+	python scripts/download_nltk_stopwords.py
 
 version:
 	pip install git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
