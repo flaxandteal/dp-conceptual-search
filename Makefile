@@ -17,7 +17,6 @@ conceptual_search:
 
 requirements:
 	pip install -r requirements.txt
-	python scripts/download_nltk_stopwords.py
 
 version:
 	pip install git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
