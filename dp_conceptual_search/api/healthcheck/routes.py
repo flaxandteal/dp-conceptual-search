@@ -42,11 +42,11 @@ async def health_check(request: ONSRequest):
         # Check indices exist
         indices = "{ons},{departments}".format(ons=SEARCH_CONFIG.search_index,
                                                departments=SEARCH_CONFIG.departments_search_index)
-        indixes_exist = client.indices.exists(indices)
-        if isawaitable(indixes_exist):
-            indixes_exist = await indixes_exist
+        indicies_exist = client.indices.exists(indices)
+        if isawaitable(indicies_exist):
+            indicies_exist = await indicies_exist
 
-        if indixes_exist:
+        if indicies_exist:
             return json(request, health, code)
         else:
             logger.error(request.request_id, "Search indicies do not exist", extra={
