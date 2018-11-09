@@ -5,10 +5,11 @@ from typing import List
 from numpy import array
 
 from unittest import mock
-from unit.utils.test_app import TestApp
+from unit.utils.search_test_app import SearchTestApp
 from unit.fasttext.fasttext_test_utils import mock_fasttext_client
-from unit.mocks.mock_fasttext_client import mock_labels_api, mock_sentence_vector
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
+
+from dp_fasttext.client.testing.mock_client import mock_labels_api, mock_sentence_vector
 
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.search.search_type import SearchType
@@ -19,7 +20,7 @@ from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import 
 from dp_conceptual_search.ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 
 
-class SearchContentApiTestCase(TestApp):
+class SearchContentApiTestCase(SearchTestApp):
 
     @staticmethod
     def paginate():

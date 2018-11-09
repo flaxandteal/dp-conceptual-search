@@ -2,7 +2,7 @@
 Tests the ONS proxy search API
 """
 from json import dumps
-from unit.utils.test_app import TestApp
+from unit.utils.search_test_app import SearchTestApp
 
 from unittest import mock
 
@@ -13,7 +13,7 @@ from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
-class SearchProxyApiTestCase(TestApp):
+class SearchProxyApiTestCase(SearchTestApp):
 
     @staticmethod
     def paginate():

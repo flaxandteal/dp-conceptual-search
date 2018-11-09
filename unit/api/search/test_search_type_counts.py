@@ -6,7 +6,7 @@ from typing import List
 
 from unittest import mock
 
-from unit.utils.test_app import TestApp
+from unit.utils.search_test_app import SearchTestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 from dp_conceptual_search.config import SEARCH_CONFIG
@@ -19,7 +19,7 @@ from dp_conceptual_search.ons.search.queries.ons_query_builders import build_con
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
-class SearchTypeCountsApiTestCase(TestApp):
+class SearchTypeCountsApiTestCase(SearchTestApp):
 
     @staticmethod
     def paginate():

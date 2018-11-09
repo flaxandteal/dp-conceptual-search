@@ -3,7 +3,7 @@ Tests the healthcheck API correctly calls the underlying Elasticsearch client
 """
 from unittest import mock
 
-from unit.utils.test_app import TestApp
+from unit.utils.search_test_app import SearchTestApp
 from unit.elasticsearch.elasticsearch_test_utils import (
     mock_health_check_client_green,
     mock_health_check_client_yellow,
@@ -15,7 +15,7 @@ from unit.elasticsearch.elasticsearch_test_utils import (
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
-class HealthCheckTestCase(TestApp):
+class HealthCheckTestCase(SearchTestApp):
 
     def setUp(self):
         super(HealthCheckTestCase, self).setUp()

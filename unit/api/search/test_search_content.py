@@ -6,7 +6,7 @@ from typing import List
 
 from unittest import mock
 
-from unit.utils.test_app import TestApp
+from unit.utils.search_test_app import SearchTestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
 
 from dp_conceptual_search.config import CONFIG
@@ -20,7 +20,7 @@ from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import 
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_function_score_content_query
 
 
-class SearchContentApiTestCase(TestApp):
+class SearchContentApiTestCase(SearchTestApp):
 
     maxDiff = None
 
