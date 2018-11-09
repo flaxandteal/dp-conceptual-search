@@ -11,6 +11,7 @@ from dp_conceptual_search.app.search_app import SearchApp
 from dp_conceptual_search.api.log import logger
 from dp_conceptual_search.api.response import json
 from dp_conceptual_search.api.request.ons_request import ONSRequest
+from dp_conceptual_search.config.config import SEARCH_CONFIG
 
 healthcheck_blueprint = Blueprint('healthcheck', url_prefix='/healthcheck')
 
@@ -37,7 +38,22 @@ async def health_check(request: ONSRequest):
 
         if code != 200:
             logger.error(request.request_id, "Healthcheck results in non-200 response", extra={"health": health})
-        return json(request, health, code)
+
+        # Check indices exist
+        indices = "{ons},{departments}".format(ons=SEARCH_CONFIG.search_index,
+                                               departments=SEARCH_CONFIG.departments_search_index)
+        indixes_exist = client.indices.exists(indices)
+        if isawaitable(indixes_exist):
+            indixes_exist = await indixes_exist
+
+        if indixes_exist:
+            return json(request, health, code)
+        else:
+            logger.error(request.request_id, "Search indicies do not exist", extra={
+                "Elasticsearch indices_checked": indices
+            })
+            body = {"indices not found": indices}
+            return json(request, body, 500)
     except Exception as e:
         logger.error(request.request_id, "Unable to get Elasticsearch cluster health", exc_info=e)
         body = {
