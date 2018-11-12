@@ -9,13 +9,15 @@ from unit.elasticsearch.elasticsearch_test_utils import (
     mock_health_check_client_yellow,
     mock_health_check_client_red,
     mock_health_check_client_exception,
-    mock_health_response,
     mock_indices_exists_client,
     mock_indices_not_exists_client
 )
 
+from unit.fasttext.fasttext_test_utils import mock_fasttext_client, mock_unhealthy_fasttext_client
+
 from dp_conceptual_search.config.config import SEARCH_CONFIG
 from dp_conceptual_search.api.healthcheck.routes import Services, HeathCheckResponse
+from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import FastTextClientService
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -24,6 +26,7 @@ class HealthCheckTestCase(SearchTestApp):
     def setUp(self):
         super(HealthCheckTestCase, self).setUp()
 
+    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     @mock.patch.object(ElasticsearchClientService, '_init_client', mock_health_check_client_green)
     def test_healthcheck_green(self):
         """
@@ -54,6 +57,7 @@ class HealthCheckTestCase(SearchTestApp):
 
         self.assertEqual(response_json, expected_response, "returned JSON should match mock response")
 
+    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     @mock.patch.object(ElasticsearchClientService, '_init_client', mock_health_check_client_yellow)
     def test_healthcheck_yellow(self):
         """
@@ -84,6 +88,7 @@ class HealthCheckTestCase(SearchTestApp):
 
         self.assertEqual(response_json, expected_response, "returned JSON should match mock response")
 
+    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     @mock.patch.object(ElasticsearchClientService, '_init_client', mock_health_check_client_red)
     def test_healthcheck_red(self):
         """
@@ -115,6 +120,7 @@ class HealthCheckTestCase(SearchTestApp):
 
         self.assertEqual(response_json, expected_response, "returned JSON should match mock response")
 
+    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     @mock.patch.object(ElasticsearchClientService, '_init_client', mock_health_check_client_exception)
     def test_healthcheck_exception(self):
         """
@@ -147,6 +153,7 @@ class HealthCheckTestCase(SearchTestApp):
 
         self.assertEqual(response_json, expected_response, "returned JSON should match mock response")
 
+    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     @mock.patch.object(ElasticsearchClientService, '_init_client', mock_indices_exists_client)
     def test_indices_exist(self):
         """
@@ -180,6 +187,7 @@ class HealthCheckTestCase(SearchTestApp):
 
         self.assertEqual(response_json, expected_response, "returned JSON should match mock response")
 
+    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     @mock.patch.object(ElasticsearchClientService, '_init_client', mock_indices_not_exists_client)
     def test_indices_do_not_exist(self):
         """
@@ -198,6 +206,41 @@ class HealthCheckTestCase(SearchTestApp):
         for service in Services:
             expected_response._set_available(service)
         expected_response._set_unavailable(Services.ELASTICSEARCH)
+
+        expected_response = expected_response.to_dict()
+
+        # Check the mock client was called with the correct arguments
+        # Assert search was called with correct arguments
+        self.mock_client.indices.exists.assert_called_with(indices)
+
+        # Check the response JSON matches the mock response
+        self.assertTrue(hasattr(response, "json"), "response should contain JSON property")
+
+        response_json = response.json
+        self.assertIsNotNone(response_json, "response json should not be none")
+        self.assertIsInstance(response_json, dict, "response json should be instanceof dict")
+
+        self.assertEqual(response_json, expected_response, "returned JSON should match mock response")
+
+    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_unhealthy_fasttext_client)
+    @mock.patch.object(ElasticsearchClientService, '_init_client', mock_health_check_client_green)
+    def test_fasttext_unhealthy(self):
+        """
+        Tests that the healthcheck API returns a 500 INTERNAL_SERVER_ERROR when dp-fasttext is unhealty
+        :return:
+        """
+        # Build the target URL
+        target = "/healthcheck"
+
+        indices = "{ons},{departments}".format(ons=SEARCH_CONFIG.search_index,
+                                               departments=SEARCH_CONFIG.departments_search_index)
+
+        # Make the request
+        request, response = self.get(target, 500)
+        expected_response = HeathCheckResponse()
+        for service in Services:
+            expected_response._set_available(service)
+        expected_response._set_unavailable(Services.FASTTEXT)
 
         expected_response = expected_response.to_dict()
 

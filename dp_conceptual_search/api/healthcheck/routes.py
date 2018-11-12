@@ -9,11 +9,13 @@ from inspect import isawaitable
 from elasticsearch import Elasticsearch
 
 from dp4py_sanic.api.response import json
+from dp_fasttext.client import Client
 
 from dp_conceptual_search.log import logger
 from dp_conceptual_search.app.search_app import SearchApp
-from dp_conceptual_search.api.request.ons_request import ONSRequest
 from dp_conceptual_search.config.config import SEARCH_CONFIG
+from dp_conceptual_search.api.request.ons_request import ONSRequest
+from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import FastTextClientService
 
 healthcheck_blueprint = Blueprint('healthcheck', url_prefix='/healthcheck')
 
@@ -31,6 +33,7 @@ async def elasticsearch_is_healthy(request: ONSRequest) -> bool:
     client: Elasticsearch = app.elasticsearch.client
     # Send the request
     try:
+        logger.debug(request.request_id, "Performing healthcheck for Elasticsearch")
         health = client.cluster.health()
         if isawaitable(health):
             health = await health
@@ -66,7 +69,22 @@ async def dp_fasttext_is_healthy(request: ONSRequest) -> bool:
     :param request:
     :return:
     """
-    return True
+    client: Client
+    async with FastTextClientService.get_fasttext_client() as client:
+        try:
+            headers = {
+                ONSRequest.request_id_header: request.request_id
+            }
+
+            logger.debug(request.request_id, "Performing healthcheck request for dp-fasttext")
+            health, headers = await client.healthcheck(headers=headers)
+            if health is not None and ONSRequest.request_id_header in headers and \
+                    headers[ONSRequest.request_id_header] == request.request_id:
+                return True
+        except Exception as e:
+            logger.error(request.request_id, "Error checking health of dp-fasttext", exc_info=e)
+
+    return False
 
 
 class Services(Enum):
@@ -75,7 +93,6 @@ class Services(Enum):
 
 
 class HeathCheckResponse(object):
-
     AVAILABLE = "available"
     UNAVAILABLE = "unavailable"
 
