@@ -15,6 +15,7 @@ from unit.elasticsearch.elasticsearch_test_utils import (
 )
 
 from dp_conceptual_search.config.config import SEARCH_CONFIG
+from dp_conceptual_search.api.healthcheck.routes import Services, HeathCheckResponse
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -34,7 +35,11 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = mock_health_response("green")
+        expected_response = HeathCheckResponse()
+        for service in Services:
+            expected_response._set_available(service)
+
+        expected_response = expected_response.to_dict()
 
         # Check the mock client was called with the correct arguments
         # Assert search was called with correct arguments
@@ -60,7 +65,11 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = mock_health_response("yellow")
+        expected_response = HeathCheckResponse()
+        for service in Services:
+            expected_response._set_available(service)
+
+        expected_response = expected_response.to_dict()
 
         # Check the mock client was called with the correct arguments
         # Assert search was called with correct arguments
@@ -86,7 +95,12 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = mock_health_response("red")
+        expected_response = HeathCheckResponse()
+        for service in Services:
+            expected_response._set_available(service)
+        expected_response._set_unavailable(Services.ELASTICSEARCH)
+
+        expected_response = expected_response.to_dict()
 
         # Check the mock client was called with the correct arguments
         # Assert search was called with correct arguments
@@ -102,7 +116,7 @@ class HealthCheckTestCase(TestApp):
         self.assertEqual(response_json, expected_response, "returned JSON should match mock response")
 
     @mock.patch.object(ElasticsearchClientService, '_init_client', mock_health_check_client_exception)
-    def test_healthcheck_red(self):
+    def test_healthcheck_exception(self):
         """
         Tests that the healthcheck API returns a 500 with the correct response body when an exception is raised
         by the client
@@ -113,9 +127,12 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = {
-            "elasticsearch": "unavailable"
-        }
+        expected_response = HeathCheckResponse()
+        for service in Services:
+            expected_response._set_available(service)
+        expected_response._set_unavailable(Services.ELASTICSEARCH)
+
+        expected_response = expected_response.to_dict()
 
         # Check the mock client was called with the correct arguments
         # Assert search was called with correct arguments
@@ -144,7 +161,11 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = mock_health_response("green")
+        expected_response = HeathCheckResponse()
+        for service in Services:
+            expected_response._set_available(service)
+
+        expected_response = expected_response.to_dict()
 
         # Check the mock client was called with the correct arguments
         # Assert search was called with correct arguments
@@ -173,7 +194,12 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = {"indices not found": indices}
+        expected_response = HeathCheckResponse()
+        for service in Services:
+            expected_response._set_available(service)
+        expected_response._set_unavailable(Services.ELASTICSEARCH)
+
+        expected_response = expected_response.to_dict()
 
         # Check the mock client was called with the correct arguments
         # Assert search was called with correct arguments
