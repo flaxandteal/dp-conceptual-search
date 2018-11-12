@@ -62,7 +62,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
 
     def paginate(self, current_page: int, size: int):
         """
-        Add pagination options to the query
+        Add pagination options to the query.
         :param current_page:
         :param size:
         :return:

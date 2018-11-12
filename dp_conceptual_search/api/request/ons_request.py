@@ -1,4 +1,3 @@
-from uuid import uuid4
 from typing import List
 from ujson import loads
 
@@ -18,7 +17,6 @@ class ONSRequest(Request):
     """
     Custom ONS request class which implements some useful methods for request parsing
     """
-
     def get_search_term(self) -> str:
         """
         Parses the request to extract a search term
@@ -57,7 +55,7 @@ class ONSRequest(Request):
             return page_size
 
         # Raise InvalidUsage (400) and log error
-        message = "Invalid size request"
+        message = "Invalid request [size={size}]".format(size=page_size)
         logger.error(self.request_id, message, extra={"size": page_size})
         raise InvalidUsage(message)
 

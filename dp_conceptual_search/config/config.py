@@ -1,4 +1,5 @@
 import os
+import logging
 
 from dp4py_config.section import Section
 from dp4py_config.utils import bool_env
@@ -6,6 +7,26 @@ from dp4py_config.utils import bool_env
 from dp4py_sanic.config import CONFIG as SANIC_CONFIG
 
 from dp_conceptual_search.config.utils import read_git_sha
+
+
+def get_log_level(variable: str, default: str="INFO"):
+    """
+    Returns the configured log level, and logs error if invalid
+    :param variable:
+    :param default:
+    :return:
+    """
+    from dp4py_sanic.logging.log_config import get_level_name
+    level = os.environ.get(variable, default)
+    if isinstance(level, str):
+        level = level.upper()
+
+    try:
+        return get_level_name(level)
+    except NotImplementedError as e:
+        logging.error("Caught exception parsing log level", exc_info=e)
+        raise SystemExit()
+
 
 # APP
 
@@ -35,6 +56,7 @@ ELASTIC_SEARCH_CONFIG = Section("Elasticsearch config")
 ELASTIC_SEARCH_CONFIG.server = os.environ.get("ELASTIC_SEARCH_SERVER", "http://localhost:9200")
 ELASTIC_SEARCH_CONFIG.async_enabled = bool_env("ELASTIC_SEARCH_ASYNC_ENABLED", True)
 ELASTIC_SEARCH_CONFIG.timeout = int(os.environ.get("ELASTIC_SEARCH_TIMEOUT", 1000))
+ELASTIC_SEARCH_CONFIG.elasticsearch_log_level = get_log_level("ELASTICSEARCH_LOG_LEVEL", default="INFO")
 
 # Search
 
@@ -46,3 +68,4 @@ SEARCH_CONFIG.results_per_page = int(os.getenv("RESULTS_PER_PAGE", 10))
 SEARCH_CONFIG.max_visible_paginator_link = int(os.getenv("MAX_VISIBLE_PAGINATOR_LINK", 5))
 SEARCH_CONFIG.conceptual_search_enabled = bool_env("CONCEPTUAL_SEARCH_ENABLED", False)
 SEARCH_CONFIG.redirect_conceptual_search = bool_env("REDIRECT_CONCEPTUAL_SEARCH", False)
+SEARCH_CONFIG.max_request_size = int(os.getenv("SEARCH_MAX_REQUEST_SIZE", 200))

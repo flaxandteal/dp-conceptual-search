@@ -9,6 +9,7 @@ from unittest import mock
 from unit.utils.test_app import TestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
 
+from dp_conceptual_search.config import CONFIG
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.search.search_type import SearchType
@@ -151,5 +152,37 @@ class SearchContentApiTestCase(TestApp):
             expected_hits_highlighted = mock_hits_highlighted()
             self.assertEqual(results, expected_hits_highlighted, "returned hits should match expected")
 
+    def test_max_request_size_400(self):
+        """
+        Test that making a request where the page size if greater than the max allowed raises a 400 BAD_REQUEST
+        :return:
+        """
+        # Make the request
+        # Set correct from_start and page size for featured result query
+        from_start = 0
+        current_page = from_start + 1
+        size = CONFIG.SEARCH.max_request_size + 1
 
+        # Set sort_by
+        sort_by: SortField = SortField.relevance
 
+        # Build params dict
+        params = {
+            "q": self.search_term,
+            "page": current_page,
+            "size": size
+        }
+
+        # Build post JSON
+        data = {
+            "sort_by": sort_by.name
+        }
+
+        # URL encode
+        url_encoded_params = self.url_encode(params)
+
+        for list_type in ListType:
+            target = "/search/{list_type}/content?{q}".format(list_type=list_type.name.lower(), q=url_encoded_params)
+
+            # Make the request
+            request, response = self.post(target, 400, data=dumps(data))

@@ -18,6 +18,7 @@ from dp_conceptual_search.ons.search.exceptions import UnknownTypeFilter
 from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
+from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
 
@@ -65,6 +66,14 @@ class SanicSearchEngine(object):
         page_size = request.get_page_size()
         sort_by = request.get_sort_by()
 
+        try:
+            engine: AbstractSearchEngine = engine.paginate(page, page_size)
+        except RequestSizeExceededException as e:
+            # Log and raise a 400 BAD_REQUEST
+            message = "Requested page size exceeds max allowed: '{0}'".format(e)
+            logger.error(request.request_id, message, exc_info=e)
+            raise InvalidUsage(message)
+
         # Add any type filters
         if type_filters_raw is not None:
             if not isinstance(type_filters_raw, list):
@@ -79,6 +88,9 @@ class SanicSearchEngine(object):
 
         # Execute
         try:
+            logger.debug(request.request_id, "Executing proxy query", extra={
+                "query": engine.to_dict()
+            })
             response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform proxy query request"
@@ -104,7 +116,12 @@ class SanicSearchEngine(object):
         page_size = request.get_page_size()
 
         try:
-            response: ONSResponse = await engine.departments_query(search_term, page, page_size).execute()
+            engine: AbstractSearchEngine = engine.departments_query(search_term, page, page_size)
+
+            logger.debug(request.request_id, "Executing departments query", extra={
+                "query": engine.to_dict()
+            })
+            response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform departments query request"
             logger.error(request.request_id, message, exc_info=e)
@@ -139,13 +156,23 @@ class SanicSearchEngine(object):
             )
 
         try:
-            response: ONSResponse = await engine.content_query(search_term, page, page_size, sort_by=sort_by,
-                                                               filter_functions=filter_functions,
-                                                               type_filters=type_filters).execute()
+            engine: AbstractSearchEngine = engine.content_query(search_term, page, page_size, sort_by=sort_by,
+                                                                filter_functions=filter_functions,
+                                                                type_filters=type_filters)
+
+            logger.debug(request.request_id, "Executing content query", extra={
+                "query": engine.to_dict()
+            })
+            response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform content query request"
             logger.error(request.request_id, message, exc_info=e)
             raise ServerError(message)
+        except RequestSizeExceededException as e:
+            # Log and raise a 400 BAD_REQUEST
+            message = "Requested page size exceeds max allowed: '{0}'".format(e)
+            logger.error(request.request_id, message, exc_info=e)
+            raise InvalidUsage(message)
 
         search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
 
@@ -164,11 +191,21 @@ class SanicSearchEngine(object):
         search_term = request.get_search_term()
 
         try:
-            response: ONSResponse = await engine.type_counts_query(search_term).execute()
+            engine: AbstractSearchEngine = engine.type_counts_query(search_term)
+
+            logger.debug(request.request_id, "Executing type counts query", extra={
+                "query": engine.to_dict()
+            })
+            response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform type counts query request"
             logger.error(request.request_id, message, exc_info=e)
             raise ServerError(message)
+        except RequestSizeExceededException as e:
+            # Log and raise a 400 BAD_REQUEST
+            message = "Requested page size exceeds max allowed: '{0}'".format(e)
+            logger.error(request.request_id, message, exc_info=e)
+            raise InvalidUsage(message)
 
         search_result: SearchResult = response.to_type_counts_query_search_result()
 
@@ -186,11 +223,21 @@ class SanicSearchEngine(object):
         search_term = request.get_search_term()
 
         try:
-            response: ONSResponse = await engine.featured_result_query(search_term).execute()
+            engine: AbstractSearchEngine = engine.featured_result_query(search_term)
+
+            logger.debug(request.request_id, "Executing featured result query", extra={
+                "query": engine.to_dict()
+            })
+            response: ONSResponse = await engine.execute()
         except ConnectionError as e:
             message = "Unable to connect to Elasticsearch cluster to perform featured result query request"
             logger.error(request.request_id, message, exc_info=e)
             raise ServerError(message)
+        except RequestSizeExceededException as e:
+            # Log and raise a 400 BAD_REQUEST
+            message = "Requested page size exceeds max allowed: '{0}'".format(e)
+            logger.error(request.request_id, message, exc_info=e)
+            raise InvalidUsage(message)
 
         search_result: SearchResult = response.to_featured_result_query_search_result()
 
