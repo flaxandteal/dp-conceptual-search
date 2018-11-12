@@ -7,8 +7,8 @@ import logging
 
 from dp4py_sanic.app.exceptions.error_handlers import ErrorHandlers
 
-from dp_conceptual_search.app.search_app import SearchApp
 from dp_conceptual_search.config import CONFIG
+from dp_conceptual_search.app.search_app import SearchApp
 
 # Import blueprints
 from dp_conceptual_search.api.search.routes import search_blueprint

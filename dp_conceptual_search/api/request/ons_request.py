@@ -5,6 +5,7 @@ from sanic.exceptions import InvalidUsage
 
 from dp4py_sanic.api.request import Request
 
+
 from dp_conceptual_search.log import logger
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.api.search.list_type import ListType

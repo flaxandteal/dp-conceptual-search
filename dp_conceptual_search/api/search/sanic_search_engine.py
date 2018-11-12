@@ -21,13 +21,12 @@ from dp_conceptual_search.app.search_app import SearchApp
 from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.api.request.ons_request import ONSRequest
 
-from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
-
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
+from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
 from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import FastTextClientService
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
