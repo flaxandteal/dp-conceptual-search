@@ -6,10 +6,9 @@ from numpy import array
 
 from unittest import mock
 from unit.utils.search_test_app import SearchTestApp
-from unit.fasttext.fasttext_test_utils import mock_fasttext_client
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
 
-from dp_fasttext.client.testing.mock_client import mock_labels_api, mock_sentence_vector
+from dp_fasttext.client.testing.mock_client import mock_labels_api, mock_sentence_vector, mock_fasttext_client
 
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.search.search_type import SearchType
@@ -69,8 +68,8 @@ class SearchContentApiTestCase(SearchTestApp):
 
         return highlight_query
 
-    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     @mock.patch.object(ElasticsearchClientService, '_init_client', mock_search_client)
+    @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     def test_content_query_search_called(self):
         """
         Tests that the search method is called properly by the api for a content query

@@ -152,7 +152,7 @@ class SanicSearchEngine(object):
                 raise MalformedSearchTerm(search_term)
 
                 # Get search vector from dp-fasttext
-            search_vector: ndarray = await client.get_sentence_vector(clean_search_term, headers=headers)
+            search_vector: ndarray = await client.supervised.get_sentence_vector(clean_search_term, headers=headers)
 
             if search_vector is None:
                 logger.error(request.request_id, "Unable to retrieve search vector for query '{0}'".format(search_term))
@@ -161,7 +161,7 @@ class SanicSearchEngine(object):
             # Get keyword labels and their probabilities from dp-fasttext
             num_labels = FASTTEXT_CONFIG.num_labels
             threshold = FASTTEXT_CONFIG.threshold
-            labels, probabilities = await client.predict(search_term, num_labels, threshold, headers=headers)
+            labels, probabilities = await client.supervised.predict(search_term, num_labels, threshold, headers=headers)
 
             return labels, search_vector
 

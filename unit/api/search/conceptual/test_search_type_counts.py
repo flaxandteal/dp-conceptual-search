@@ -6,10 +6,9 @@ from numpy import array
 
 from unittest import mock
 from unit.utils.search_test_app import SearchTestApp
-from unit.fasttext.fasttext_test_utils import mock_fasttext_client
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
-from dp_fasttext.client.testing.mock_client import mock_labels_api, mock_sentence_vector
+from dp_fasttext.client.testing.mock_client import mock_labels_api, mock_sentence_vector, mock_fasttext_client
 
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.ons.search.index import Index
