@@ -16,9 +16,8 @@ from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
-from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import FastTextClientService
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
-from dp_conceptual_search.ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 
 
 class SearchTypeCountsApiTestCase(SearchTestApp):

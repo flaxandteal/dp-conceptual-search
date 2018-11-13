@@ -11,8 +11,8 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_health_response, Mo
 from dp_fasttext.client.testing.mock_client import MockClient, mock_fasttext_client
 
 from dp_conceptual_search.config.config import SEARCH_CONFIG
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 from dp_conceptual_search.api.healthcheck.routes import Services, HeathCheckResponse
-from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import FastTextClientService
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 

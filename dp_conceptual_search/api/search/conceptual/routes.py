@@ -12,7 +12,7 @@ from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.api.search.sanic_search_engine import SanicSearchEngine
-from dp_conceptual_search.ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
+from dp_conceptual_search.ons.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 
 
 conceptual_search_blueprint = Blueprint('conceptual search', url_prefix='/search/conceptual')
