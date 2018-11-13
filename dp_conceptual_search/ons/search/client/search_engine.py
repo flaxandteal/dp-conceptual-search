@@ -1,9 +1,12 @@
 from typing import List
 
+from dp_conceptual_search.search.query_helper import match_by_uri
+
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
 from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
+
 from dp_conceptual_search.ons.search.queries.ons_query_builders import (
     build_content_query, build_type_counts_query, build_function_score_content_query, build_departments_query
 )
@@ -15,6 +18,15 @@ class SearchEngine(AbstractSearchEngine):
     """
     default_page_number = 1
     agg_bucket = "docCounts"
+
+    def match_by_uri(self, uri: str):
+        """
+        Builds a simple match by uri query
+        :param uri:
+        :return:
+        """
+        query = match_by_uri(uri)
+        return self.query(query)
 
     def departments_query(self, search_term: str, current_page: int, size: int):
         """

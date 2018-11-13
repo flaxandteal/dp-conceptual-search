@@ -2,7 +2,6 @@
 This file contains utility methods for performing search queries using abstract search engines and clients
 """
 from json import loads
-from numpy import ndarray
 from typing import ClassVar, List
 from elasticsearch.exceptions import ConnectionError
 
@@ -10,40 +9,24 @@ from sanic.exceptions import ServerError, InvalidUsage
 
 from dp4py_logging.time import timeit
 
-from dp_fasttext.client import Client
-from dp_fasttext.ml.utils import clean_string, replace_nouns_with_singulars
-
 from dp_conceptual_search.log import logger
-from dp_conceptual_search.config.config import FASTTEXT_CONFIG
-
 from dp_conceptual_search.app.search_app import SearchApp
-
+from dp_conceptual_search.config.config import FASTTEXT_CONFIG
 from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.api.request.ons_request import ONSRequest
 
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.sort_fields import SortField
+from dp_conceptual_search.ons.search.exceptions import UnknownTypeFilter
 from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
+from dp_conceptual_search.ons.search.type_filter import build_filter_functions
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
-from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
-from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
-from dp_conceptual_search.ons.search.exceptions import UnknownTypeFilter, MalformedSearchTerm, UnknownSearchVector
+from dp_conceptual_search.ons.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
 
-
-def build_filter_functions(type_filters: List[TypeFilter]) -> List[AvailableContentTypes]:
-    """
-    Build a list of filter functions from type filters
-    :return:
-    """
-    filter_functions: List[AvailableContentTypes] = []
-    for type_filter in type_filters:
-        filter_functions.extend(
-            type_filter.get_content_types()
-        )
-    return filter_functions
+from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 
 
 class SanicSearchEngine(object):
@@ -126,45 +109,6 @@ class SanicSearchEngine(object):
         return search_result
 
     @timeit
-    async def get_conceptual_search_params(self, request: ONSRequest, search_term: str) -> tuple:
-        """
-        Queries external fastText server for labels and search vector
-        :param request:
-        :param search_term:
-        :return:
-        """
-        # Initialise dp-fastText client
-        client: Client
-        async with FastTextClientService.get_fasttext_client() as client:
-            # Set request context header
-
-            headers = {
-                Client.REQUEST_ID_HEADER: request.request_id,
-                "Connection": "close"
-            }
-
-            # First, clean the search term and replace all nouns with singulars
-            clean_search_term = replace_nouns_with_singulars(clean_string(search_term))
-
-            if len(clean_search_term) == 0:
-                logger.error(request.request_id, "cleaned search term is empty")
-                raise MalformedSearchTerm(search_term)
-
-                # Get search vector from dp-fasttext
-            search_vector: ndarray = await client.supervised.get_sentence_vector(clean_search_term, headers=headers)
-
-            if search_vector is None:
-                logger.error(request.request_id, "Unable to retrieve search vector for query '{0}'".format(search_term))
-                raise UnknownSearchVector(search_term)
-
-            # Get keyword labels and their probabilities from dp-fasttext
-            num_labels = FASTTEXT_CONFIG.num_labels
-            threshold = FASTTEXT_CONFIG.threshold
-            labels, probabilities = await client.supervised.predict(search_term, num_labels, threshold, headers=headers)
-
-            return labels, search_vector
-
-    @timeit
     async def departments_query(self, request: ONSRequest) -> SearchResult:
         """
         Executes the ONS departments query using the given SearchEngine class
@@ -219,7 +163,9 @@ class SanicSearchEngine(object):
         try:
             kwargs = {}
             if isinstance(engine, ConceptualSearchEngine):
-                labels, search_vector = await self.get_conceptual_search_params(request, search_term)
+                labels, search_vector = await engine.conceptual_search_params(search_term,
+                                                                              FASTTEXT_CONFIG.num_labels,
+                                                                              FASTTEXT_CONFIG.threshold)
                 kwargs['labels'] = labels
                 kwargs['search_vector'] = search_vector
 
@@ -261,7 +207,9 @@ class SanicSearchEngine(object):
         try:
             kwargs = {}
             if isinstance(engine, ConceptualSearchEngine):
-                labels, search_vector = await self.get_conceptual_search_params(request, search_term)
+                labels, search_vector = await engine.conceptual_search_params(search_term,
+                                                                              FASTTEXT_CONFIG.num_labels,
+                                                                              FASTTEXT_CONFIG.threshold)
                 kwargs['labels'] = labels
                 kwargs['search_vector'] = search_vector
 

@@ -103,3 +103,16 @@ class AvailableTypeFilters(Enum):
             return AvailableTypeFilters[label.upper()]
         else:
             raise NotImplementedError("No such TypeFilter for string: '{0}'".format(label))
+
+
+def build_filter_functions(type_filters: List[TypeFilter]) -> List[AvailableContentTypes]:
+    """
+    Build a list of filter functions from type filters
+    :return:
+    """
+    filter_functions: List[AvailableContentTypes] = []
+    for type_filter in type_filters:
+        filter_functions.extend(
+            type_filter.get_content_types()
+        )
+    return filter_functions

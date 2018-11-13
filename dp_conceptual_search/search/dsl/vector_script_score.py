@@ -25,5 +25,5 @@ class VectorScriptScore(ScriptScore):
                 "vector": vector.tolist()
             },
             "script": Scripts.BINARY_VECTOR_SCORE.value,
-            "weight": weight
+            # "weight": weight
         })
