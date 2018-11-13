@@ -6,8 +6,8 @@ from numpy import ndarray
 
 from unittest import mock, TestCase
 from unittest.mock import MagicMock
-from unit.utils.async_test import AsyncTestCase
 
+from unit.utils.async_test import AsyncTestCase
 from unit.elasticsearch.elasticsearch_test_utils import MockElasticsearchClient, mock_hits, mock_single_hit, mock_search_response
 
 from dp_fasttext.ml.utils import decode_float_list
