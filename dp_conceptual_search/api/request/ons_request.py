@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from ujson import loads
 
 from sanic.exceptions import InvalidUsage
@@ -7,7 +7,7 @@ from dp4py_sanic.api.request import Request
 
 
 from dp_conceptual_search.log import logger
-from dp_conceptual_search.config import SEARCH_CONFIG
+from dp_conceptual_search.config import SEARCH_CONFIG, FASTTEXT_CONFIG
 from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.exceptions import UnknownTypeFilter
@@ -18,16 +18,36 @@ class ONSRequest(Request):
     """
     Custom ONS request class which implements some useful methods for request parsing
     """
-    def get_search_term(self) -> str:
+    def get_search_term(self) -> Optional[str]:
         """
         Parses the request to extract a search term
         :return:
         """
         search_term = self.args.get("q", None)
         if search_term is None:
-            logger.error(self.request_id, "Search term not specified", extra={"status": 400})
+            logger.error(self.request_id, "Search term not specified", extra={
+                "status": 400
+            })
             raise InvalidUsage("Search term not specified")
         return search_term
+
+    def get_uri(self) -> Optional[str]:
+        """
+        Returns the uri param from the POST data
+        :return:
+        """
+        if hasattr(self, "json") and isinstance(self.json, dict):
+            if "uri" not in self.json:
+                logger.error(self.request_id, "uri parameter not found in POST data", extra={
+                    "status": 4000
+                })
+                raise InvalidUsage("uri parameter not found in POST data")
+            return self.json.get("uri")
+        message = "Invalid request body whilst trying to parse body for uri"
+        logger.error(self.request_id, message, extra={
+            "status": 400
+        })
+        raise InvalidUsage(message)
 
     def get_current_page(self) -> int:
         """
@@ -37,7 +57,7 @@ class ONSRequest(Request):
         current_page = self.args.get("page", 1)
         return int(current_page)
 
-    def get_page_size(self) -> int:
+    def get_page_size(self) -> Optional[int]:
         """
         Returns the requested page size (min of 1). Defaults to the value set by the paginator.
         :return:
@@ -71,7 +91,7 @@ class ONSRequest(Request):
                 return SortField.from_str(sort_by_str)
         return SortField.relevance
 
-    def get_type_filters(self, list_type: ListType) -> List[TypeFilter]:
+    def get_type_filters(self, list_type: ListType) -> Optional[List[TypeFilter]]:
         """
         Returns requested type filters or the defaults for the desired ListType
         :param list_type:
@@ -98,7 +118,15 @@ class ONSRequest(Request):
 
         return list_type.to_type_filters()
 
-    def get_elasticsearch_query(self) -> dict:
+    def get_num_labels(self) -> int:
+        """
+        Returns the requested number of labels. Defaults to config value.
+        :return:
+        """
+        current_page = self.args.get("num_labels", FASTTEXT_CONFIG.num_labels)
+        return int(current_page)
+
+    def get_elasticsearch_query(self) -> Optional[dict]:
         """
         Parse the request body for Elasticsearch query JSON and return as dict
         :return:

@@ -13,6 +13,7 @@ from dp_conceptual_search.app.search_app import SearchApp
 # Import blueprints
 from dp_conceptual_search.api.search.routes import search_blueprint
 from dp_conceptual_search.api.search.conceptual.routes import conceptual_search_blueprint
+from dp_conceptual_search.api.search.recommend.routes import recommend_blueprint
 from dp_conceptual_search.api.spellcheck.routes import spell_check_blueprint
 from dp_conceptual_search.api.healthcheck.routes import healthcheck_blueprint
 
@@ -39,8 +40,11 @@ def create_app() -> SearchApp:
     app.blueprint(healthcheck_blueprint)
 
     # Enable conceptual search routes?
-    if CONFIG.SEARCH.conceptual_search_enabled:
+    if CONFIG.API.conceptual_search_enabled:
         app.blueprint(conceptual_search_blueprint)
+
+    if CONFIG.API.recommended_search_enabled:
+        app.blueprint(recommend_blueprint)
 
     # Register error handlers
     ErrorHandlers.register(app)

@@ -64,7 +64,7 @@ async def ons_content_query(request: ONSRequest, list_type: str) -> HTTPResponse
     :param list_type: The list_type to query against (i.e ons, onsdata or onspublications; see api.search.list_type.py)
     :return:
     """
-    if CONFIG.SEARCH.redirect_conceptual_search:
+    if CONFIG.API.redirect_conceptual_search:
         return await conceptual_routes.conceptual_content_query(request, list_type)
 
     # Parse list_type to enum
@@ -92,7 +92,7 @@ async def ons_counts_query(request: ONSRequest, list_type: str) -> HTTPResponse:
     :param list_type: Not used for type counts query, but allows route to support multiply list_type queries
     :return:
     """
-    if CONFIG.SEARCH.redirect_conceptual_search:
+    if CONFIG.API.redirect_conceptual_search:
         return await conceptual_routes.conceptual_counts_query(request, list_type)
 
     # Initialise the search engine

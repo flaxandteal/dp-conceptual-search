@@ -31,7 +31,7 @@ fastText:
 	pip install fasttextmirror==0.8.22
 
 test: test_requirements
-	TESTING=true CONCEPTUAL_SEARCH_ENABLED=true python manager.py test
+	TESTING=true CONCEPTUAL_SEARCH_ENABLED=true RECOMMENDED_SEARCH_ENABLED=true python manager.py test
 
 pep8:
 	autopep8 --in-place --aggressive --aggressive -r ./

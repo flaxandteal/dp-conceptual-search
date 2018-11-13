@@ -17,6 +17,7 @@ from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.search.query_helper import match_by_uri
 from dp_conceptual_search.search.dsl.vector_script_score import VectorScriptScore
 
+from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.recommend.queries.ons_query_builders import similar_to_uri
 from dp_conceptual_search.ons.conceptual.client.fasttext_client import FastTextClientService
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field, AvailableFields
@@ -24,8 +25,8 @@ from dp_conceptual_search.ons.recommend.client.recommend_search_engine import Re
 
 
 # Define global test params
-_TEST_URI = "/this/is/a/test/uri"
-_TEST_HIT_FOR_URI = mock_single_hit()
+TEST_URI = "/this/is/a/test/uri"
+TEST_HIT_FOR_URI = mock_single_hit()
 
 
 # Need a custom mock here to handle match by uri query
@@ -39,16 +40,16 @@ def mock_search(index=None, doc_type=None, body=None, params=None, **kwargs):
     :return:
     """
     match_query = {
-        "query": match_by_uri(_TEST_URI).to_dict()
+        "query": match_by_uri(TEST_URI).to_dict()
     }
 
     if body == match_query:
-        return mock_search_response(_TEST_HIT_FOR_URI)
+        return mock_search_response(TEST_HIT_FOR_URI)
     else:
         return mock_search_response(mock_hits())
 
 
-def mock_recommend_search_client():
+def mock_recommend_search_client(*args):
     """
     Returns a mock client capable of handling match by uri queries
     :return:
@@ -146,7 +147,7 @@ class RecommendationSearchEngineTestCase(AsyncTestCase, TestCase):
         embedding_field: Field = AvailableFields.EMBEDDING_VECTOR.value
 
         # Get test vector
-        test_hits: list = _TEST_HIT_FOR_URI
+        test_hits: list = TEST_HIT_FOR_URI
         test_hit_source: dict = test_hits[0].get("_source")
         test_hit_vector_encoded = test_hit_source.get(embedding_field.name)
         test_hit_vector_decoded: ndarray = decode_float_list(test_hit_vector_encoded)
@@ -159,10 +160,11 @@ class RecommendationSearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Build the expected query dict - note this should not change
         expected = {
-            "query": similar_to_uri(_TEST_URI, mock_similar_by, vector_script_score).to_dict(),
+            "query": similar_to_uri(TEST_URI, mock_similar_by, vector_script_score).to_dict(),
             "from": from_start,
             "size": size,
-            "highlight": self.highlight_dict
+            "highlight": self.highlight_dict,
+            "sort": query_sort(SortField.relevance)
         }
 
         # Define the async function to be ran
@@ -170,7 +172,7 @@ class RecommendationSearchEngineTestCase(AsyncTestCase, TestCase):
             # Create an instance of the SearchEngine
             engine = self.get_search_engine()
 
-            engine: RecommendationSearchEngine = await engine.similar_by_uri_query(_TEST_URI, num_labels,
+            engine: RecommendationSearchEngine = await engine.similar_by_uri_query(TEST_URI, num_labels,
                                                                                    current_page, size)
 
             # Ensure search method on SearchClient is called correctly on execute

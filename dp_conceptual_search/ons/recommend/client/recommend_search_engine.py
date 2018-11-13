@@ -24,6 +24,7 @@ class RecommendationSearchEngine(ConceptualSearchEngine):
         :param current_page:
         :param size:
         :param sort_by:
+        :param highlight:
         :return:
         """
         # Get the page embedding vector
@@ -41,7 +42,8 @@ class RecommendationSearchEngine(ConceptualSearchEngine):
         # Set query
         s: RecommendationSearchEngine = s.query(query) \
             .paginate(current_page, size) \
-            .search_type(SearchType.DFS_QUERY_THEN_FETCH)
+            .search_type(SearchType.DFS_QUERY_THEN_FETCH) \
+            .sort_by(sort_by)
 
         if highlight:
             s: RecommendationSearchEngine = s.apply_highlight_fields()
