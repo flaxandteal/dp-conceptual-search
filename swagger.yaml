@@ -278,6 +278,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/HealthCheck'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/UnhealhyHealthCheck'
 
 
 definitions:
@@ -313,6 +317,7 @@ definitions:
   DocCounts:
     type: object
     description: "Dictionary containing doc counts by content type"
+    example:
   Paginator:
     type: object
     description: "Object containing pagination information"
@@ -362,4 +367,14 @@ definitions:
         enum:
           - available
           - unavailable
+
+  UnhealhyHealthCheck:
+    type: object
+    properties:
+      elasticsearch:
+        type: string
+        example: unavailable
+      dp_fasttext:
+        type: string
+        example: unavailable
     
