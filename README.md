@@ -49,33 +49,37 @@ To run the unit tests, use: ```make test```.
 
 # Structure
 
-The code is organised into four main modules:
+The code is organised into the following main modules:
 
-* ```search```
-* ```ons```
-* ```app```
 * ```api```
+* ```app```
+* ```config```
+* ```log```
+* ```ml```
+* ```ons```
+* ```search```
 
-The ```search``` module implements common functionality for search, working with mongoDB, 
-loading (un)supervised word embedding modules, spell checking, and user / session tracking. The core recommendation
-engine is also implemented here, and is responsible for updating user session vectors using the supplied models.
+The ```search``` module implements common functionality for search, whilst refraining from any ONS specific implementations.
+This includes methods/classes which simplify the process of quering elasticsearch for many common use cases, and also includes
+implements 
 
-The ```ons``` module contains code specific to the ONS search implementation, such as Elasticsearch queries, index names, 
-content types, sort fields, filter functions, type filters, and pagination. Any modifications to the queries being 
-executed in either the vanilla search engine (babbage replica), or the new conceptual search engine, should
-be made in this module. The implementation of both search engines follow the same pattern:
+The ```ons``` module is further split into the ```conceptual``` and ```search``` packages. The default search functionality of
+```babbage``` is implemented in the ```search``` with the following pattern:
 
-1. Define methods to build queries in a ```queries.py``` file, using the ```elasticsearch_dsl``` module.
-2. Define  a ```SearchEngine``` class which extends the ```AbstractSearchClient``` (see ```ons/search/search_engine.py```)
+1. Define methods to build queries in a ```queries/ons_query_builders.py``` file, using the ```elasticsearch_dsl``` module.
+2. Define  a ```SearchEngine``` class which extends the ```AbstractSearchClient``` found in ```ons/search/client/abstract_search_client.py```.
 3. Define utilty methods on  ```SearchEngine``` class as required, following the clone patten as seen in the 
 ```ons/search/search_engine.SearchEngine``` class
 4. Manipulate ```SearchEngine``` class in server routes to execute queries.
 
 To implement conceptual search, we simply extend the ```ons/search/search_engine.SearchEngine``` class and redefine the 
-original content query (see ```ons/search/queries.py```) to take advantage of our pre-trained models and
-indexed embedding vectors (see ```ons/search/conceptual/queries.py``` and ```ons/search/conceptual/search_engine.py```).
+original content query to take advantage of our pre-trained models (see query in ```ons/conceptual/queries/ons_query_builders.py```).
 As such, all the core logic for pagination, field highlighting, aggregations, sorting and type filtering need only be implemented once
 in ```ons/search/search_engine.AbstractSearchClient```.
+
+The ```ml``` package hosts the spell checking code and models.
+
+The ```log``` package hosts the app logger, which will ensure request context is always logged.
 
 Finally, the ```app``` and ```api``` modules host the ```sanic``` asynchronous HTTP server and all routes. Details of which routes are registered and various app configurations can be found in ```app/app.py```.
 
