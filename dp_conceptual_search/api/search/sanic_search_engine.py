@@ -28,9 +28,8 @@ from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
-from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import FastTextClientService
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
-from dp_conceptual_search.ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
 from dp_conceptual_search.ons.search.exceptions import UnknownTypeFilter, MalformedSearchTerm, UnknownSearchVector
 
 

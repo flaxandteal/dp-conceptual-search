@@ -10,7 +10,7 @@ from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.exceptions import InvalidUsage
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_type_counts_query
-from dp_conceptual_search.ons.search.conceptual.queries.ons_query_builders import build_content_query
+from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build_content_query
 from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
 
 

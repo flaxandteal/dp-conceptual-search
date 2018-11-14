@@ -14,9 +14,9 @@ from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
-from dp_conceptual_search.ons.search.conceptual.client.fasttext_client import FastTextClientService
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
-from dp_conceptual_search.ons.search.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
+from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
 
 
 class SearchContentApiTestCase(SearchTestApp):
