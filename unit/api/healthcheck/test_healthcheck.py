@@ -352,7 +352,7 @@ class HealthCheckTestCase(SearchTestApp):
         expected_response = HeathCheckResponse()
         for service in Services:
             expected_response._set_available(service)
-        expected_response._set_unavailable(Services.FASTTEXT)
+        expected_response._set_unavailable(Services.DP_FASTTEXT)
 
         expected_response = expected_response.to_dict()
 

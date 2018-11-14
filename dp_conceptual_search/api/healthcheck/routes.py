@@ -89,7 +89,7 @@ async def dp_fasttext_is_healthy(request: ONSRequest) -> bool:
 
 class Services(Enum):
     ELASTICSEARCH = partial(elasticsearch_is_healthy)
-    FASTTEXT = partial(dp_fasttext_is_healthy)
+    DP_FASTTEXT = partial(dp_fasttext_is_healthy)
 
 
 class HeathCheckResponse(object):
