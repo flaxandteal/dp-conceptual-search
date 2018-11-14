@@ -6,10 +6,17 @@ from numpy import ndarray
 from elasticsearch_dsl import query as Q
 
 from dp_conceptual_search.search.boost_mode import BoostMode
+from dp_conceptual_search.search.dsl.script_score import ScriptScore
 from dp_conceptual_search.ons.search.queries import ons_query_builders
 from dp_conceptual_search.search.dsl.function_score import FunctionScore
 from dp_conceptual_search.ons.search.fields import AvailableFields, Field
 from dp_conceptual_search.search.dsl.vector_script_score import VectorScriptScore
+from dp_conceptual_search.search.dsl.date_decay_function import date_decay_function
+
+
+# Build a date decay function to promote recent releases
+date_function = date_decay_function(AvailableFields.RELEASE_DATE.value.name,
+                                    "exp", "356d", "30d", decay=0.95)
 
 
 def word_vector_keywords_query(labels: List[str]) -> Q.Query:
@@ -59,12 +66,28 @@ def build_content_query(search_term: str, labels: List[str], search_vector: ndar
         boost_mode=BoostMode.REPLACE.value
     )
 
-    # Build the original content query
-    dis_max_query = ons_query_builders.build_content_query(search_term)
-
-    # Combine as DisMax with FunctionScore
-    query = Q.DisMax(
-        queries=[dis_max_query, additional_keywords_query]
+    # Build a script to boost original query
+    boost_script = ScriptScore(
+        script="_score * boostFactor",
+        params={
+            "boostFactor": 100
+        }
     )
 
-    return query
+    # Build the original content query
+    dis_max_query = FunctionScore(
+        query=ons_query_builders.build_content_query(search_term),
+        functions=[boost_script.to_dict()],
+        boost_mode=BoostMode.REPLACE.value
+    )
+
+    # Combine as DisMax with FunctionScore
+    query = Q.Bool(
+        should=[dis_max_query, additional_keywords_query]
+    )
+
+    return FunctionScore(
+        query=query,
+        functions=[date_function.to_dict()],
+        boost_mode=BoostMode.MULTIPLY.value
+    )
