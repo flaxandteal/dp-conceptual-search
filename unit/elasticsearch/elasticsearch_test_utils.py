@@ -2,14 +2,41 @@ from unittest.mock import MagicMock
 from unit.mocks.mock_es_client import MockElasticsearchClient
 
 
-def mock_search_client(*args):
+def mock_search(index=None, doc_type=None, body=None, params=None, **kwargs) -> dict:
+    """
+    Mock search method which can handle match by uri queries
+    :param self:
+    :param index:
+    :param doc_type:
+    :param body:
+    :param params:
+    :param kwargs:
+    :return:
+    """
+    if 'query' in body:
+        query = body['query']
+        if 'match' in query:
+            match = query['match']
+            if '_id' in match or 'uri' in match:
+                # Return only 1 hit
+                uri = match['_id'] if '_id' in match else match['uri']
+                return mock_match_uri_response(uri)
+
+    # Return usual mock search response
+    return mock_search_response()
+
+
+def mock_search_client(*args) -> MockElasticsearchClient:
     """
     Returns a mock Elasticsearch client for search
     :return:
     """
     # Mock the search client
     mock_client = MockElasticsearchClient()
-    mock_client.search = MagicMock(return_value=mock_search_response())
+    mock_client.search = MagicMock()
+
+    # Set side effect to call custom mock_search
+    mock_client.search.side_effect = mock_search
 
     return mock_client
 
@@ -116,7 +143,66 @@ def mock_hits_highlighted() -> list:
     return hits
 
 
-def mock_search_response():
+def mock_uri_hit(uri: str) -> dict:
+    """
+    Returns a mock hit with the desired uri
+    :param uri:
+    :return:
+    """
+    return {
+        "_id": uri,
+        "_type": "ghostbuster",
+        "_source": {
+            "name": "Egon Spengler",
+            "occupation": "Ghostbuster",
+            "location": "New York City, New York",
+            "description": {
+                "keywords": ["Test"]
+            }
+        }
+    }
+
+
+def mock_match_uri_response(uri: str) -> dict:
+    """
+    Mock response for a match by uri query
+    :return:
+    """
+    hits = [
+        mock_uri_hit(uri)
+    ]
+
+    response = {
+        "_shards": mock_shards_json(),
+        "hits": {
+            "hits": hits,
+            "max_score": 1.0,
+            "total": len(hits)
+        },
+        "aggregations": {
+            "docCounts": {
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0,
+                "buckets": [
+                    {
+                        "key": "ghostbuster",
+                        "doc_count": 2
+                    },
+                    {
+                        "key": "not_a_ghostbuster",
+                        "doc_count": 1
+                    }
+                ]
+            }
+        },
+        "timed_out": False,
+        "took": 5
+    }
+
+    return response
+
+
+def mock_search_response() -> dict:
     """
     Returns a full mock response to be used for testing
     :return:
@@ -152,7 +238,7 @@ def mock_search_response():
     return response
 
 
-def mock_health_response(status):
+def mock_health_response(status) -> dict:
     """
     Mocks the cluster health response
     :return:

@@ -119,3 +119,22 @@ async def ons_featured_result_query(request: ONSRequest) -> HTTPResponse:
     search_result: SearchResult = await sanic_search_engine.featured_result_query(request)
 
     return json(request, search_result.to_dict(), 200)
+
+
+@search_blueprint.route('/uri/', methods=['GET', 'POST'])
+@search_blueprint.route('/uri/<path:path>', methods=['GET', 'POST'])
+async def search_by_uri(request: ONSRequest, path: str):
+    """
+    Search for a page by it's uri
+    :param request:
+    :param path:
+    :return:
+    """
+    # Initialise the search engine
+    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+
+    # Perform the request
+    search_result: SearchResult = await sanic_search_engine.search_by_uri(request, path)
+
+    return json(request, search_result.to_dict(), 200)
+

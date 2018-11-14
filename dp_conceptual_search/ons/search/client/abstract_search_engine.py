@@ -1,8 +1,10 @@
 import abc
 from typing import List
 
-from dp_conceptual_search.ons.search.sort_fields import query_sort
+from dp_conceptual_search.search.query_helper import match_by_uri
 from dp_conceptual_search.search.client.search_client import SearchClient
+
+from dp_conceptual_search.ons.search.sort_fields import query_sort
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 from dp_conceptual_search.ons.search import AvailableContentTypes, SortField, TypeFilter
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
@@ -14,6 +16,15 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     """
     def __init__(self, **kwargs):
         super(AbstractSearchEngine, self).__init__(response_class=ONSResponse, **kwargs)
+
+    def match_by_uri(self, uri: str):
+        """
+        Builds a simple match by uri query
+        :param uri:
+        :return:
+        """
+        query = match_by_uri(uri)
+        return self.query(query)
 
     def apply_highlight_fields(self):
         """
