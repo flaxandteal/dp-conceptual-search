@@ -1,4 +1,5 @@
 nltk==3.2.5
+sortedcontainers == 1.5.9
 numpy==1.14.5
 sanic==0.8.1
 ujson==1.35

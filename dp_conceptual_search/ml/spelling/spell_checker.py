@@ -2,6 +2,7 @@
 Implementation of a spellchecker using word embedding models
 """
 from typing import Generator, List
+from sortedcontainers import SortedSet
 
 from dp_conceptual_search.ml.word_embedding.fastText.unsupervised import UnsupervisedModel
 
@@ -46,7 +47,7 @@ class SpellChecker(object):
         """
         result = []
 
-        for term in terms:
+        for term in SortedSet(terms):
             correction = self.correction(term)
             if correction.lower() != term.lower():
                 probability = self.probability(correction)
