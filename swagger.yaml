@@ -12,11 +12,9 @@ host: localhost:5000
 tags:
   - name: "search"
   - name: "conceptual_search"
+  - name: "recommend"
   - name: "spellcheck"
   - name: "healthcheck"
-  - name: "users"
-  - name: "sessions"
-  - name: "recommend"
 
 paths:
   /search:
@@ -40,6 +38,9 @@ paths:
       responses:
         200:
           description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+
         400:
           description: request body not specified
 
@@ -82,9 +83,25 @@ paths:
           description: "Page size"
           type: integer
           required: false
+        - in: query
+          name: sort_by
+          required: false
+          type: string
+          enum:
+            - first_letter
+            - title
+            - relevance
+            - release_date
+            - release_date_asc
+        - in: query
+          name: filter
+          required: false
+          type: string
       responses:
         200:
           description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
         400:
           description: Query term not specified
         404:
@@ -153,6 +170,8 @@ paths:
       responses:
         200:
           description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
         404:
           description: No document with the given URI found
 
@@ -200,6 +219,34 @@ paths:
           schema:
             $ref: '#/definitions/SearchResponse'
 
+  /search/recommend/similar/:
+    post:
+      tags:
+        - recommend
+      parameters:
+        - in: query
+          name: uri
+          type: string
+          required: true
+          description: "URI of the page for which similar content is wanted"
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+      summary: "Query for recommended content"
+      description: "Executes a query which returns content similar to the page at the given path. If the _ga cookie is specified, then the corresponding users session vector is also used."
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+
   /suggest/spelling:
     get:
       tags:
@@ -231,246 +278,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/HealthCheck'
-
-  /users/create:
-    put:
-      tags:
-        - users
-      summary: "Create a user"
-      description: "Creates a user using their _ga cookie and inserts them into mongoDB"
-      responses:
-        200:
-          description: OK
-          schema:
-            type: object
-            $ref: '#/definitions/User'
-        400:
-          description: "Google analytics cookie (_ga) not specified"
-
-  /users/find:
-    get:
-      tags:
-        - users
-      summary: "Find a user"
-      description: "Finds a user in the database and returns it"
-      responses:
-        200:
-          description: OK
-          schema:
-            type: object
-            $ref: '#/definitions/User'
-        400:
-          description: "Google analytics cookie (_ga) not specified"
-        404:
-          description: "User does not exist"
-
-  /users/find/{user_id}:
-    get:
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: user_id
-          type: string
-          required: true
-          description: "ID of user to search for"
-      summary: "Find a user"
-      description: "Finds a user in the database and returns it"
-      responses:
-        200:
-          description: OK
-        404:
-          description: "User does not exist"
-
-  /users/delete/{user_id}:
-    delete:
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: user_id
-          type: string
-          required: true
-          description: "ID of user to delete"
-      summary: "Delete a user"
-      description: "Delete the user with the given id"
-      responses:
-        200:
-          description: OK
-        404:
-          description: "User does not exist"
-
-  /sessions/create/{user_id}:
-    put:
-      tags:
-        - sessions
-      parameters:
-        - in: path
-          name: user_id
-          type: string
-          required: true
-          description: "ID of the user to attach this session to"
-      summary: "Create a user session"
-      description: "Creates a user session and attaches it to a known user"
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/Session'
-        400:
-          description: "Google analytics cookie (_gid) not specified"
-        404:
-          description: "User does not exist"
-
-  /recommend/update/page/{path}:
-    post:
-      tags:
-        - recommend
-      parameters:
-        - in: path
-          name: path
-          type: string
-          required: true
-          description: "Path to the page to use for user update"
-        - in: formData
-          name: sentiment
-          type: string
-          description: "Use positive or negative update"
-          default: positive
-          enum:
-            - positive
-            - negative
-      consumes:
-        - "application/json"
-        - "multipart/form-data"
-      summary: "Update a user vector using the given page"
-      description: "Update a user vector using the given page to display interest in similar content"
-      responses:
-        200:
-          description: OK
-        400:
-          description: "Unknown sentiment value or GA cookies (_ga and _gid) not supplied"
-        404:
-          description: "Page not found"
-
-  /recommend/{sentiment}/{term}:
-    post:
-      tags:
-        - recommend
-      parameters:
-        - in: path
-          name: sentiment
-          type: string
-          required: true
-          description: "Sentiment to use in update"
-          enum:
-            - positive
-            - negative
-        - in: path
-          name: term
-          type: string
-          required: true
-          description: "Term to use for vector update"
-      summary: "Update user session with term"
-      description: "Updates the users session vector using the given term and sentiment"
-      responses:
-        200:
-          description: OK
-        400:
-          description: "Google analytics cookies (_ga and _gid) not supplied"
-
-  /recommend/similarity/{term}:
-    get:
-      tags:
-        - recommend
-      parameters:
-        - in: path
-          name: term
-          type: string
-          required: true
-          description: "Term to measure similarity against"
-      summary: "Measure similarity between user and term"
-      description: "Measure similarity between user and term"
-      responses:
-        200:
-          description: OK
-        400:
-          description: "Google analytics cookies (_ga and _gid) not supplied"
-
-  /recommend/similarity/{user_id}/{term}:
-    get:
-      tags:
-        - recommend
-      parameters:
-        - in: path
-          name: user_id
-          type: string
-          required: true
-          description: "ID of the user to measure similarity against"
-        - in: path
-          name: term
-          type: string
-          required: true
-          description: "Term to measure similarity against"
-      summary: "Measure similarity between user and term"
-      description: "Measure similarity between user and term"
-      responses:
-        200:
-          description: OK
-        400:
-          description: "Google analytics cookies (_ga and _gid) not supplied"
-
-  /recommend/content/{path}:
-    get:
-      tags:
-        - recommend
-      parameters:
-        - in: path
-          name: path
-          type: string
-          required: true
-          description: "Path of the page for which similar content is wanted"
-        - in: query
-          name: page
-          description: "Current page"
-          type: integer
-          required: false
-        - in: query
-          name: size
-          description: "Page size"
-          type: integer
-          required: false
-      summary: "Query for recommended content"
-      description: "Executes a query which returns content similar to the page at the given path. If the _ga cookie is specified, then the corresponding users session vector is also used."
-      responses:
-        200:
-          description: OK
-    post:
-      tags:
-        - recommend
-      parameters:
-        - in: path
-          name: path
-          type: string
-          required: true
-          description: "Path of the page for which similar content is wanted"
-        - in: query
-          name: page
-          description: "Current page"
-          type: integer
-          required: false
-        - in: query
-          name: size
-          description: "Page size"
-          type: integer
-          required: false
-      summary: "Query for recommended content"
-      description: "Executes a query which returns content similar to the page at the given path. If the _ga cookie is specified, then the corresponding users session vector is also used."
-      responses:
-        200:
-          description: OK
-
-
 
 
 definitions:
@@ -546,96 +353,13 @@ definitions:
     type: object
     properties:
       elasticsearch:
-        $ref: '#/definitions/ElasticsearchHealth'
-  ElasticsearchHealth:
-    type: object
-    properties:
-      cluster_name:
         type: string
-        description: "Name of the Elasticsearch cluster"
-        example: "elasticsearch"
-      status:
+        enum:
+          - available
+          - unavailable
+      dp_fasttext:
         type: string
-        description: "Status of the cluster"
-        example: "yellow"
-      timed_out:
-        type: boolean
-        description: "Whether the request timed out"
-        example: false
-      number_of_nodes:
-        type: integer
-        description: "Number of nodes in cluster"
-        example: 1
-      number_of_data_nodes:
-        type: integer
-        description: "Number of data nodes in the cluster"
-        example: 1
-      active_primary_shards:
-        type: integer
-        description: "Number of active primary shards"
-        example: 9
-      active_shards:
-        type: integer
-        description: "Total number of active shards"
-        example: 9
-      relocating_shards:
-        type: integer
-        description: "Number of shards in relocating state"
-        example: 0
-      initializing_shards:
-        type: integer
-        description: "Number of shards in initializing state"
-        example: 0
-      unassigned_shards:
-        type: integer
-        description: "Number of unassaigned shards"
-        example: 5
-      delayed_unassigned_shards:
-        type: integer
-        description: "Number of nodes delayed in being assigned"
-        example: 0
-      number_of_pending_tasks:
-        type: integer
-        description: "Number of pending tasks"
-        example: 0
-      number_of_in_flight_fetch:
-        type: integer
-        description: "Number of shards in flight fetch"
-        example: 0
-      task_max_waiting_in_queue_millis:
-        type: integer
-        description: "Max task queue waiting time in ms"
-        example: 0
-      active_shards_percent_as_number:
-        type: number
-        description: "Number of active shards as a percentage of the total"
-        example: 64.2857142857
-  User:
-    type: object
-    properties:
-      _id:
-        type: object
-        description: "MongoDB object ID"
-      user_id:
-        type: string
-        description: "Salt & pepper hashed _ga ID"
-  Session:
-    type: object
-    properties:
-      _id:
-        type: object
-        description: "MongoDB object ID"
-      user_oid:
-        type: object
-        default: "MongoDB object ID of user"
-      session_id:
-        type: string
-        description: "Salt & pepper hashed _gid ID"
-      session_vector:
-        type: array
-        items:
-          type: number
-        description: "Word embedding vector which represents this session"
-
-
+        enum:
+          - available
+          - unavailable
     
