@@ -21,8 +21,17 @@ def word_vector_keywords_query(labels: List[str]) -> Q.Query:
     # Use the raw keywords field for matching
     field: Field = AvailableFields.KEYWORDS_RAW.value
 
+    # Remove _ from labels
+    labels = [label.replace("_", " ") for label in labels]
+
     # Build the individual match queries
-    match_queries = [Q.Match(**{field.name: {"query": label}}) for label in labels]
+    match_queries = [Q.MultiMatch(**{
+        "query": label,
+        "fields": [field.name,
+                   AvailableFields.SEARCH_BOOST.value.name,
+                   AvailableFields.TITLE.value.name,
+                   AvailableFields.SUMMARY.value.name]
+    }) for label in labels]
 
     return Q.Bool(should=match_queries)
 
@@ -58,8 +67,4 @@ def build_content_query(search_term: str, labels: List[str], search_vector: ndar
         queries=[dis_max_query, additional_keywords_query]
     )
 
-    return FunctionScore(
-        query=query,
-        functions=[script_score_dict],
-        boost_mode=BoostMode.AVG.value
-    )
+    return query
