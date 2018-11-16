@@ -6,9 +6,9 @@ from typing import List
 from elasticsearch_dsl import query as Q
 from elasticsearch_dsl.aggs import A as Aggregation
 
-from dp_conceptual_search.search.query_helper import match, multi_match
-from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
 from dp_conceptual_search.ons.search.fields import AvailableFields
+from dp_conceptual_search.ons.search.content_type import ContentType
+from dp_conceptual_search.search.query_helper import match, multi_match
 
 
 def type_counts_query() -> Aggregation:
@@ -59,7 +59,7 @@ def content_query(search_term: str, **kwargs) -> Q.DisMax:
     return q
 
 
-def function_score_content_query(query: Q.Query, content_types: List[AvailableContentTypes], boost: float=1.0) -> Q.Query:
+def function_score_content_query(query: Q.Query, content_types: List[ContentType], boost: float=1.0) -> Q.Query:
     """
     Generate a function score query using ContentType weights
     :param query:
@@ -69,8 +69,8 @@ def function_score_content_query(query: Q.Query, content_types: List[AvailableCo
     """
     function_scores = []
 
-    content_type: AvailableContentTypes
+    content_type: ContentType
     for content_type in content_types:
-        function_scores.append(content_type.value.filter_function())
+        function_scores.append(content_type.filter_function())
 
     return Q.FunctionScore(query=query, functions=function_scores, boost=boost)

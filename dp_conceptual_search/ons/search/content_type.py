@@ -103,7 +103,7 @@ class AvailableContentTypes(Enum):
         return label.upper() in AvailableContentTypes.available_content_type_names()
 
     @staticmethod
-    def from_str(label: str) -> 'AvailableContentTypes':
+    def from_str(label: str) -> 'ContentType':
         """
         Returns the enum type corresponding to the input string
         :param label:
@@ -111,6 +111,6 @@ class AvailableContentTypes(Enum):
         """
 
         if AvailableContentTypes.is_content_type(label):
-            return AvailableContentTypes[label.upper()]
+            return AvailableContentTypes[label.upper()].value
         else:
             raise NotImplementedError("No such ContentType for string: '{0}'".format(label))

@@ -62,7 +62,7 @@ class SearchDepartmentsApiTestCase(TestApp):
         # URL encode
         url_encoded_params = self.url_encode(params)
 
-        target = "/search/ons/departments?{q}".format(q=url_encoded_params)
+        target = "/search/departments?{q}".format(q=url_encoded_params)
 
         # Make the request
         request, response = self.get(target, 200)
