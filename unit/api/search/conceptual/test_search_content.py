@@ -10,13 +10,15 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock
 
 from dp_fasttext.client.testing.mock_client import mock_labels_api, mock_sentence_vector, mock_fasttext_client
 
-from dp_conceptual_search.ons.search.index import Index
-from dp_conceptual_search.search.search_type import SearchType
-from dp_conceptual_search.api.search.list_type import ListType
-from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
-from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+
+from dp_conceptual_search.search.search_type import SearchType
+
+from dp_conceptual_search.ons.search.index import Index
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
+from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
+from dp_conceptual_search.ons.search.content_type import ContentType, AvailableContentTypes
 
 
 class SearchContentApiTestCase(SearchTestApp):
@@ -106,39 +108,34 @@ class SearchContentApiTestCase(SearchTestApp):
         search_vector = array(search_vector_json.get("vector"))
 
         # Loop over list types
-        list_type: ListType
-        for list_type in ListType:
-            target = "/search/conceptual/{list_type}/content?{q}".format(list_type=list_type.name.lower(), q=url_encoded_params)
+        target = "/search/conceptual/content?{q}".format(q=url_encoded_params)
 
-            # Make the request
-            request, response = self.post(target, 200)
+        # Make the request
+        request, response = self.post(target, 200)
 
-            # Build the filter query
-            type_filters = list_type.to_type_filters()
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
 
-            # Build the expected query dict - note this should not change
-            s = ConceptualSearchEngine().content_query(
-                self.search_term,
-                current_page,
-                size,
-                highlight=True,
-                filter_functions=None,
-                type_filters=type_filters,
-                labels=labels,
-                search_vector=search_vector
-            )
+        # Build the expected query dict - note this should not change
+        s = ConceptualSearchEngine().content_query(
+            self.search_term,
+            current_page,
+            size,
+            highlight=True,
+            filter_functions=None,
+            type_filters=content_types,
+            labels=labels,
+            search_vector=search_vector
+        )
 
-            expected = s.to_dict()
+        expected = s.to_dict()
 
-            # Assert search was called with correct arguments
-            self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
-                                                       search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+        # Assert search was called with correct arguments
+        self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
+                                                   search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
 
-            data = response.json
-            results = data['results']
+        data = response.json
+        results = data['results']
 
-            expected_hits_highlighted = mock_hits_highlighted()
-            self.assertEqual(results, expected_hits_highlighted, "returned hits should match expected")
-
-
-
+        expected_hits_highlighted = mock_hits_highlighted()
+        self.assertEqual(results, expected_hits_highlighted, "returned hits should match expected")

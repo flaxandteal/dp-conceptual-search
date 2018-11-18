@@ -11,12 +11,11 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.ons.search.index import Index
-from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
-from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
-from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_type_counts_query
+from dp_conceptual_search.ons.search.content_type import AvailableContentTypes, ContentType
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_type_counts_query
 
 
 class SearchTypeCountsApiTestCase(SearchTestApp):
@@ -78,50 +77,47 @@ class SearchTypeCountsApiTestCase(SearchTestApp):
         # URL encode
         url_encoded_params = self.url_encode(params)
 
-        # Loop over list types
-        list_type: ListType
-        for list_type in ListType:
-            target = "/search/{list_type}/counts?{q}".format(list_type=list_type.name.lower(), q=url_encoded_params)
+        target = "/search/counts?{q}".format(q=url_encoded_params)
 
-            # Make the request
-            request, response = self.post(target, 200, data=dumps(data))
+        # Make the request
+        request, response = self.post(target, 200, data=dumps(data))
 
-            # Build the filter query - Note, for type counts we use all available type filters (not those
-            # specified in the list type)
-            type_filters: List[TypeFilter] = AvailableTypeFilters.all()
-            content_type_filters = []
-            for type_filter in type_filters:
-                for content_type in type_filter.get_content_types():
-                    content_type_filters.append(content_type.value.name)
-            filter_query = [
-                {
-                    "terms": {
-                        "type": content_type_filters
-                    }
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
+
+        # Build the filter query
+        type_filters = [content_type.name for content_type in content_types]
+        filter_query = [
+            {
+                "terms": {
+                    "type": type_filters
                 }
-            ]
-
-            # Build expected aggs query
-            aggs = {
-                "docCounts": build_type_counts_query().to_dict()
             }
+        ]
 
-            # Build the expected query dict - note this should not change
-            expected = {
-                "from": from_start,
-                "query": {
-                    "bool": {
-                        "filter": filter_query,
-                        "must": [
-                            build_content_query(self.search_term).to_dict(),
-                        ]
-                    }
-                },
-                "size": size,
-                "sort": query_sort(SortField.relevance),
-                "aggs": aggs
-            }
+        aggs_query = build_type_counts_query().to_dict()
 
-            # Assert search was called with correct arguments
-            self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
-                                                       search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+        # Build expected aggs query
+        aggs = {
+            "docCounts": aggs_query
+        }
+
+        # Build the expected query dict - note this should not change
+        expected = {
+            "from": from_start,
+            "query": {
+                "bool": {
+                    "filter": filter_query,
+                    "must": [
+                        build_content_query(self.search_term).to_dict(),
+                    ]
+                }
+            },
+            "size": size,
+            "sort": query_sort(SortField.relevance),
+            "aggs": aggs
+        }
+
+        # Assert search was called with correct arguments
+        self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
+                                                   search_type=SearchType.DFS_QUERY_THEN_FETCH.value)

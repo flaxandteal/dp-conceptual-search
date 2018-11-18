@@ -11,14 +11,14 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 from dp_fasttext.client.testing.mock_client import mock_labels_api, mock_sentence_vector, mock_fasttext_client
 
 from dp_conceptual_search.config import SEARCH_CONFIG
-from dp_conceptual_search.ons.search.index import Index
-from dp_conceptual_search.api.search.list_type import ListType
-from dp_conceptual_search.search.search_type import SearchType
-from dp_conceptual_search.ons.search.sort_fields import SortField
-from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
-from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+
+from dp_conceptual_search.search.search_type import SearchType
+
+from dp_conceptual_search.ons.search.index import Index
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
+from dp_conceptual_search.ons.search.content_type import ContentType, AvailableContentTypes
 
 
 class SearchTypeCountsApiTestCase(SearchTestApp):
@@ -63,9 +63,6 @@ class SearchTypeCountsApiTestCase(SearchTestApp):
         current_page = from_start + 1
         size = SEARCH_CONFIG.results_per_page
 
-        # Set sort_by
-        sort_by: SortField = SortField.relevance
-
         # Build params dict
         params = {
             "q": self.search_term,
@@ -92,29 +89,24 @@ class SearchTypeCountsApiTestCase(SearchTestApp):
         self.assertEqual(search_vector_json.get("query"), params.get("q"), "fastText query string should match input")
         search_vector = array(search_vector_json.get("vector"))
 
-        # Loop over list types
-        list_type: ListType
-        for list_type in ListType:
-            target = "/search/conceptual/{list_type}/counts?{q}".format(list_type=list_type.name.lower(), q=url_encoded_params)
+        target = "/search/conceptual/counts?{q}".format(q=url_encoded_params)
 
-            # Make the request
-            request, response = self.post(target, 200)
+        # Make the request
+        request, response = self.post(target, 200)
 
-            # Build the filter query - Note, for type counts we use all available type filters (not those
-            # specified in the list type)
-            type_filters: List[TypeFilter] = AvailableTypeFilters.all()
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
 
-            # Build the expected query dict - note this should not change
-            # Build the expected query dict - note this should not change
-            s = ConceptualSearchEngine().type_counts_query(
-                self.search_term,
-                type_filters=type_filters,
-                labels=labels,
-                search_vector=search_vector
-            )
+        # Build the expected query dict - note this should not change
+        s = ConceptualSearchEngine().type_counts_query(
+            self.search_term,
+            type_filters=content_types,
+            labels=labels,
+            search_vector=search_vector
+        )
 
-            expected = s.to_dict()
+        expected = s.to_dict()
 
-            # Assert search was called with correct arguments
-            self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
-                                                       search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
+        # Assert search was called with correct arguments
+        self.mock_client.search.assert_called_with(index=[Index.ONS.value], doc_type=[], body=expected,
+                                                   search_type=SearchType.DFS_QUERY_THEN_FETCH.value)
