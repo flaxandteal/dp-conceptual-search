@@ -42,7 +42,7 @@ def mock_single_hit() -> list:
     embedding_vector_field: Field = AvailableFields.EMBEDDING_VECTOR.value
 
     test_vector = rand(10)
-    test_vector_encoded = encode_float_list(list(test_vector.tolist()))
+    test_vector_encoded = encode_float_list(test_vector)
     hit = {
         "_id": "test 1",
         "_type": "ghostbuster",

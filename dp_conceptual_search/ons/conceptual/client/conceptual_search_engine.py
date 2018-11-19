@@ -189,7 +189,7 @@ class ConceptualSearchEngine(SearchEngine):
         client: Client
         async with FastTextClientService.get_fasttext_client() as client:
             # Encode vector
-            encoded_vector = encode_float_list(list(vector.tolist()))
+            encoded_vector = encode_float_list(vector)
 
             # Generate headers
             headers = self.get_fasttext_headers(context)
