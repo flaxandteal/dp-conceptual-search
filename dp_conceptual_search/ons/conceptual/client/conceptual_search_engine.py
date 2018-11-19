@@ -68,9 +68,6 @@ class ConceptualSearchEngine(SearchEngine):
         if search_vector is None or not isinstance(search_vector, ndarray):
             raise InvalidUsage("Must supply 'search_vector: np.ndarray' argument for conceptual search")
 
-        if type_filters is None:
-            type_filters = AvailableTypeFilters.all()
-
         vector_script_score = self.vector_script_score(search_vector)
 
         # Build the query
@@ -80,9 +77,11 @@ class ConceptualSearchEngine(SearchEngine):
         s: ConceptualSearchEngine = self._clone() \
             .query(query) \
             .paginate(current_page, size) \
-            .type_filter(type_filters) \
             .search_type(SearchType.DFS_QUERY_THEN_FETCH) \
             .exclude_fields_from_source(self.EMBEDDING_VECTOR)
+
+        if type_filters is not None:
+            s: ConceptualSearchEngine = s.type_filter(type_filters)
 
         if highlight:
             s: SearchEngine = s.apply_highlight_fields()
@@ -100,14 +99,14 @@ class ConceptualSearchEngine(SearchEngine):
         labels: List[str] = kwargs.get("labels", None)
         search_vector: ndarray = kwargs.get("search_vector", None)
 
-        if type_filters is None:
-            type_filters = AvailableTypeFilters.all()
-
         # Build the content query with no type filters, function scores or sorting
-        s: SearchEngine = self.content_query(search_term, self.default_page_number,
+        s: SearchEngine = self.content_query(search_term,
+                                             self.default_page_number,
                                              SEARCH_CONFIG.results_per_page,
-                                             type_filters=type_filters, highlight=False,
-                                             labels=labels, search_vector=search_vector)
+                                             type_filters=type_filters,
+                                             highlight=False,
+                                             labels=labels,
+                                             search_vector=search_vector)
 
         # Build the aggregations
         aggregations = build_type_counts_query()

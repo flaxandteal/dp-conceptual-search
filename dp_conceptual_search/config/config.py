@@ -41,6 +41,8 @@ APP_CONFIG.description = 'Dedicated search API for digital publishing.'
 API_CONFIG = Section("API config")
 API_CONFIG.enabled_prometheus_metrics = bool_env('ENABLE_PROMETHEUS_METRICS', False)
 API_CONFIG.testing = bool_env("TESTING", False)
+API_CONFIG.conceptual_search_enabled = bool_env("CONCEPTUAL_SEARCH_ENABLED", False)
+API_CONFIG.redirect_conceptual_search = bool_env("REDIRECT_CONCEPTUAL_SEARCH", False)
 
 # ML
 
@@ -71,6 +73,4 @@ SEARCH_CONFIG.search_index = os.environ.get("SEARCH_INDEX", SEARCH_CONFIG.defaul
 SEARCH_CONFIG.departments_search_index = "departments"
 SEARCH_CONFIG.results_per_page = int(os.getenv("RESULTS_PER_PAGE", 10))
 SEARCH_CONFIG.max_visible_paginator_link = int(os.getenv("MAX_VISIBLE_PAGINATOR_LINK", 5))
-SEARCH_CONFIG.conceptual_search_enabled = bool_env("CONCEPTUAL_SEARCH_ENABLED", False)
-SEARCH_CONFIG.redirect_conceptual_search = bool_env("REDIRECT_CONCEPTUAL_SEARCH", False)
 SEARCH_CONFIG.max_request_size = int(os.getenv("SEARCH_MAX_REQUEST_SIZE", 200))
