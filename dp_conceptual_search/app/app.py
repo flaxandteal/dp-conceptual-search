@@ -39,7 +39,7 @@ def create_app() -> SearchApp:
     app.blueprint(healthcheck_blueprint)
 
     # Enable conceptual search routes?
-    if CONFIG.SEARCH.conceptual_search_enabled:
+    if CONFIG.API.conceptual_search_enabled:
         app.blueprint(conceptual_search_blueprint)
 
     # Register error handlers

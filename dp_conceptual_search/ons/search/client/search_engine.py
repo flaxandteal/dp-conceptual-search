@@ -1,9 +1,10 @@
 from typing import List
 
 from dp_conceptual_search.config import SEARCH_CONFIG
+
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
-from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
+from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, ContentType
 from dp_conceptual_search.ons.search.queries.ons_query_builders import (
     build_content_query, build_type_counts_query, build_function_score_content_query, build_departments_query
 )
@@ -32,10 +33,10 @@ class SearchEngine(AbstractSearchEngine):
         return s
 
     def content_query(self, search_term: str, current_page: int, size: int,
-                      sort_by: SortField = SortField.relevance,
-                      highlight: bool = True,
-                      filter_functions: List[AvailableContentTypes] = None,
-                      type_filters: List[TypeFilter] = None,
+                      sort_by: SortField=SortField.relevance,
+                      highlight: bool=True,
+                      filter_functions: List[ContentType]=None,
+                      type_filters: List[ContentType]=None,
                       **kwargs):
         """
         Builds the ONS content query, responsible for populating the SERP
@@ -49,9 +50,6 @@ class SearchEngine(AbstractSearchEngine):
         :param kwargs:
         :return:
         """
-        if type_filters is None:
-            type_filters = AvailableTypeFilters.all()
-
         # Build the query dict
         query = build_content_query(search_term)
 
@@ -64,15 +62,17 @@ class SearchEngine(AbstractSearchEngine):
             .query(query) \
             .paginate(current_page, size) \
             .sort_by(sort_by) \
-            .type_filter(type_filters) \
             .search_type(SearchType.DFS_QUERY_THEN_FETCH)
+
+        if type_filters is not None:
+            s: SearchEngine = s.type_filter(type_filters)
 
         if highlight:
             s: SearchEngine = s.apply_highlight_fields()
 
         return s
 
-    def type_counts_query(self, search_term, type_filters: List[TypeFilter] = None, **kwargs):
+    def type_counts_query(self, search_term, type_filters: List[ContentType]=None, **kwargs):
         """
         Builds the ONS type counts query, responsible providing counts by content type
         :param search_term:
@@ -80,9 +80,6 @@ class SearchEngine(AbstractSearchEngine):
         :param kwargs:
         :return:
         """
-        if type_filters is None:
-            type_filters = AvailableTypeFilters.all()
-
         # Build the content query with no type filters, function scores or sorting
         s: SearchEngine = self.content_query(search_term, self.default_page_number,
                                              SEARCH_CONFIG.results_per_page,
@@ -102,9 +99,7 @@ class SearchEngine(AbstractSearchEngine):
         :param search_term:
         :return:
         """
-        type_filters: List[TypeFilter] = [
-            AvailableTypeFilters.FEATURED.value
-        ]
+        type_filters: List[ContentType] = AvailableTypeFilters.FEATURED.value.get_content_types()
 
         page_size = 1  # Only want one hit
 

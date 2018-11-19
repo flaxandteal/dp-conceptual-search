@@ -7,20 +7,32 @@ from numpy import ndarray
 
 from dp_conceptual_search.config.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.search.dsl.vector_script_score import VectorScriptScore
+
+from dp_conceptual_search.ons.search import SortField, ContentType
 from dp_conceptual_search.ons.search.exceptions import InvalidUsage
+from dp_conceptual_search.ons.search.fields import AvailableFields, Field
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_type_counts_query
 from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build_content_query
-from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
 
 
 class ConceptualSearchEngine(SearchEngine):
+    EMBEDDING_VECTOR: Field = AvailableFields.EMBEDDING_VECTOR.value
+
+    def vector_script_score(self, vector: ndarray) -> VectorScriptScore:
+        """
+        Wrapper for building a script score function using the embedding vector field
+        :param vector:
+        :return:
+        """
+        return VectorScriptScore(self.EMBEDDING_VECTOR.name, vector, cosine=True)
 
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField = SortField.relevance,
                       highlight: bool = True,
-                      filter_functions: List[AvailableContentTypes] = None,
-                      type_filters: List[TypeFilter] = None,
+                      filter_functions: List[ContentType] = None,
+                      type_filters: List[ContentType] = None,
                       **kwargs):
         """
         Builds the ONS conceptual search content query, responsible for populating the SERP
@@ -56,25 +68,27 @@ class ConceptualSearchEngine(SearchEngine):
         if search_vector is None or not isinstance(search_vector, ndarray):
             raise InvalidUsage("Must supply 'search_vector: np.ndarray' argument for conceptual search")
 
-        if type_filters is None:
-            type_filters = AvailableTypeFilters.all()
+        vector_script_score = self.vector_script_score(search_vector)
 
         # Build the query
-        query = build_content_query(search_term, labels, search_vector)
+        query = build_content_query(search_term, labels, vector_script_score)
 
         # Build the content query
         s: ConceptualSearchEngine = self._clone() \
             .query(query) \
             .paginate(current_page, size) \
-            .type_filter(type_filters) \
-            .search_type(SearchType.DFS_QUERY_THEN_FETCH)
+            .search_type(SearchType.DFS_QUERY_THEN_FETCH) \
+            .exclude_fields_from_source(self.EMBEDDING_VECTOR)
+
+        if type_filters is not None:
+            s: ConceptualSearchEngine = s.type_filter(type_filters)
 
         if highlight:
             s: SearchEngine = s.apply_highlight_fields()
 
         return s
 
-    def type_counts_query(self, search_term, type_filters: List[TypeFilter] = None, **kwargs):
+    def type_counts_query(self, search_term, type_filters: List[ContentType] = None, **kwargs):
         """
         Builds the ONS conceptual type counts query, responsible providing counts by content type
         :param search_term:
@@ -85,14 +99,14 @@ class ConceptualSearchEngine(SearchEngine):
         labels: List[str] = kwargs.get("labels", None)
         search_vector: ndarray = kwargs.get("search_vector", None)
 
-        if type_filters is None:
-            type_filters = AvailableTypeFilters.all()
-
         # Build the content query with no type filters, function scores or sorting
-        s: SearchEngine = self.content_query(search_term, self.default_page_number,
+        s: SearchEngine = self.content_query(search_term,
+                                             self.default_page_number,
                                              SEARCH_CONFIG.results_per_page,
-                                             type_filters=type_filters, highlight=False,
-                                             labels=labels, search_vector=search_vector)
+                                             type_filters=type_filters,
+                                             highlight=False,
+                                             labels=labels,
+                                             search_vector=search_vector)
 
         # Build the aggregations
         aggregations = build_type_counts_query()

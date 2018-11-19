@@ -2,15 +2,15 @@
 Tests the ONS featured result search API
 """
 from json import dumps
+from typing import List
 
 from unittest import mock
+from unit.utils.search_test_app import SearchTestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
-from unit.utils.search_test_app import SearchTestApp
-
 from dp_conceptual_search.ons.search.index import Index
-from dp_conceptual_search.api.search.list_type import ListType
 from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.ons.search.content_type import ContentType
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query
@@ -76,25 +76,19 @@ class SearchFeaturedApiTestCase(SearchTestApp):
         # URL encode
         url_encoded_params = self.url_encode(params)
 
-        # Use the ONS list_type only
-        list_type: ListType = ListType.ONS
-        target = "/search/{list_type}/featured?{q}".format(list_type=list_type.name.lower(), q=url_encoded_params)
+        target = "/search/featured?{q}".format(q=url_encoded_params)
 
         # Make the request
         request, response = self.post(target, 200, data=dumps(data))
 
-        # Build the filter query
-        type_filters = [
-            AvailableTypeFilters.FEATURED.value
-        ]
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableTypeFilters.FEATURED.value.get_content_types()
+        type_filters = [content_type.name for content_type in content_types]
+
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]
