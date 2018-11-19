@@ -2,7 +2,6 @@
 This file contains queries for conceptual search
 """
 from typing import List
-from numpy import ndarray
 from elasticsearch_dsl import query as Q
 
 from dp_conceptual_search.search.boost_mode import BoostMode
@@ -43,21 +42,18 @@ def word_vector_keywords_query(labels: List[str]) -> Q.Query:
     return Q.Bool(should=match_queries)
 
 
-def build_content_query(search_term: str, labels: List[str], search_vector: ndarray,
-                        field: Field = AvailableFields.EMBEDDING_VECTOR.value) -> Q.Query:
+def build_content_query(search_term: str, labels: List[str], search_vector_script: VectorScriptScore) -> Q.Query:
     """
     Defines the ONS conceptual search content query
     :param search_term:
     :param labels:
-    :param search_vector:
-    :param field:
+    :param search_vector_script:
     :return:
     """
     wv_keywords_query = word_vector_keywords_query(labels)
 
     # Build function scores
-    script_score = VectorScriptScore(field.name, search_vector, cosine=True)
-    script_score_dict = script_score.to_dict()
+    script_score_dict = search_vector_script.to_dict()
 
     # Generate additional keywords query
     additional_keywords_query = FunctionScore(
