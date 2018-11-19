@@ -3,6 +3,7 @@ This file contains utility methods for performing search queries using abstract 
 """
 from numpy import ndarray
 from typing import ClassVar, List
+
 from elasticsearch.exceptions import ConnectionError
 
 from sanic.exceptions import ServerError, InvalidUsage
@@ -27,7 +28,6 @@ from dp_conceptual_search.ons.search.response.client.ons_response import ONSResp
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
 from dp_conceptual_search.ons.search.exceptions import MalformedSearchTerm, UnknownSearchVector
 from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
-
 
 async def execute(request: ONSRequest, engine: AbstractSearchEngine) -> ONSResponse:
     """
@@ -146,13 +146,26 @@ class SanicSearchEngine(object):
         type_filters: List[ContentType] = request.get_type_filters()
 
         # Attempt to build the query
-        try:
-            kwargs = {}
-            if isinstance(engine, ConceptualSearchEngine):
-                labels, search_vector = await self.get_conceptual_search_params(request, search_term)
-                kwargs['labels'] = labels
-                kwargs['search_vector'] = search_vector
+        kwargs = {}
+        if isinstance(engine, ConceptualSearchEngine):
+            labels, search_vector = await self.get_conceptual_search_params(request, search_term)
+            kwargs['labels'] = labels
+            kwargs['search_vector'] = search_vector
 
+        logger.debug(request.request_id, "Received content query request", extra={
+            "params": {
+                "search_term": search_term,
+                "page": page,
+                "page_size": page_size,
+                "sort_by": sort_by.name,
+                "filters": type_filters,
+                "kwargs": kwargs
+            }
+        })
+
+        try:
+            # Pass the same content types as both filters and filter boosts (type_filters and filter_functions,
+            # respectively).
             engine: AbstractSearchEngine = engine.content_query(search_term, page, page_size, sort_by=sort_by,
                                                                 filter_functions=type_filters,
                                                                 type_filters=type_filters,
@@ -187,6 +200,13 @@ class SanicSearchEngine(object):
         type_filters: List[ContentType] = request.get_type_filters()
 
         # Attempt to build the query
+        logger.debug(request.request_id, "Received type counts query request", extra={
+            "params": {
+                "search_term": search_term,
+                "filters": type_filters
+            }
+        })
+
         try:
             kwargs = {}
             if isinstance(engine, ConceptualSearchEngine):
@@ -222,6 +242,12 @@ class SanicSearchEngine(object):
 
         # Perform the query
         search_term = request.get_search_term()
+
+        logger.debug(request.request_id, "Received featured result query request", extra={
+            "params": {
+                "search_term": search_term
+            }
+        })
 
         try:
             engine: AbstractSearchEngine = engine.featured_result_query(search_term)
