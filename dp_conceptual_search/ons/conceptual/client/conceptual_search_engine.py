@@ -7,6 +7,7 @@ from numpy import ndarray
 
 from dp_conceptual_search.config.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.search.dsl.vector_script_score import VectorScriptScore
 
 from dp_conceptual_search.ons.search.exceptions import InvalidUsage
 from dp_conceptual_search.ons.search.fields import AvailableFields, Field
@@ -62,8 +63,10 @@ class ConceptualSearchEngine(SearchEngine):
         if type_filters is None:
             type_filters = AvailableTypeFilters.all()
 
+        script_score = VectorScriptScore(self.embedding_vector_field.name, search_vector, cosine=True)
+
         # Build the query
-        query = build_content_query(search_term, labels, search_vector)
+        query = build_content_query(search_term, labels, script_score)
 
         # Build the content query
         s: ConceptualSearchEngine = self._clone() \
