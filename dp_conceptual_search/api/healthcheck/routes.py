@@ -15,7 +15,7 @@ from dp_conceptual_search.log import logger
 from dp_conceptual_search.app.search_app import SearchApp
 from dp_conceptual_search.config.config import SEARCH_CONFIG
 from dp_conceptual_search.api.request.ons_request import ONSRequest
-from dp_conceptual_search.ons.conceptual.client.fasttext_client import FastTextClientService
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 
 healthcheck_blueprint = Blueprint('healthcheck', url_prefix='/healthcheck')
 

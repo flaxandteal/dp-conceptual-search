@@ -12,9 +12,8 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 from dp_conceptual_search.search.search_type import SearchType
 
 from dp_conceptual_search.config import SEARCH_CONFIG
-from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters
-from dp_conceptual_search.search.dsl.vector_script_score import VectorScriptScore
-from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field, AvailableFields
+from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
+from dp_conceptual_search.ons.search.content_type import AvailableContentTypes, ContentType
 from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build_content_query
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_type_counts_query
 from dp_conceptual_search.ons.conceptual.client.conceptual_search_engine import ConceptualSearchEngine
@@ -98,23 +97,20 @@ class ConceptualSearchEngineTestCase(AsyncTestCase, TestCase):
         # Calculate correct start page number
         from_start, current_page, size = self.paginate()
 
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
+
         # Build the filter query
-        type_filters = AvailableTypeFilters.all()
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        type_filters = [content_type.name for content_type in content_types]
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]
 
-        embedding_field: Field = AvailableFields.EMBEDDING_VECTOR.value
         vector = rand(10)
-        vector_script_score = VectorScriptScore(embedding_field.name, vector)
 
         labels = ["these", "are", "a", "test"]
 
@@ -124,7 +120,7 @@ class ConceptualSearchEngineTestCase(AsyncTestCase, TestCase):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        build_content_query(self.search_term, labels, vector_script_score).to_dict(),
+                        build_content_query(self.search_term, labels, vector).to_dict(),
                     ]
                 }
             },
@@ -159,16 +155,15 @@ class ConceptualSearchEngineTestCase(AsyncTestCase, TestCase):
         from_start = 0
         size = SEARCH_CONFIG.results_per_page
 
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
+
         # Build the filter query
-        type_filters = AvailableTypeFilters.all()
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        type_filters = [content_type.name for content_type in content_types]
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]
@@ -178,9 +173,7 @@ class ConceptualSearchEngineTestCase(AsyncTestCase, TestCase):
             "docCounts": build_type_counts_query().to_dict()
         }
 
-        embedding_field: Field = AvailableFields.EMBEDDING_VECTOR.value
         vector = rand(10)
-        vector_script_score = VectorScriptScore(embedding_field.name, vector)
 
         labels = ["these", "are", "a", "test"]
 
@@ -190,7 +183,7 @@ class ConceptualSearchEngineTestCase(AsyncTestCase, TestCase):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        build_content_query(self.search_term, labels, vector_script_score).to_dict(),
+                        build_content_query(self.search_term, labels, vector).to_dict(),
                     ]
                 }
             },

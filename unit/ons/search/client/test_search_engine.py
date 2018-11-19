@@ -9,10 +9,10 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
-from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
+from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, AvailableContentTypes, ContentType
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_type_counts_query
 
 
@@ -150,6 +150,9 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         Tests the departments query method correctly calls the underlying Elasticsearch client
         :return:
         """
+        # Create an instance of the SearchEngine
+        engine = self.get_search_engine()
+
         # Calculate correct start page number
         from_start, current_page, size = self.paginate()
 
@@ -167,13 +170,11 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             "size": size
         }
 
+        # Call departments_query
+        engine: SearchEngine = engine.departments_query(self.search_term, current_page, size)
+
         # Define the async function to be ran
         async def async_test_function():
-            # Create an instance of the SearchEngine
-            engine = self.get_search_engine()
-
-            engine: SearchEngine = engine.departments_query(self.search_term, current_page, size)
-
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -188,19 +189,21 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         Tests the content query method correctly calls the underlying Elasticsearch client
         :return:
         """
+        # Create an instance of the SearchEngine
+        engine = self.get_search_engine()
+
         # Calculate correct start page number
         from_start, current_page, size = self.paginate()
 
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
+
         # Build the filter query
-        type_filters = AvailableTypeFilters.all()
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        type_filters = [content_type.name for content_type in content_types]
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]
@@ -221,13 +224,11 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             "highlight": self.highlight_dict
         }
 
+        # Call departments_query
+        engine: SearchEngine = engine.content_query(self.search_term, current_page, size, type_filters=content_types)
+
         # Define the async function to be ran
         async def async_test_function():
-            # Create an instance of the SearchEngine
-            engine = self.get_search_engine()
-
-            engine: SearchEngine = engine.content_query(self.search_term, current_page, size)
-
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -242,27 +243,31 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         Tests the type counts query method correctly calls the underlying Elasticsearch client
         :return:
         """
+        # Create an instance of the SearchEngine
+        engine = self.get_search_engine()
+
         # Set correct from_start and page size for type counts query
         from_start = 0
         size = SEARCH_CONFIG.results_per_page
 
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
+
         # Build the filter query
-        type_filters = AvailableTypeFilters.all()
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        type_filters = [content_type.name for content_type in content_types]
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]
 
+        aggs_query = build_type_counts_query().to_dict()
+
         # Build expected aggs query
         aggs = {
-            "docCounts": build_type_counts_query().to_dict()
+            "docCounts": aggs_query
         }
 
         # Build the expected query dict - note this should not change
@@ -281,12 +286,11 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             "aggs": aggs
         }
 
+        # Call departments_query
+        engine: SearchEngine = engine.type_counts_query(self.search_term, type_filters=content_types)
+
         # Define the async function to be ran
         async def async_test_function():
-            # Create an instance of the SearchEngine
-            engine = self.get_search_engine()
-
-            engine: SearchEngine = engine.type_counts_query(self.search_term)
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 
@@ -301,22 +305,20 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         Tests the featured query method correctly calls the underlying Elasticsearch client
         :return:
         """
+        # Create an instance of the SearchEngine
+        engine = self.get_search_engine()
+
         # Set correct from_start and page size for featured result query
         from_start = 0
         size = 1
 
         # Build the filter query
-        type_filters = [
-            AvailableTypeFilters.FEATURED.value
-        ]
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        content_types = AvailableTypeFilters.FEATURED.value.get_content_types()
+        type_filters = [content_type.name for content_type in content_types]
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]
@@ -336,12 +338,11 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             "sort": query_sort(SortField.relevance)
         }
 
+        # Call departments_query
+        engine: SearchEngine = engine.featured_result_query(self.search_term)
+
         # Define the async function to be ran
         async def async_test_function():
-            # Create an instance of the SearchEngine
-            engine = self.get_search_engine()
-
-            engine: SearchEngine = engine.featured_result_query(self.search_term)
             # Ensure search method on SearchClient is called correctly on execute
             response = await engine.execute(ignore_cache=True)
 

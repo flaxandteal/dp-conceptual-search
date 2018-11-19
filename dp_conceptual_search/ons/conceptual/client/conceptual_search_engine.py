@@ -21,11 +21,12 @@ from dp_conceptual_search.ons.search.exceptions import InvalidUsage
 from dp_conceptual_search.ons.search.fields import AvailableFields, Field
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
-from dp_conceptual_search.ons.conceptual.client.fasttext_client import FastTextClientService
+from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, ContentType
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_type_counts_query
-from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build_content_query
 from dp_conceptual_search.ons.search.exceptions import MalformedSearchTerm, UnknownSearchVector
-from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, TypeFilter, AvailableContentTypes
+
+from dp_conceptual_search.ons.conceptual.client.fasttext_client import FastTextClientService
+from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build_content_query
 
 
 class ConceptualSearchEngine(SearchEngine):
@@ -45,8 +46,8 @@ class ConceptualSearchEngine(SearchEngine):
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField = SortField.relevance,
                       highlight: bool = True,
-                      filter_functions: List[AvailableContentTypes] = None,
-                      type_filters: List[TypeFilter] = None,
+                      filter_functions: List[ContentType] = None,
+                      type_filters: List[ContentType] = None,
                       **kwargs):
         """
         Builds the ONS conceptual search content query, responsible for populating the SERP
@@ -101,7 +102,7 @@ class ConceptualSearchEngine(SearchEngine):
 
         return s
 
-    def type_counts_query(self, search_term, type_filters: List[TypeFilter] = None, **kwargs):
+    def type_counts_query(self, search_term, type_filters: List[ContentType] = None, **kwargs):
         """
         Builds the ONS conceptual type counts query, responsible providing counts by content type
         :param search_term:
