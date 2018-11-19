@@ -9,10 +9,10 @@ from dp_conceptual_search.config.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.search.dsl.vector_script_score import VectorScriptScore
 
+from dp_conceptual_search.ons.search import SortField, ContentType
 from dp_conceptual_search.ons.search.exceptions import InvalidUsage
 from dp_conceptual_search.ons.search.fields import AvailableFields, Field
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
-from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, ContentType
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_type_counts_query
 from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build_content_query
 
