@@ -18,7 +18,15 @@ from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build
 
 
 class ConceptualSearchEngine(SearchEngine):
-    embedding_vector_field: Field = AvailableFields.EMBEDDING_VECTOR.value
+    EMBEDDING_VECTOR: Field = AvailableFields.EMBEDDING_VECTOR.value
+
+    def vector_script_score(self, vector: ndarray) -> VectorScriptScore:
+        """
+        Wrapper for building a script score function using the embedding vector field
+        :param vector:
+        :return:
+        """
+        return VectorScriptScore(self.EMBEDDING_VECTOR.name, vector, cosine=True)
 
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField = SortField.relevance,
@@ -63,10 +71,10 @@ class ConceptualSearchEngine(SearchEngine):
         if type_filters is None:
             type_filters = AvailableTypeFilters.all()
 
-        script_score = VectorScriptScore(self.embedding_vector_field.name, search_vector, cosine=True)
+        vector_script_score = self.vector_script_score(search_vector)
 
         # Build the query
-        query = build_content_query(search_term, labels, script_score)
+        query = build_content_query(search_term, labels, vector_script_score)
 
         # Build the content query
         s: ConceptualSearchEngine = self._clone() \
@@ -74,7 +82,7 @@ class ConceptualSearchEngine(SearchEngine):
             .paginate(current_page, size) \
             .type_filter(type_filters) \
             .search_type(SearchType.DFS_QUERY_THEN_FETCH) \
-            .exclude_fields_from_source(self.embedding_vector_field)
+            .exclude_fields_from_source(self.EMBEDDING_VECTOR)
 
         if highlight:
             s: SearchEngine = s.apply_highlight_fields()
