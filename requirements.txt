@@ -16,4 +16,4 @@ nltk==3.2.5
 git+https://github.com/ONSdigital/dp4py-logging.git@master#egg=dp4py_logging
 git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
 git+https://github.com/ONSdigital/dp4py-sanic.git@master#egg=dp4py_sanic
-git+https://github.com/ONSdigital/dp-fasttext.git@feature/batch-sentence-vector#egg=dp_fasttext
+git+https://github.com/ONSdigital/dp-fasttext.git@develop#egg=dp_fasttext

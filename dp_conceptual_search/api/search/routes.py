@@ -44,7 +44,7 @@ async def ons_content_query(request: ONSRequest) -> HTTPResponse:
     :param request:
     :return:
     """
-    if CONFIG.SEARCH.redirect_conceptual_search:
+    if CONFIG.API.redirect_conceptual_search:
         return await conceptual_routes.conceptual_content_query(request)
 
     # Initialise the search engine
@@ -63,7 +63,7 @@ async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     :param request:
     :return:
     """
-    if CONFIG.SEARCH.redirect_conceptual_search:
+    if CONFIG.API.redirect_conceptual_search:
         return await conceptual_routes.conceptual_counts_query(request)
 
     # Initialise the search engine
