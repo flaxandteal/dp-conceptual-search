@@ -1,5 +1,5 @@
-from typing import List
 from ujson import loads
+from typing import List
 
 from sanic.exceptions import InvalidUsage
 
@@ -8,11 +8,9 @@ from dp4py_sanic.api.request import Request
 from dp_conceptual_search.config import SEARCH_CONFIG
 
 from dp_conceptual_search.ons.search.sort_fields import SortField
-from dp_conceptual_search.ons.search.type_filter import TypeFilter, AvailableTypeFilters
-from dp_conceptual_search.ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
+from dp_conceptual_search.ons.search.content_type import AvailableContentTypes, ContentType
 
 from dp_conceptual_search.api.log import logger
-from dp_conceptual_search.api.search.list_type import ListType
 
 
 class ONSRequest(Request):
@@ -72,32 +70,32 @@ class ONSRequest(Request):
                 return SortField.from_str(sort_by_str)
         return SortField.relevance
 
-    def get_type_filters(self, list_type: ListType) -> List[TypeFilter]:
+    def get_type_filters(self) -> List[ContentType]:
         """
-        Returns requested type filters or the defaults for the desired ListType
-        :param list_type:
+        Returns requested type filters
         :return:
         """
         if hasattr(self, "json") and isinstance(self.json, dict):
-            type_filters_raw = self.json.get("filter", None)
+            json: dict = self.json
+            if "filter" in json and isinstance(json.get("filter"), list):
+                filters: List[str] = self.json.get("filter")
 
-            if type_filters_raw is not None:
-                if isinstance(type_filters_raw, str):
-                    type_filters_raw = loads(type_filters_raw)
+                content_type_filters: List[ContentType] = []
+                for content_filter in filters:
+                    if AvailableContentTypes.is_content_type(content_filter):
+                        content_type_filters.append(AvailableContentTypes.from_str(content_filter))
+                    else:
+                        logger.error(self.request_id, "Unknown content type for filter", extra={
+                            "params": {
+                                "type": content_filter
+                            }
+                        })
+                        raise InvalidUsage("Unknown content type for filter [%s]" % content_filter)
 
-                if not isinstance(type_filters_raw, list):
-                    type_filters_raw = [type_filters_raw]
+                return content_type_filters
 
-                try:
-                    type_filters: List[TypeFilter] = AvailableTypeFilters.from_string_list(type_filters_raw)
-                    return type_filters
-                except UnknownTypeFilter as e:
-                    # Import logger here to prevent circular dependency on module import
-                    message = "Received unknown type filter: '{0}'".format(e.unknown_type_filter)
-                    logger.error(self.request_id, message, exc_info=e)
-                    raise InvalidUsage(message)
-
-        return list_type.to_type_filters()
+        # Return all known content types
+        return AvailableContentTypes.available_content_types()
 
     def get_elasticsearch_query(self) -> dict:
         """
