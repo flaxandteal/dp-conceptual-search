@@ -247,7 +247,7 @@ paths:
           schema:
             $ref: '#/definitions/SearchResponse'
 
-  /suggest/spelling:
+  /spellcheck:
     get:
       tags:
         - spellcheck

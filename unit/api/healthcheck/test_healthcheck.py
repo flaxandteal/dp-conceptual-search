@@ -9,13 +9,12 @@ from unit.elasticsearch.elasticsearch_test_utils import (
     mock_health_check_client_yellow,
     mock_health_check_client_red,
     mock_health_check_client_exception,
-    mock_health_response,
     mock_indices_exists_client,
     mock_indices_not_exists_client
 )
 
 from dp_conceptual_search.config.config import SEARCH_CONFIG
-from dp_conceptual_search.api.healthcheck.routes import Services, HeathCheckResponse
+from dp_conceptual_search.api.healthcheck.routes import Service, HealthCheckResponse
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -35,9 +34,8 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -65,9 +63,8 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -95,10 +92,8 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
-        expected_response._set_unavailable(Services.ELASTICSEARCH)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "cluster unhealthy [status=red]", 500)
 
         expected_response = expected_response.to_dict()
 
@@ -127,10 +122,8 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
-        expected_response._set_unavailable(Services.ELASTICSEARCH)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "unreachable", 500)
 
         expected_response = expected_response.to_dict()
 
@@ -161,9 +154,8 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -194,10 +186,9 @@ class HealthCheckTestCase(TestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
-        expected_response._set_unavailable(Services.ELASTICSEARCH)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "indices unavailable [indices={indices}]"
+                                                   .format(indices=indices), 500)
 
         expected_response = expected_response.to_dict()
 

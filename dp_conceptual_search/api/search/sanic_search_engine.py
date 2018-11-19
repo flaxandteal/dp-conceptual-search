@@ -8,7 +8,7 @@ from elasticsearch.exceptions import ConnectionError
 
 from sanic.exceptions import ServerError, InvalidUsage
 
-from dp_conceptual_search.api.log import logger
+from dp_conceptual_search.log import logger
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.content_type import AvailableContentTypes

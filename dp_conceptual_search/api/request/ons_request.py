@@ -11,7 +11,7 @@ from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.type_filter import TypeFilter, AvailableTypeFilters
 from dp_conceptual_search.ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
 
-from dp_conceptual_search.api.log import logger
+from dp_conceptual_search.log import logger
 from dp_conceptual_search.api.search.list_type import ListType
 
 
