@@ -87,6 +87,16 @@ class SanicSearchEngine(object):
         sort_by: SortField = request.get_sort_by()
         type_filters: List[ContentType] = request.get_type_filters()
 
+        logger.debug(request.request_id, "Received content query request", extra={
+            "params": {
+                "search_term": search_term,
+                "page": page,
+                "page_size": page_size,
+                "sort_by": sort_by.name,
+                "filters": type_filters
+            }
+        })
+
         try:
             # Pass the same content types as both filters and filter boosts (type_filters and filter_functions,
             # respectively).
@@ -124,6 +134,13 @@ class SanicSearchEngine(object):
         search_term = request.get_search_term()
         type_filters: List[ContentType] = request.get_type_filters()
 
+        logger.debug(request.request_id, "Received type counts query request", extra={
+            "params": {
+                "search_term": search_term,
+                "filters": type_filters
+            }
+        })
+
         try:
             engine: AbstractSearchEngine = engine.type_counts_query(search_term, type_filters=type_filters)
 
@@ -155,6 +172,12 @@ class SanicSearchEngine(object):
 
         # Perform the query
         search_term = request.get_search_term()
+
+        logger.debug(request.request_id, "Received featured result query request", extra={
+            "params": {
+                "search_term": search_term
+            }
+        })
 
         try:
             engine: AbstractSearchEngine = engine.featured_result_query(search_term)
