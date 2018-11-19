@@ -7,7 +7,9 @@ from numpy import ndarray
 
 from dp_conceptual_search.config.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
+
 from dp_conceptual_search.ons.search.exceptions import InvalidUsage
+from dp_conceptual_search.ons.search.fields import AvailableFields, Field
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, ContentType
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_type_counts_query
@@ -15,6 +17,7 @@ from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build
 
 
 class ConceptualSearchEngine(SearchEngine):
+    embedding_vector_field: Field = AvailableFields.EMBEDDING_VECTOR.value
 
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField = SortField.relevance,
@@ -67,7 +70,8 @@ class ConceptualSearchEngine(SearchEngine):
             .query(query) \
             .paginate(current_page, size) \
             .type_filter(type_filters) \
-            .search_type(SearchType.DFS_QUERY_THEN_FETCH)
+            .search_type(SearchType.DFS_QUERY_THEN_FETCH) \
+            .exclude_fields_from_source(self.embedding_vector_field)
 
         if highlight:
             s: SearchEngine = s.apply_highlight_fields()

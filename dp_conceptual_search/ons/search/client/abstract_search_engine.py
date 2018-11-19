@@ -14,8 +14,22 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     """
     Abstract search engine client defining common methods for ONS search engine
     """
+
     def __init__(self, **kwargs):
         super(AbstractSearchEngine, self).__init__(response_class=ONSResponse, **kwargs)
+
+    def exclude_fields_from_source(self, fields: List[Field]):
+        """
+        Excludes one (or many) fields from the _source
+        :param fields:
+        :return:
+        """
+        if not isinstance(fields, list):
+            fields = [fields]
+
+        field_names = [f.name for f in fields]
+
+        return self.source(exclude=field_names)
 
     def apply_highlight_fields(self):
         """
