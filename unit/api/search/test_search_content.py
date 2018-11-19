@@ -21,8 +21,6 @@ from dp_conceptual_search.ons.search.queries.ons_query_builders import build_con
 
 class SearchContentApiTestCase(SearchTestApp):
 
-    maxDiff = None
-
     @staticmethod
     def paginate():
         """

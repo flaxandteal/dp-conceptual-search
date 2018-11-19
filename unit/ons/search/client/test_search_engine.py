@@ -9,6 +9,8 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.search.query_helper import match_by_uri
+
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
@@ -85,6 +87,32 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         from_start = 0 if current_page <= 1 else (current_page - 1) * size
 
         return from_start, current_page, size
+
+    def test_match_uri(self):
+        """
+        Tests that the match by uri method correctly calls the underlying Elasticsearch client
+        :return:
+        """
+        test_uri = "this/is/a/test/uri"
+        # Build the expected query dict - note this should not change
+        expected = {
+            "query": match_by_uri(test_uri).to_dict()
+        }
+
+        # Define the async function to be ran
+        async def async_test_function():
+            # Create an instance of the SearchEngine
+            engine = self.get_search_engine()
+
+            engine: SearchEngine = engine.match_by_uri(test_uri)
+
+            # Ensure search method on SearchClient is called correctly on execute
+            response = await engine.execute(ignore_cache=True)
+
+            self.mock_client.search.assert_called_with(index=[self.index], doc_type=[], body=expected)
+
+        # Run the above function in a dedicated event loop
+        self.run_async(async_test_function)
 
     def test_sort_by(self):
         """
