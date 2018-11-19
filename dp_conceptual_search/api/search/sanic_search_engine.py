@@ -88,6 +88,8 @@ class SanicSearchEngine(object):
         type_filters: List[ContentType] = request.get_type_filters()
 
         try:
+            # Pass the same content types as both filters and filter boosts (type_filters and filter_functions,
+            # respectively).
             engine: AbstractSearchEngine = engine.content_query(search_term, page, page_size, sort_by=sort_by,
                                                                 filter_functions=type_filters,
                                                                 type_filters=type_filters)
