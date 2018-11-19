@@ -24,10 +24,9 @@ from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.content_type import ContentType
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
-from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
-from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
 from dp_conceptual_search.ons.search.exceptions import MalformedSearchTerm, UnknownSearchVector
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
 
 
 async def execute(request: ONSRequest, engine: AbstractSearchEngine) -> ONSResponse:
