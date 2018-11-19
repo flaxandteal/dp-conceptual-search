@@ -9,11 +9,11 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
+from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
 from dp_conceptual_search.ons.search.queries import content_query, type_counts_query
-from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters
-from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
-from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
+from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, AvailableContentTypes, ContentType
 
 
 class SearchEngineTestCase(AsyncTestCase, TestCase):
@@ -195,16 +195,15 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         # Calculate correct start page number
         from_start, current_page, size = self.paginate()
 
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
+
         # Build the filter query
-        type_filters = AvailableTypeFilters.all()
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        type_filters = [content_type.name for content_type in content_types]
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]
@@ -226,7 +225,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         }
 
         # Call departments_query
-        engine: SearchEngine = engine.content_query(self.search_term, current_page, size)
+        engine: SearchEngine = engine.content_query(self.search_term, current_page, size, type_filters=content_types)
 
         # Define the async function to be ran
         async def async_test_function():
@@ -251,16 +250,15 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         from_start = 0
         size = SEARCH_CONFIG.results_per_page
 
+        # Get a list of all available content types
+        content_types: List[ContentType] = AvailableContentTypes.available_content_types()
+
         # Build the filter query
-        type_filters = AvailableTypeFilters.all()
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        type_filters = [content_type.name for content_type in content_types]
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]
@@ -287,7 +285,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         }
 
         # Call departments_query
-        engine: SearchEngine = engine.type_counts_query(self.search_term)
+        engine: SearchEngine = engine.type_counts_query(self.search_term, type_filters=content_types)
 
         # Define the async function to be ran
         async def async_test_function():
@@ -313,17 +311,12 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         size = 1
 
         # Build the filter query
-        type_filters = [
-            AvailableTypeFilters.FEATURED.value
-        ]
-        content_type_filters = []
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                content_type_filters.append(content_type.value.name)
+        content_types = AvailableTypeFilters.FEATURED.value.get_content_types()
+        type_filters = [content_type.name for content_type in content_types]
         filter_query = [
             {
                 "terms": {
-                    "type": content_type_filters
+                    "type": type_filters
                 }
             }
         ]

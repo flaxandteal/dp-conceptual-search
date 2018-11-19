@@ -2,26 +2,22 @@
 This file contains utility methods for performing search queries using abstract search engines and clients
 """
 from typing import ClassVar, List
-from json import loads
 
 from elasticsearch.exceptions import ConnectionError
 
 from sanic.exceptions import ServerError, InvalidUsage
 
 from dp_conceptual_search.log import logger
+from dp_conceptual_search.app.search_app import SearchApp
+from dp_conceptual_search.api.request import ONSRequest
+from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
+
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.sort_fields import SortField
-from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
-from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
-from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, TypeFilter
+from dp_conceptual_search.ons.search.content_type import ContentType
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
-from dp_conceptual_search.ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
-
-from dp_conceptual_search.api.request.ons_request import ONSRequest
-from dp_conceptual_search.api.search.list_type import ListType
-from dp_conceptual_search.app.search_app import SearchApp
 
 
 class SanicSearchEngine(object):
@@ -42,65 +38,6 @@ class SanicSearchEngine(object):
         :return:
         """
         return self._search_engine_cls(using=self.app.elasticsearch.client, index=self.index.value)
-
-    async def proxy(self, request: ONSRequest) -> SearchResult:
-        """
-        Proxy an Elasticsearch query over HTTP
-        :param request:
-        :return:
-        """
-        # Initialise the search engine
-        engine: AbstractSearchEngine = self.get_search_engine_instance()
-
-        # Parse the request body for a valid Elasticsearch query
-        body: dict = request.get_elasticsearch_query()
-
-        # Parse query and filters
-        query: dict = loads(body.get("query"))
-        type_filters_raw = body.get("filter")
-
-        # Update the search engine with the query JSON
-        engine.update_from_dict(query)
-
-        # Extract paginator params
-        page = request.get_current_page()
-        page_size = request.get_page_size()
-        sort_by = request.get_sort_by()
-
-        try:
-            engine: AbstractSearchEngine = engine.paginate(page, page_size)
-        except RequestSizeExceededException as e:
-            # Log and raise a 400 BAD_REQUEST
-            message = "Requested page size exceeds max allowed: '{0}'".format(e)
-            logger.error(request.request_id, message, exc_info=e)
-            raise InvalidUsage(message)
-
-        # Add any type filters
-        if type_filters_raw is not None:
-            if not isinstance(type_filters_raw, list):
-                type_filters_raw = [type_filters_raw]
-            try:
-                type_filters = AvailableTypeFilters.from_string_list(type_filters_raw)
-                engine: AbstractSearchEngine = engine.type_filter(type_filters)
-            except UnknownTypeFilter as e:
-                message = "Received unknown type filter: '{0}'".format(e.unknown_type_filter)
-                logger.error(request.request_id, message, exc_info=e)
-                raise InvalidUsage(message)
-
-        # Execute
-        try:
-            logger.debug(request.request_id, "Executing proxy query", extra={
-                "query": engine.to_dict()
-            })
-            response: ONSResponse = await engine.execute()
-        except ConnectionError as e:
-            message = "Unable to connect to Elasticsearch cluster to perform proxy query request"
-            logger.error(request.request_id, message, e)
-            raise ServerError(message)
-
-        search_result: SearchResult = response.to_content_query_search_result(page, page_size, sort_by)
-
-        return search_result
 
     async def departments_query(self, request: ONSRequest) -> SearchResult:
         """
@@ -132,11 +69,10 @@ class SanicSearchEngine(object):
 
         return search_result
 
-    async def content_query(self, request: ONSRequest, list_type: ListType) -> SearchResult:
+    async def content_query(self, request: ONSRequest) -> SearchResult:
         """
         Executes the ONS content query using the given SearchEngine class
         :param request:
-        :param list_type:
         :return:
         """
         # Initialise the search engine
@@ -147,18 +83,23 @@ class SanicSearchEngine(object):
         page = request.get_current_page()
         page_size = request.get_page_size()
         sort_by: SortField = request.get_sort_by()
-        type_filters: List[TypeFilter] = request.get_type_filters(list_type)
+        type_filters: List[ContentType] = request.get_type_filters()
 
-        # Build filter functions
-        filter_functions: List[AvailableContentTypes] = []
-        for type_filter in type_filters:
-            filter_functions.extend(
-                type_filter.get_content_types()
-            )
+        logger.debug(request.request_id, "Received content query request", extra={
+            "params": {
+                "search_term": search_term,
+                "page": page,
+                "page_size": page_size,
+                "sort_by": sort_by.name,
+                "filters": type_filters
+            }
+        })
 
         try:
+            # Pass the same content types as both filters and filter boosts (type_filters and filter_functions,
+            # respectively).
             engine: AbstractSearchEngine = engine.content_query(search_term, page, page_size, sort_by=sort_by,
-                                                                filter_functions=filter_functions,
+                                                                filter_functions=type_filters,
                                                                 type_filters=type_filters)
 
             logger.debug(request.request_id, "Executing content query", extra={
@@ -183,16 +124,23 @@ class SanicSearchEngine(object):
         """
         Executes the ONS type counts query using the given SearchEngine class
         :param request:
-        :param list_type:
         :return:
         """
         engine: AbstractSearchEngine = self.get_search_engine_instance()
 
         # Perform the query
         search_term = request.get_search_term()
+        type_filters: List[ContentType] = request.get_type_filters()
+
+        logger.debug(request.request_id, "Received type counts query request", extra={
+            "params": {
+                "search_term": search_term,
+                "filters": type_filters
+            }
+        })
 
         try:
-            engine: AbstractSearchEngine = engine.type_counts_query(search_term)
+            engine: AbstractSearchEngine = engine.type_counts_query(search_term, type_filters=type_filters)
 
             logger.debug(request.request_id, "Executing type counts query", extra={
                 "query": engine.to_dict()
@@ -222,6 +170,12 @@ class SanicSearchEngine(object):
 
         # Perform the query
         search_term = request.get_search_term()
+
+        logger.debug(request.request_id, "Received featured result query request", extra={
+            "params": {
+                "search_term": search_term
+            }
+        })
 
         try:
             engine: AbstractSearchEngine = engine.featured_result_query(search_term)

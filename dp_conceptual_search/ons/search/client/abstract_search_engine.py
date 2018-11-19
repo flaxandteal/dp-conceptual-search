@@ -1,11 +1,13 @@
 import abc
+import logging as logger
 from typing import List
 
-from dp_conceptual_search.ons.search.sort_fields import query_sort
 from dp_conceptual_search.search.client.search_client import SearchClient
-from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
-from dp_conceptual_search.ons.search import AvailableContentTypes, SortField, TypeFilter
+
+from dp_conceptual_search.ons.search.sort_fields import query_sort
+from dp_conceptual_search.ons.search import ContentType, SortField
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
+from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 
 
 class AbstractSearchEngine(SearchClient, abc.ABC):
@@ -18,8 +20,6 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     def apply_highlight_fields(self):
         """
         Applies highlight options to the Elasticsearch query
-        :param fields:
-        :param kwargs:
         :return:
         """
         highlight_fields: List[Field] = get_highlighted_fields()
@@ -40,25 +40,22 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         :param sort_by:
         :return:
         """
-
         return self.sort(
             *query_sort(sort_by)
         )
 
-    def type_filter(self, type_filters: List[TypeFilter]):
+    def type_filter(self, type_filters: List[ContentType]):
         """
         Add type filter options to the query
         :param type_filters:
         :return:
         """
-        type_filter_list = []
+        if not isinstance(type_filters, list) or len(type_filters) == 0 or not isinstance(type_filters[0], ContentType):
+            logger.error("Method 'type_filter' requires List[ContentType]")
+            raise ValueError("Method 'type_filter' requires List[ContentType]")
 
-        content_type: AvailableContentTypes
-        for type_filter in type_filters:
-            for content_type in type_filter.get_content_types():
-                type_filter_list.append(content_type.value.name)
-
-        return self.filter("terms", type=type_filter_list)
+        type_filters_list: List[str] = [content_type.name for content_type in type_filters]
+        return self.filter("terms", type=type_filters_list)
 
     def paginate(self, current_page: int, size: int):
         """
@@ -94,8 +91,8 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     def content_query(self, search_term: str, current_page: int, size: int,
                       sort_by: SortField=SortField.relevance,
                       highlight: bool=True,
-                      filter_functions: List[AvailableContentTypes]=None,
-                      type_filters: List[TypeFilter]=None,
+                      filter_functions: List[ContentType]=None,
+                      type_filters: List[ContentType]=None,
                       **kwargs):
         """
         Builds the ONS content query, responsible for populating the SERP
@@ -112,7 +109,7 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def type_counts_query(self, search_term, type_filters: List[TypeFilter]=None, **kwargs):
+    def type_counts_query(self, search_term, type_filters: List[ContentType]=None, **kwargs):
         """
         Builds the ONS type counts query, responsible providing counts by content type
         :param search_term:

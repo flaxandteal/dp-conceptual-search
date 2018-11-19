@@ -17,57 +17,46 @@ tags:
   - name: "healthcheck"
 
 paths:
-  /search:
-    post:
-      tags:
-        - search
-      summary: "Proxy an Elasticsearch query over HTTP"
-      description: "Proxy an Elasticsearch query over HTTP"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - in: body
-          name: body
-          required: true
-          description: The Elasticsearch query to be executed.
-          schema:
-            type: object
-            example: {match_all: {}}
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/SearchResponse'
 
-        400:
-          description: request body not specified
-
-  /search/{list_type}/{endpoint}:
+  /search/departments:
     get:
       tags:
         - search
       summary: "Default ONS query API"
       description: "Default ONS query API"
       parameters:
-        - in: path
-          name: list_type
-          required: true
+        - in: query
+          name: q
+          description: "Query search term"
           type: string
-          enum:
-            - ons
-            - onsdata
-            - onspublications
-        - in: path
-          name: endpoint
           required: true
-          type: string
-          enum:
-            - content
-            - counts
-            - featured
-            - departments
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+
+  /search/content:
+    get:
+      tags:
+        - search
+      summary: "Default ONS query API"
+      description: "Default ONS query API"
+      parameters:
         - in: query
           name: q
           description: "Query search term"
@@ -104,31 +93,14 @@ paths:
             $ref: '#/definitions/SearchResponse'
         400:
           description: Query term not specified
-        404:
-          description: Unknown endpoint
+        500:
+          description: Internal server error
     post:
       tags:
         - search
       summary: "Default ONS query API"
       description: "Default ONS query API"
       parameters:
-        - in: path
-          name: list_type
-          required: true
-          type: string
-          enum:
-            - ons
-            - onsdata
-            - onspublications
-        - in: path
-          name: endpoint
-          required: true
-          type: string
-          enum:
-            - content
-            - counts
-            - featured
-            - departments
         - in: query
           name: q
           description: "Query search term"
@@ -144,7 +116,20 @@ paths:
           description: "Page size"
           type: integer
           required: false
-          minimum: 1
+        - in: query
+          name: sort_by
+          required: false
+          type: string
+          enum:
+            - first_letter
+            - title
+            - relevance
+            - release_date
+            - release_date_asc
+        - in: query
+          name: filter
+          required: false
+          type: string
       responses:
         200:
           description: OK
@@ -152,8 +137,80 @@ paths:
             $ref: '#/definitions/SearchResponse'
         400:
           description: Query term not specified
-        404:
-          description: Unknown endpoint
+        500:
+          description: Internal server error
+
+  /search/counts:
+    get:
+      tags:
+        - search
+      summary: "Default ONS type counts query API"
+      description: "Default ONS query API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: filter
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - search
+      summary: "Default ONS type counts query API"
+      description: "Default ONS query API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: filter
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+
+  /search/featured:
+    get:
+      tags:
+        - search
+      summary: "Default ONS featured result query API"
+      description: "Default ONS query API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
 
   /search/uri/{path}:
     get:
