@@ -2,7 +2,6 @@
 This file contains utility methods for performing search queries using abstract search engines and clients
 """
 from typing import ClassVar, List
-from json import loads
 
 from elasticsearch.exceptions import ConnectionError
 
@@ -18,12 +17,9 @@ from dp_conceptual_search.search.client.exceptions import RequestSizeExceededExc
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.content_type import ContentType
-from dp_conceptual_search.ons.search.content_type import AvailableContentTypes
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
-from dp_conceptual_search.ons.search.exceptions.unknown_type_filter_exception import UnknownTypeFilter
-
 
 
 class SanicSearchEngine(object):
