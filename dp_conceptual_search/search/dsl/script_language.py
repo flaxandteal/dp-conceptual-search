@@ -5,7 +5,7 @@ from enum import Enum
 
 
 class ScriptLanguage(Enum):
-    KNN = "knn"
+    KNN = "knn"  # K Nearest Neighbours
 
     def __str__(self):
         return self.value

@@ -110,6 +110,8 @@ class ONSRequest(Request):
                         })
                         raise InvalidUsage("Unknown content type for filter [%s]" % content_filter)
 
+                return content_type_filters
+
         # Return all known content types
         return AvailableContentTypes.available_content_types()
 

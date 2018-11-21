@@ -16,9 +16,8 @@ from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import 
 from dp_conceptual_search.search.search_type import SearchType
 
 from dp_conceptual_search.ons.search.index import Index
-from dp_conceptual_search.ons.conceptual.client import FastTextClientService
-from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
 from dp_conceptual_search.ons.search.content_type import ContentType, AvailableContentTypes
+from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
 
 
 class SearchTypeCountsApiTestCase(SearchTestApp):
