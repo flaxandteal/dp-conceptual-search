@@ -1,139 +1,18 @@
 """
 Healthcheck API
 """
-from enum import Enum
-from sanic import Blueprint
-from functools import partial
-from inspect import isawaitable
+from .services import Service
+from .response import HealthCheckResponse
+from .healthchecks.healthcheck import HealthCheck
 
-from elasticsearch import Elasticsearch
+from sanic import Blueprint
 
 from dp4py_sanic.api.response import json
-from dp_fasttext.client import Client
 
 from dp_conceptual_search.log import logger
-from dp_conceptual_search.app.search_app import SearchApp
-from dp_conceptual_search.config.config import SEARCH_CONFIG
 from dp_conceptual_search.api.request.ons_request import ONSRequest
-from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 
 healthcheck_blueprint = Blueprint('healthcheck', url_prefix='/healthcheck')
-
-
-async def elasticsearch_is_healthy(request: ONSRequest) -> bool:
-    """
-    Checks if Elasticsearch is healthy or not
-    :param request:
-    :param client:
-    :return:
-    """
-    # Ping elasticsearch to get cluster health
-    app: SearchApp = request.app
-
-    client: Elasticsearch = app.elasticsearch.client
-    # Send the request
-    try:
-        logger.debug(request.request_id, "Performing healthcheck for Elasticsearch")
-        health = client.cluster.health()
-        if isawaitable(health):
-            health = await health
-
-        if not 'status' in health or health['status'] not in ['yellow', 'green']:
-            logger.error("Elasticsearch cluster is unhealthy", extra={
-                "data": health
-            })
-            return False
-
-        # Check indices exist
-        indices = "{ons},{departments}".format(ons=SEARCH_CONFIG.search_index,
-                                               departments=SEARCH_CONFIG.departments_search_index)
-        indicies_exist = client.indices.exists(indices)
-        if isawaitable(indicies_exist):
-            indicies_exist = await indicies_exist
-
-        if indicies_exist:
-            return True
-        else:
-            logger.error(request.request_id, "Search indicies do not exist", extra={
-                "Elasticsearch indices_checked": indices
-            })
-            return False
-    except Exception as e:
-        logger.error(request.request_id, "Unable to get Elasticsearch cluster health", exc_info=e)
-        return False
-
-
-async def dp_fasttext_is_healthy(request: ONSRequest) -> bool:
-    """
-    Checks the health of dp-fasttext
-    :param request:
-    :return:
-    """
-    client: Client
-    async with FastTextClientService.get_fasttext_client() as client:
-        try:
-            headers = {
-                ONSRequest.request_id_header: request.request_id
-            }
-
-            logger.debug(request.request_id, "Performing healthcheck request for dp-fasttext")
-            health, headers = await client.healthcheck(headers=headers)
-            if health is not None and ONSRequest.request_id_header in headers and \
-                    headers[ONSRequest.request_id_header] == request.request_id:
-                return True
-        except Exception as e:
-            logger.error(request.request_id, "Error checking health of dp-fasttext", exc_info=e)
-
-    return False
-
-
-class Services(Enum):
-    ELASTICSEARCH = partial(elasticsearch_is_healthy)
-    DP_FASTTEXT = partial(dp_fasttext_is_healthy)
-
-
-class HeathCheckResponse(object):
-    AVAILABLE = "available"
-    UNAVAILABLE = "unavailable"
-
-    def __init__(self):
-        self.is_healthy = True
-        self._services = {}
-
-    async def evaluate(self, service: Services, request: ONSRequest):
-        """
-        Evaluate health of given service
-        :param service:
-        :param request:
-        :return:
-        """
-        fn = service.value
-
-        if await fn(request):
-            self._set_available(service)
-        else:
-            self._set_unavailable(service)
-
-    def _set_available(self, service: Services):
-        """
-        Mark a service as being available
-        :param service:
-        :return:
-        """
-        self._services[service.name.lower()] = self.AVAILABLE
-
-    def _set_unavailable(self, service: Services):
-        """
-        Mark a service as being unavailable
-        :param service:
-        :return:
-        """
-        # Mark app as unhealthy
-        self.is_healthy = False
-        self._services[service.name.lower()] = self.UNAVAILABLE
-
-    def to_dict(self):
-        return self._services
 
 
 @healthcheck_blueprint.route('/', methods=['GET'])
@@ -144,15 +23,21 @@ async def health_check(request: ONSRequest):
     :return:
     """
     # Init the response body
-    response: HeathCheckResponse = HeathCheckResponse()
+    response: HealthCheckResponse = HealthCheckResponse()
 
-    service: Services
-    for service in Services:
-        await response.evaluate(service, request)
+    service: Service
+    for service in Service:
+        health_checker: HealthCheck = service.value
+        message, code = await health_checker.healthcheck(request)
+
+        response.set_response_for_service(service, message, code)
 
     body = response.to_dict()
-    code = 200
-    if not response.is_healthy:
-        code = 500
 
-    return json(request, body, code)
+    logger.info(request.request_id, "Health check response", extra={
+        "body": body
+    })
+    if not response.is_healthy:
+        return json(request, body, 500)
+
+    return json(request, body, 200)

@@ -10,9 +10,10 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_health_response, Mo
 
 from dp_fasttext.client.testing.mock_client import MockClient, mock_fasttext_client
 
-from dp_conceptual_search.config.config import SEARCH_CONFIG
-from dp_conceptual_search.api.healthcheck.routes import Services, HeathCheckResponse
 from dp_conceptual_search.ons.conceptual.client import FastTextClientService
+
+from dp_conceptual_search.config.config import SEARCH_CONFIG
+from dp_conceptual_search.api.healthcheck.routes import Service, HealthCheckResponse
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
@@ -150,9 +151,9 @@ class HealthCheckTestCase(SearchTestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "available", 200)
+        expected_response.set_response_for_service(Service.dp_fasttext, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -181,9 +182,9 @@ class HealthCheckTestCase(SearchTestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "available", 200)
+        expected_response.set_response_for_service(Service.dp_fasttext, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -212,10 +213,9 @@ class HealthCheckTestCase(SearchTestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
-        expected_response._set_unavailable(Services.ELASTICSEARCH)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "cluster unhealthy [status=red]", 500)
+        expected_response.set_response_for_service(Service.dp_fasttext, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -245,10 +245,9 @@ class HealthCheckTestCase(SearchTestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
-        expected_response._set_unavailable(Services.ELASTICSEARCH)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "unreachable", 500)
+        expected_response.set_response_for_service(Service.dp_fasttext, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -280,9 +279,9 @@ class HealthCheckTestCase(SearchTestApp):
 
         # Make the request
         request, response = self.get(target, 200)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "available", 200)
+        expected_response.set_response_for_service(Service.dp_fasttext, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -314,10 +313,10 @@ class HealthCheckTestCase(SearchTestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
-        expected_response._set_unavailable(Services.ELASTICSEARCH)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "indices unavailable [indices={indices}]"
+                                                   .format(indices=indices), 500)
+        expected_response.set_response_for_service(Service.dp_fasttext, "available", 200)
 
         expected_response = expected_response.to_dict()
 
@@ -349,10 +348,9 @@ class HealthCheckTestCase(SearchTestApp):
 
         # Make the request
         request, response = self.get(target, 500)
-        expected_response = HeathCheckResponse()
-        for service in Services:
-            expected_response._set_available(service)
-        expected_response._set_unavailable(Services.DP_FASTTEXT)
+        expected_response = HealthCheckResponse()
+        expected_response.set_response_for_service(Service.elasticsearch, "available", 200)
+        expected_response.set_response_for_service(Service.dp_fasttext, "unavailable", 500)
 
         expected_response = expected_response.to_dict()
 

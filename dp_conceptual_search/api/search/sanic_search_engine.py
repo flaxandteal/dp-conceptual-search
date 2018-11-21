@@ -13,11 +13,11 @@ from dp4py_logging.time import timeit
 from dp_fasttext.client import Client
 from dp_fasttext.ml.utils import clean_string, replace_nouns_with_singulars
 
-from dp_conceptual_search.log import logger
 from dp_conceptual_search.config.config import FASTTEXT_CONFIG
 
+from dp_conceptual_search.log import logger
 from dp_conceptual_search.app.search_app import SearchApp
-from dp_conceptual_search.api.request.ons_request import ONSRequest
+from dp_conceptual_search.api.request import ONSRequest
 from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 
 from dp_conceptual_search.ons.search.index import Index
@@ -28,6 +28,7 @@ from dp_conceptual_search.ons.search.response.client.ons_response import ONSResp
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
 from dp_conceptual_search.ons.search.exceptions import MalformedSearchTerm, UnknownSearchVector
 from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
+
 
 async def execute(request: ONSRequest, engine: AbstractSearchEngine) -> ONSResponse:
     """
@@ -122,7 +123,7 @@ class SanicSearchEngine(object):
         logger.trace(request.request_id, "Executing departments query", extra={
             "query": engine.to_dict()
         })
-        response: ONSResponse = await engine.execute()
+        response: ONSResponse = await execute(request, engine)
 
         search_result: SearchResult = response.to_departments_query_search_result(page, page_size)
 
