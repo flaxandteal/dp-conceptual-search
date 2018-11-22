@@ -19,6 +19,21 @@ conceptual_search_blueprint = Blueprint('conceptual search', url_prefix='/search
 search_engine_cls = ConceptualSearchEngine
 
 
+@conceptual_search_blueprint.route('/', methods=['GET', 'POST'], strict_slashes=False)
+async def search(request: ONSRequest) -> HTTPResponse:
+    """
+    API which combines the content, counts and featured result queries into one
+    :param request:
+    :return:
+    """
+    # Initialise the search engine
+    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+
+    result = await sanic_search_engine.search(request)
+
+    return json(request, result, 200)
+
+
 @conceptual_search_blueprint.route('/content', methods=['GET', 'POST'], strict_slashes=True)
 async def conceptual_content_query(request: ONSRequest) -> HTTPResponse:
     """

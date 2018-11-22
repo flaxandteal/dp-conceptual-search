@@ -35,6 +35,24 @@ async def ons_departments_query(request: ONSRequest) -> HTTPResponse:
     return json(request, search_result.to_dict(), 200)
 
 
+@search_blueprint.route('/', methods=['GET', 'POST'], strict_slashes=False)
+async def search(request: ONSRequest) -> HTTPResponse:
+    """
+    API which combines the content, counts and featured result queries into one
+    :param request:
+    :return:
+    """
+    if CONFIG.API.redirect_conceptual_search:
+        return await conceptual_routes.search(request)
+
+    # Initialise the search engine
+    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+
+    result = await sanic_search_engine.search(request)
+
+    return json(request, result, 200)
+
+
 @search_blueprint.route('/content', methods=['GET', 'POST'], strict_slashes=True)
 async def ons_content_query(request: ONSRequest) -> HTTPResponse:
     """
