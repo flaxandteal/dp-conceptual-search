@@ -6,7 +6,7 @@ from sanic.response import json
 from sanic.log import logger as sanic_logger
 
 from dp_conceptual_search.app.search_app import SearchApp
-from dp_conceptual_search.api.log import logger
+from dp_conceptual_search.log import logger
 from dp_conceptual_search.api.request.ons_request import ONSRequest
 
 

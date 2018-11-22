@@ -1,7 +1,6 @@
 """
 Tests the ONS featured result search API
 """
-from json import dumps
 from typing import List
 
 from unittest import mock
@@ -69,18 +68,13 @@ class SearchFeaturedApiTestCase(TestApp):
             "size": size
         }
 
-        # Build post JSON
-        data = {
-            "sort_by": sort_by.name
-        }
-
         # URL encode
         url_encoded_params = self.url_encode(params)
 
         target = "/search/featured?{q}".format(q=url_encoded_params)
 
         # Make the request
-        request, response = self.post(target, 200, data=dumps(data))
+        request, response = self.get(target, 200)
 
         # Get a list of all available content types
         content_types: List[ContentType] = AvailableTypeFilters.FEATURED.value.get_content_types()

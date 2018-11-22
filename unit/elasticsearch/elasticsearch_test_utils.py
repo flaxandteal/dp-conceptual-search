@@ -9,10 +9,45 @@ def mock_search_client(*args):
     """
     # Mock search response
     search_response = mock_search_response()
+    health_response = mock_health_response("green")
 
     # Mock the search client
     mock_client = MockElasticsearchClient()
     mock_client.search = MagicMock(return_value=search_response)
+    mock_client.cluster.health = MagicMock(return_value=health_response)
+    mock_client.indices.exists = MagicMock(return_value=True)
+
+    return mock_client
+
+
+def mock_indices_exists_client(*args):
+    """
+    Mocks a True result for the indices.exists API
+    :param args:
+    :return:
+    """
+    health_response = mock_health_response("green")
+
+    mock_client = MockElasticsearchClient()
+
+    mock_client.cluster.health = MagicMock(return_value=health_response)
+    mock_client.indices.exists = MagicMock(return_value=True)
+
+    return mock_client
+
+
+def mock_indices_not_exists_client(*args):
+    """
+    Mocks a True result for the indices.exists API
+    :param args:
+    :return:
+    """
+    health_response = mock_health_response("green")
+
+    mock_client = MockElasticsearchClient()
+
+    mock_client.cluster.health = MagicMock(return_value=health_response)
+    mock_client.indices.exists = MagicMock(return_value=False)
 
     return mock_client
 
@@ -28,6 +63,7 @@ def mock_health_check_client_green(*args):
     # Mock the search client
     mock_client = MockElasticsearchClient()
     mock_client.cluster.health = MagicMock(return_value=health_response)
+    mock_client.indices.exists = MagicMock(return_value=True)
 
     return mock_client
 
@@ -43,6 +79,7 @@ def mock_health_check_client_yellow(*args):
     # Mock the search client
     mock_client = MockElasticsearchClient()
     mock_client.cluster.health = MagicMock(return_value=health_response)
+    mock_client.indices.exists = MagicMock(return_value=True)
 
     return mock_client
 
@@ -58,6 +95,7 @@ def mock_health_check_client_red(*args):
     # Mock the search client
     mock_client = MockElasticsearchClient()
     mock_client.cluster.health = MagicMock(return_value=health_response)
+    mock_client.indices.exists = MagicMock(return_value=True)
 
     return mock_client
 
@@ -71,6 +109,7 @@ def mock_health_check_client_exception(*args):
     mock_client = MockElasticsearchClient()
     mock_client.cluster.health = MagicMock()
     mock_client.cluster.health.side_effect = Exception("Mock exception")
+    mock_client.indices.exists = MagicMock(return_value=True)
 
     return mock_client
 

@@ -7,11 +7,9 @@ from elasticsearch.exceptions import ConnectionError
 
 from sanic.exceptions import ServerError, InvalidUsage
 
-from dp_conceptual_search.api.log import logger
-from dp_conceptual_search.api.request.ons_request import ONSRequest
-
+from dp_conceptual_search.log import logger
 from dp_conceptual_search.app.search_app import SearchApp
-
+from dp_conceptual_search.api.request import ONSRequest
 from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 
 from dp_conceptual_search.ons.search.index import Index

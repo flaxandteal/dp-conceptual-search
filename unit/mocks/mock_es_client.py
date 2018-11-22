@@ -3,6 +3,7 @@ Mock Elasticsearch client for unit
 """
 from elasticsearch import Elasticsearch
 from elasticsearch.client import ClusterClient
+from elasticsearch.client import IndicesClient
 
 
 class MockClusterClient(ClusterClient):
@@ -11,6 +12,15 @@ class MockClusterClient(ClusterClient):
     """
     def health(self, index=None, params=None):
         raise NotImplementedError("health not implemented, must be mocked!")
+
+
+class MockIndicesClient(IndicesClient):
+    """
+    Mocks out functionality from the Elasticsearch IndicesClient
+    """
+
+    def exists(self, index, params=None):
+        raise NotImplementedError("exists not implemented, must be mocked!")
 
 
 class MockElasticsearchClient(Elasticsearch):
@@ -24,6 +34,7 @@ class MockElasticsearchClient(Elasticsearch):
         super(MockElasticsearchClient, self).__init__(*args, **kwargs)
 
         self.cluster = MockClusterClient(self)
+        self.indices = MockIndicesClient(self)
 
     def index(self, index, doc_type, body, id=None, params=None):
         raise NotImplementedError("Index not implemented")

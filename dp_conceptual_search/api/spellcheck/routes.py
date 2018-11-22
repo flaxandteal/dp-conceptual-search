@@ -5,7 +5,7 @@ from sanic import Blueprint
 
 from dp_conceptual_search.api.response import json
 from dp_conceptual_search.api.request import ONSRequest
-from dp_conceptual_search.api.log import logger
+from dp_conceptual_search.log import logger
 
 from dp_conceptual_search.app.search_app import SearchApp
 

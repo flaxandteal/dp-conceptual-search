@@ -1,14 +1,12 @@
 """
 Healthcheck API
 """
+from .services import Service
+from .response import HealthCheckResponse
+
 from sanic import Blueprint
-from inspect import isawaitable
 
-from elasticsearch import Elasticsearch
-
-from dp_conceptual_search.app.search_app import SearchApp
-
-from dp_conceptual_search.api.log import logger
+from dp_conceptual_search.log import logger
 from dp_conceptual_search.api.response import json
 from dp_conceptual_search.api.request.ons_request import ONSRequest
 
@@ -22,25 +20,22 @@ async def health_check(request: ONSRequest):
     :param request:
     :return:
     """
-    # Ping elasticsearch to get cluster health
-    app: SearchApp = request.app
+    # Init the response body
+    response: HealthCheckResponse = HealthCheckResponse()
 
-    client: Elasticsearch = app.elasticsearch.client
+    service: Service
+    for service in Service:
+        health_check_fn = service.value
+        message, code = await health_check_fn(request)
 
-    # Send the request
-    try:
-        health = client.cluster.health()
-        if isawaitable(health):
-            health = await health
+        response.set_response_for_service(service, message, code)
 
-        code = 200 if 'status' in health and health['status'] in ['yellow', 'green'] else 500
+    body = response.to_dict()
 
-        if code != 200:
-            logger.error(request.request_id, "Healthcheck results in non-200 response", extra={"health": health})
-        return json(request, health, code)
-    except Exception as e:
-        logger.error(request.request_id, "Unable to get Elasticsearch cluster health", exc_info=e)
-        body = {
-            "elasticsearch": "unavailable"
-        }
+    logger.info(request.request_id, "Health check response", extra={
+        "body": body
+    })
+    if not response.is_healthy:
         return json(request, body, 500)
+
+    return json(request, body, 200)

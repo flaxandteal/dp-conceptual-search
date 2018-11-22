@@ -15,11 +15,10 @@ from dp_conceptual_search.ons.search.response.search_result import SearchResult
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-@search_blueprint.route('/departments', methods=['GET', 'POST'], strict_slashes=True)
+@search_blueprint.route('/departments', methods=['GET'], strict_slashes=True)
 async def ons_departments_query(request: ONSRequest) -> HTTPResponse:
     """
-    Handles departments queries to the ONS list type. Note, filtering by list_type does not apply
-    to the featured result (hence we only offer an 'ONS' list type for this API).
+    Handles departments queries to the departments index
     :param request:
     :return:
     """
@@ -35,7 +34,7 @@ async def ons_departments_query(request: ONSRequest) -> HTTPResponse:
 @search_blueprint.route('/content', methods=['GET', 'POST'], strict_slashes=True)
 async def ons_content_query(request: ONSRequest) -> HTTPResponse:
     """
-    Handles content queries to the <list_type> API.
+    Handles content queries to the API.
     :param request:
     :return:
     """
@@ -51,9 +50,8 @@ async def ons_content_query(request: ONSRequest) -> HTTPResponse:
 @search_blueprint.route('/counts', methods=['GET', 'POST'], strict_slashes=True)
 async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     """
-    Handles type counts queries to the <list_type> API.
+    Handles type counts queries to the API.
     :param request:
-    :param list_type: Not used for type counts query, but allows route to support multiply list_type queries
     :return:
     """
     # Initialise the search engine
@@ -65,11 +63,10 @@ async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     return json(request, search_result.to_dict(), 200)
 
 
-@search_blueprint.route('/featured', methods=['GET', 'POST'], strict_slashes=True)
+@search_blueprint.route('/featured', methods=['GET'], strict_slashes=True)
 async def ons_featured_result_query(request: ONSRequest) -> HTTPResponse:
     """
-    Handles type counts queries to the ONS list type. Note, filtering by list_type does not apply
-    to the featured result (hence we only offer an 'ons' list type for this API)
+    Handles featured result queries (i.e product and home page census pages)
     :param request:
     :return:
     """
