@@ -82,6 +82,13 @@ paths:
             - relevance
             - release_date
             - release_date_asc
+          description: >
+            Sort order:
+              * `first_letter` - First letter sort using the `title_first_letter` mapping (`first_letter` analyzer)
+              * `title` - Sort using `title.title_raw` mapping
+              * `relevance` - Default sort option. Uses Elasticsearch score and release date (descending)
+              * `release_date` - Sort by release date in descending order
+              * `release_date_asc` - Sort by release date in ascending order
         - in: query
           name: filter
           required: false
@@ -126,6 +133,13 @@ paths:
             - relevance
             - release_date
             - release_date_asc
+          description: >
+            Sort order:
+              * `first_letter` - First letter sort using the `title_first_letter` mapping (`first_letter` analyzer)
+              * `title` - Sort using `title.title_raw` mapping
+              * `relevance` - Default sort option. Uses Elasticsearch score and release date (descending)
+              * `release_date` - Sort by release date in descending order
+              * `release_date_asc` - Sort by release date in ascending order
         - in: query
           name: filter
           required: false
@@ -190,6 +204,160 @@ paths:
         500:
           description: Internal server error
 
+  /search/conceptual/content:
+    get:
+      tags:
+        - search
+      summary: "Conceptual ONS query API"
+      description: "Conceptual ONS query API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+        - in: query
+          name: sort_by
+          required: false
+          type: string
+          enum:
+            - first_letter
+            - title
+            - relevance
+            - release_date
+            - release_date_asc
+          description: >
+            Sort order:
+              * `first_letter` - First letter sort using the `title_first_letter` mapping (`first_letter` analyzer)
+              * `title` - Sort using `title.title_raw` mapping
+              * `relevance` - Default sort option. Uses Elasticsearch score and release date (descending)
+              * `release_date` - Sort by release date in descending order
+              * `release_date_asc` - Sort by release date in ascending order
+        - in: query
+          name: filter
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - search
+      summary: "Conceptual ONS query API"
+      description: "Conceptual ONS query API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+        - in: query
+          name: sort_by
+          required: false
+          type: string
+          enum:
+            - first_letter
+            - title
+            - relevance
+            - release_date
+            - release_date_asc
+          description: >
+            Sort order:
+              * `first_letter` - First letter sort using the `title_first_letter` mapping (`first_letter` analyzer)
+              * `title` - Sort using `title.title_raw` mapping
+              * `relevance` - Default sort option. Uses Elasticsearch score and release date (descending)
+              * `release_date` - Sort by release date in descending order
+              * `release_date_asc` - Sort by release date in ascending order
+        - in: query
+          name: filter
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+
+  /search/conceptual/counts:
+    get:
+      tags:
+        - search
+      summary: "Conceptual ONS type counts query API"
+      description: "Conceptual ONS query API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: filter
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - search
+      summary: "Conceptual ONS type counts query API"
+      description: "Conceptual ONS query API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: filter
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+
   /search/featured:
     get:
       tags:
@@ -231,50 +399,6 @@ paths:
             $ref: '#/definitions/SearchResponse'
         404:
           description: No document with the given URI found
-
-  /search/conceptual/{list_type}/{endpoint}:
-    post:
-      tags:
-        - conceptual_search
-      summary: "ONS conceptual search API"
-      description: "ONS API for performing conceptual search (i.e non-keyword matching with ML)"
-      parameters:
-        - in: path
-          name: list_type
-          required: true
-          type: string
-          enum:
-            - ons
-            - onsdata
-            - onspublications
-        - in: path
-          name: endpoint
-          required: true
-          type: string
-          enum:
-            - content
-            - counts
-            - featured
-        - in: query
-          name: q
-          description: "Query search term"
-          type: string
-          required: true
-        - in: query
-          name: page
-          description: "Current page"
-          type: integer
-          required: false
-        - in: query
-          name: size
-          description: "Page size"
-          type: integer
-          required: false
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/SearchResponse'
 
   /search/recommend/similar/:
     post:
@@ -338,7 +462,7 @@ paths:
         500:
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/UnhealhyHealthCheck'
+            $ref: '#/definitions/HealthCheck'
 
 
 definitions:
@@ -416,22 +540,8 @@ definitions:
     properties:
       elasticsearch:
         type: string
-        enum:
-          - available
-          - unavailable
+        example: available
       dp_fasttext:
         type: string
-        enum:
-          - available
-          - unavailable
-
-  UnhealhyHealthCheck:
-    type: object
-    properties:
-      elasticsearch:
-        type: string
-        example: unavailable
-      dp_fasttext:
-        type: string
-        example: unavailable
+        example: available
     
