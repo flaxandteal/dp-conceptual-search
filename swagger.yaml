@@ -462,7 +462,7 @@ paths:
         500:
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/UnhealhyHealthCheck'
+            $ref: '#/definitions/HealthCheck'
 
 
 definitions:
@@ -540,22 +540,8 @@ definitions:
     properties:
       elasticsearch:
         type: string
-        enum:
-          - available
-          - unavailable
+        example: available
       dp_fasttext:
         type: string
-        enum:
-          - available
-          - unavailable
-
-  UnhealhyHealthCheck:
-    type: object
-    properties:
-      elasticsearch:
-        type: string
-        example: unavailable
-      dp_fasttext:
-        type: string
-        example: unavailable
+        example: available
     
