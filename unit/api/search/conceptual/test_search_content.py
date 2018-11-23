@@ -11,12 +11,12 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock
 from dp_fasttext.client.testing.mock_client import mock_labels_api, mock_sentence_vector, mock_fasttext_client
 
 from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
 from dp_conceptual_search.ons.search.content_type import ContentType, AvailableContentTypes
 from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
-from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
 class SearchContentApiTestCase(SearchTestApp):

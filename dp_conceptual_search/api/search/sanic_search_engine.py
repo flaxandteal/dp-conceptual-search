@@ -1,7 +1,6 @@
 """
 This file contains utility methods for performing search queries using abstract search engines and clients
 """
-from numpy import ndarray
 from typing import ClassVar, List
 
 from elasticsearch.exceptions import ConnectionError
@@ -9,9 +8,6 @@ from elasticsearch.exceptions import ConnectionError
 from sanic.exceptions import ServerError, InvalidUsage
 
 from dp4py_logging.time import timeit
-
-from dp_fasttext.client import Client
-from dp_fasttext.ml.utils import clean_string, replace_nouns_with_singulars
 
 from dp_conceptual_search.config.config import FASTTEXT_CONFIG
 
@@ -23,11 +19,10 @@ from dp_conceptual_search.search.client.exceptions import RequestSizeExceededExc
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.content_type import ContentType
+from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
-from dp_conceptual_search.ons.search.exceptions import MalformedSearchTerm, UnknownSearchVector
-from dp_conceptual_search.ons.conceptual.client import FastTextClientService, ConceptualSearchEngine
 
 
 async def execute(request: ONSRequest, engine: AbstractSearchEngine) -> ONSResponse:
@@ -63,45 +58,6 @@ class SanicSearchEngine(object):
         :return:
         """
         return self._search_engine_cls(using=self.app.elasticsearch.client, index=self.index.value)
-
-    @timeit
-    async def get_conceptual_search_params(self, request: ONSRequest, search_term: str) -> tuple:
-        """
-        Queries external fastText server for labels and search vector
-        :param request:
-        :param search_term:
-        :return:
-        """
-        # Initialise dp-fasttext client
-        client: Client
-        async with FastTextClientService.get_fasttext_client() as client:
-            # Set request context header
-
-            headers = {
-                Client.REQUEST_ID_HEADER: request.request_id,
-                "Connection": "close"
-            }
-
-            # First, clean the search term and replace all nouns with singulars
-            clean_search_term = replace_nouns_with_singulars(clean_string(search_term))
-
-            if len(clean_search_term) == 0:
-                logger.error(request.request_id, "cleaned search term is empty")
-                raise MalformedSearchTerm(search_term)
-
-                # Get search vector from dp-fasttext
-            search_vector: ndarray = await client.supervised.get_sentence_vector(clean_search_term, headers=headers)
-
-            if search_vector is None:
-                logger.error(request.request_id, "Unable to retrieve search vector for query '{0}'".format(search_term))
-                raise UnknownSearchVector(search_term)
-
-            # Get keyword labels and their probabilities from dp-fasttext
-            num_labels = FASTTEXT_CONFIG.num_labels
-            threshold = FASTTEXT_CONFIG.threshold
-            labels, probabilities = await client.supervised.predict(search_term, num_labels, threshold, headers=headers)
-
-            return labels, search_vector
 
     @timeit
     async def departments_query(self, request: ONSRequest) -> SearchResult:
@@ -146,26 +102,27 @@ class SanicSearchEngine(object):
         sort_by: SortField = request.get_sort_by()
         type_filters: List[ContentType] = request.get_type_filters()
 
-        # Attempt to build the query
-        kwargs = {}
-        if isinstance(engine, ConceptualSearchEngine):
-            labels, search_vector = await self.get_conceptual_search_params(request, search_term)
-            kwargs['labels'] = labels
-            kwargs['search_vector'] = search_vector
-
-        logger.debug(request.request_id, "Received content query request", extra={
-            "params": {
-                "search_term": search_term,
-                "page": page,
-                "page_size": page_size,
-                "sort_by": sort_by.name,
-                "filters": type_filters,
-                "kwargs": kwargs
-            }
-        })
-
         try:
-            # Pass the same content types as both filters and filter boosts (type_filters and filter_functions,
+            kwargs = {}
+            if isinstance(engine, ConceptualSearchEngine):
+                labels, search_vector = await engine.conceptual_search_params(search_term,
+                                                                              FASTTEXT_CONFIG.num_labels,
+                                                                              FASTTEXT_CONFIG.threshold)
+                kwargs['labels'] = labels
+                kwargs['search_vector'] = search_vector
+
+            logger.debug(request.request_id, "Received content query request", extra={
+                "params": {
+                    "search_term": search_term,
+                    "page": page,
+                    "page_size": page_size,
+                    "sort_by": sort_by.name,
+                    "filters": type_filters,
+                    "kwargs": kwargs
+                }
+            })
+
+            # NB: We pass the same content types as both filters and filter boosts (type_filters and filter_functions,
             # respectively).
             engine: AbstractSearchEngine = engine.content_query(search_term, page, page_size, sort_by=sort_by,
                                                                 filter_functions=type_filters,
@@ -201,19 +158,22 @@ class SanicSearchEngine(object):
         type_filters: List[ContentType] = request.get_type_filters()
 
         # Attempt to build the query
-        logger.debug(request.request_id, "Received type counts query request", extra={
-            "params": {
-                "search_term": search_term,
-                "filters": type_filters
-            }
-        })
-
         try:
             kwargs = {}
             if isinstance(engine, ConceptualSearchEngine):
-                labels, search_vector = await self.get_conceptual_search_params(request, search_term)
+                labels, search_vector = await engine.conceptual_search_params(search_term,
+                                                                              FASTTEXT_CONFIG.num_labels,
+                                                                              FASTTEXT_CONFIG.threshold)
                 kwargs['labels'] = labels
                 kwargs['search_vector'] = search_vector
+
+            logger.debug(request.request_id, "Received type counts query request", extra={
+                "params": {
+                    "search_term": search_term,
+                    "filters": type_filters,
+                    "kwargs": kwargs
+                }
+            })
 
             engine: AbstractSearchEngine = engine.type_counts_query(search_term, type_filters=type_filters, **kwargs)
         except RequestSizeExceededException as e:

@@ -37,7 +37,7 @@ fastText:
 
 .PHONY: test
 test: test_requirements
-	TESTING=true CONCEPTUAL_SEARCH_ENABLED=true python manager.py test
+	TESTING=true CONCEPTUAL_SEARCH_ENABLED=true RECOMMENDED_SEARCH_ENABLED=true python manager.py test
 
 .PHONY: pep8
 pep8:
