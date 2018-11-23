@@ -1,5 +1,5 @@
 """
-Defines /recommend routes
+Defines the recommendation routes
 """
 from sanic.blueprints import Blueprint
 

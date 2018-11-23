@@ -31,7 +31,7 @@ def similar_to_uri(uri: str, labels: List[str], vector_script_score: VectorScrip
         boost_mode=BoostMode.REPLACE.value
     )
 
-    # Combine into bool query
+    # Combine into bool query and explicitly omit the current page with must_not clause
     query: Q.Bool = Q.Bool(must_not=[match_query], should=[additional_keywords_query])
 
     # Convert to function score

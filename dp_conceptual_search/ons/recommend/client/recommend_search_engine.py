@@ -3,6 +3,8 @@ Defines the search engine for recommendation queries
 """
 from numpy import ndarray
 
+from elasticsearch_dsl import query as Q
+
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.search.dsl.vector_script_score import VectorScriptScore
 
@@ -13,7 +15,7 @@ from dp_conceptual_search.ons.conceptual.client.conceptual_search_engine import 
 
 class RecommendationSearchEngine(ConceptualSearchEngine):
 
-    async def similar_by_uri_query(self, uri: str, num_labels, current_page: int, size: int,
+    async def similar_by_uri_query(self, uri: str, num_labels, page: int, page_size: int,
                                    sort_by: SortField = SortField.relevance,
                                    highlight: bool=True,
                                    **kwargs):
@@ -21,8 +23,8 @@ class RecommendationSearchEngine(ConceptualSearchEngine):
         Queries for content similar to (but excluding) the given uri
         :param uri:
         :param num_labels:
-        :param current_page:
-        :param size:
+        :param page:
+        :param page_size:
         :param sort_by:
         :param highlight:
         :return:
@@ -41,7 +43,7 @@ class RecommendationSearchEngine(ConceptualSearchEngine):
 
         # Set query
         s: RecommendationSearchEngine = s.query(query) \
-            .paginate(current_page, size) \
+            .paginate(page, page_size) \
             .search_type(SearchType.DFS_QUERY_THEN_FETCH) \
             .sort_by(sort_by)
 

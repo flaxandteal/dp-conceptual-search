@@ -51,8 +51,15 @@ class ONSRequest(Request):
         Returns the requested page number. Defaults to the first page.
         :return:
         """
-        current_page = self.args.get("page", 1)
-        return int(current_page)
+        current_page = int(self.args.get("page", 1))
+
+        if isinstance(current_page, int) and current_page > 0:
+            return current_page
+
+        # Raise InvalidUsage (400) and log error
+        message = "Invalid request [page={page}]".format(page=current_page)
+        logger.error(self.request_id, message, extra={"page": current_page})
+        raise InvalidUsage(message)
 
     def get_page_size(self) -> Optional[int]:
         """

@@ -166,7 +166,7 @@ class ConceptualSearchEngine(SearchEngine):
 
     def get_fasttext_headers(self, context: str):
         """
-        Build and return headers for fastText client
+        Build and return headers for fasttext client
         :param context:
         :return:
         """
@@ -177,7 +177,7 @@ class ConceptualSearchEngine(SearchEngine):
 
     async def similar_by_vector(self, vector: ndarray, num_labels: int, **kwargs) -> list:
         """
-        Initialises a fastText client and makes a HTTP request to get words similar by vector
+        Initialises a fasttext client and makes a HTTP request to get words similar by vector
         :param vector:
         :param num_labels:
         :return:
@@ -190,7 +190,7 @@ class ConceptualSearchEngine(SearchEngine):
             # Encode vector
             encoded_vector = encode_float_list(vector)
 
-            # Generate headers
+            # Build request context header
             headers = self.get_fasttext_headers(context)
 
             similar_words = await client.unsupervised.similar_by_vector(encoded_vector, num_labels, headers=headers)
@@ -200,7 +200,7 @@ class ConceptualSearchEngine(SearchEngine):
     async def conceptual_search_params(self, search_term: str, num_labels: int, threshold: float, **kwargs) -> \
             Tuple[List[str], ndarray]:
         """
-        Queries external fastText server for labels and search vector
+        Queries external fasttext server for labels and search vector
         :param search_term:
         :param num_labels:
         :param threshold:
@@ -209,11 +209,10 @@ class ConceptualSearchEngine(SearchEngine):
         # Get/generate request context
         context = kwargs.get("context", str(uuid4()))
 
-        # Initialise dp-fastText client
+        # Initialise dp-fasttext client
         client: Client
         async with FastTextClientService.get_fasttext_client() as client:
-            # Set request context header
-
+            # Build request context header
             headers = self.get_fasttext_headers(context)
 
             # First, clean the search term and replace all nouns with singulars

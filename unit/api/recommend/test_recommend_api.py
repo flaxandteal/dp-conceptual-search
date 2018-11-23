@@ -1,5 +1,5 @@
 """
-Tests all routes on the /search/recommend API
+Tests all routes for the recommendation API
 """
 from json import dumps
 from typing import List
