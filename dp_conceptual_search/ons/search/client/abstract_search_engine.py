@@ -2,6 +2,7 @@ import abc
 import logging as logger
 from typing import List
 
+from dp_conceptual_search.search.query_helper import match_by_uri
 from dp_conceptual_search.search.client.search_client import SearchClient
 
 from dp_conceptual_search.ons.search.sort_fields import query_sort
@@ -14,8 +15,31 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
     """
     Abstract search engine client defining common methods for ONS search engine
     """
+
     def __init__(self, **kwargs):
         super(AbstractSearchEngine, self).__init__(response_class=ONSResponse, **kwargs)
+
+    def match_by_uri(self, uri: str):
+        """
+        Builds a simple match by uri query
+        :param uri:
+        :return:
+        """
+        query = match_by_uri(uri)
+        return self.query(query)
+
+    def exclude_fields_from_source(self, fields: List[Field]):
+        """
+        Excludes one (or many) fields from the _source
+        :param fields:
+        :return:
+        """
+        if not isinstance(fields, list):
+            fields: List[Field] = [fields]
+
+        field_names = [f.name for f in fields]
+
+        return self.source(exclude=field_names)
 
     def apply_highlight_fields(self):
         """
@@ -101,8 +125,8 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         :param size:
         :param sort_by:
         :param highlight:
-        :param filter_functions:
-        :param type_filters:
+        :param filter_functions: content types to generate filter scores for (content type boosting)
+        :param type_filters: content types to filter in query
         :param kwargs:
         :return:
         """

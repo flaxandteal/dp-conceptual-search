@@ -3,7 +3,7 @@ import sys
 from subprocess import check_output
 
 from dp_conceptual_search.app.app import create_app
-from dp_conceptual_search.api.protocol.ons_http_protocol import ONSHttpProtocol
+from dp4py_sanic.api.protocol.ons_http_protocol import ONSHttpProtocol
 
 
 def test():

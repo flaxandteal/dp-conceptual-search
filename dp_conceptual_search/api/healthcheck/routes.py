@@ -3,11 +3,13 @@ Healthcheck API
 """
 from .services import Service
 from .response import HealthCheckResponse
+from .healthchecks.healthcheck import HealthCheck
 
 from sanic import Blueprint
 
+from dp4py_sanic.api.response import json
+
 from dp_conceptual_search.log import logger
-from dp_conceptual_search.api.response import json
 from dp_conceptual_search.api.request.ons_request import ONSRequest
 
 healthcheck_blueprint = Blueprint('healthcheck', url_prefix='/healthcheck')
@@ -25,8 +27,8 @@ async def health_check(request: ONSRequest):
 
     service: Service
     for service in Service:
-        health_check_fn = service.value
-        message, code = await health_check_fn(request)
+        health_checker: HealthCheck = service.value
+        message, code = await health_checker.healthcheck(request)
 
         response.set_response_for_service(service, message, code)
 

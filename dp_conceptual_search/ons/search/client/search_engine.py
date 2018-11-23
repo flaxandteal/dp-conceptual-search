@@ -1,13 +1,11 @@
 from typing import List
 
-from dp_conceptual_search.config import SEARCH_CONFIG
-
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
-
-from dp_conceptual_search.ons.search import ContentType, AvailableTypeFilters, SortField
-from dp_conceptual_search.ons.search.queries import type_counts_query
-from dp_conceptual_search.ons.search.queries import content_query, function_score_content_query, departments_query
+from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, ContentType
+from dp_conceptual_search.ons.search.queries.ons_query_builders import (
+    build_content_query, build_type_counts_query, build_function_score_content_query, build_departments_query
+)
 
 
 class SearchEngine(AbstractSearchEngine):
@@ -26,7 +24,7 @@ class SearchEngine(AbstractSearchEngine):
         :return:
         """
         s: SearchEngine = self._clone() \
-            .query(departments_query(search_term)) \
+            .query(build_departments_query(search_term)) \
             .paginate(current_page, size) \
             .search_type(SearchType.DFS_QUERY_THEN_FETCH)
 
@@ -45,17 +43,17 @@ class SearchEngine(AbstractSearchEngine):
         :param size:
         :param sort_by:
         :param highlight:
-        :param filter_functions:
-        :param type_filters:
+        :param filter_functions: content types to generate filter scores for (content type boosting)
+        :param type_filters: content types to filter in query
         :param kwargs:
         :return:
         """
         # Build the query dict
-        query = content_query(search_term)
+        query = build_content_query(search_term)
 
         # Add function scores if specified
         if filter_functions is not None:
-            query = function_score_content_query(query, filter_functions)
+            query = build_function_score_content_query(query, filter_functions)
 
         # Build the content query
         s: SearchEngine = self._clone() \
@@ -81,11 +79,13 @@ class SearchEngine(AbstractSearchEngine):
         :return:
         """
         # Build the content query with no type filters, function scores or sorting
-        s: SearchEngine = self.content_query(search_term, self.default_page_number, SEARCH_CONFIG.results_per_page,
+        s: SearchEngine = self.content_query(search_term,
+                                             0,  # hard code page number to 0, as it does not impact the aggregations
+                                             0,  # hard code page number to 0, as it does not impact the aggregations
                                              type_filters=type_filters, highlight=False)
 
         # Build the aggregations
-        aggregations = type_counts_query()
+        aggregations = build_type_counts_query()
 
         # Setup the aggregations bucket
         s.aggs.bucket(self.agg_bucket, aggregations)

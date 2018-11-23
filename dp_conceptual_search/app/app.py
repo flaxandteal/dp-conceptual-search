@@ -7,11 +7,12 @@ import logging
 
 from dp4py_sanic.app.exceptions.error_handlers import ErrorHandlers
 
+from dp_conceptual_search.config import CONFIG
 from dp_conceptual_search.app.search_app import SearchApp
-from dp_conceptual_search.config import CONFIG, SANIC_CONFIG
 
 # Import blueprints
 from dp_conceptual_search.api.search.routes import search_blueprint
+from dp_conceptual_search.api.search.conceptual.routes import conceptual_search_blueprint
 from dp_conceptual_search.api.spellcheck.routes import spell_check_blueprint
 from dp_conceptual_search.api.healthcheck.routes import healthcheck_blueprint
 
@@ -30,12 +31,16 @@ def create_app() -> SearchApp:
     # Now initialise the APP config, logger and ONSRequest handler
     app = SearchApp(CONFIG.APP.title)
 
-    logging.info("Using config:", extra={"config": CONFIG.to_dict()})
+    logging.info("Using config", extra={"config": CONFIG.to_dict()})
 
     # Register blueprints
     app.blueprint(search_blueprint)
     app.blueprint(spell_check_blueprint)
     app.blueprint(healthcheck_blueprint)
+
+    # Enable conceptual search routes?
+    if CONFIG.API.conceptual_search_enabled:
+        app.blueprint(conceptual_search_blueprint)
 
     # Register error handlers
     ErrorHandlers.register(app)

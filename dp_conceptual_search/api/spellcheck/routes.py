@@ -3,12 +3,11 @@ This file contains all routes for the /spellcheck API
 """
 from sanic import Blueprint
 
-from dp_conceptual_search.api.response import json
-from dp_conceptual_search.api.request import ONSRequest
+from dp4py_sanic.api.response.json_response import json
+
 from dp_conceptual_search.log import logger
-
+from dp_conceptual_search.api.request import ONSRequest
 from dp_conceptual_search.app.search_app import SearchApp
-
 from dp_conceptual_search.ml.spelling.spell_checker import SpellChecker
 
 spell_check_blueprint = Blueprint('spellcheck', url_prefix='/spellcheck')

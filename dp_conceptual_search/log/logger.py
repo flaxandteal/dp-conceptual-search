@@ -3,6 +3,9 @@ Custom logger class for API routes which wraps the Sanic logger and injects addi
 """
 import logging
 
+from dp_conceptual_search.config import CONFIG
+logger = logging.getLogger(CONFIG.APP.title)
+
 
 def _log(level: str, context: str, msg: str, *args, **kwargs):
     """
@@ -14,12 +17,12 @@ def _log(level: str, context: str, msg: str, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    if hasattr(logging, level):
-        fn = getattr(logging, level)
+    if hasattr(logger, level):
+        fn = getattr(logger, level)
         if 'extra' not in kwargs:
             kwargs['extra'] = {}
         elif not isinstance(kwargs['extra'], dict):
-            logging.error("Incorrect usage of logger: argument 'extra' must be instanceof dict")
+            logger.error("Incorrect usage of logger: argument 'extra' must be instanceof dict")
 
         kwargs['extra'] = {
             "context": context,
@@ -88,3 +91,15 @@ def warn(context: str, msg: str, *args, **kwargs):
     :return:
     """
     warning(context, msg, *args, **kwargs)
+
+
+def trace(context: str, msg: str, *args, **kwargs):
+    """
+    Log at TRACE level
+    :param context:
+    :param msg:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    _log('trace', context, msg, *args, **kwargs)

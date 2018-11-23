@@ -3,7 +3,7 @@ Tests the ONS content search API
 """
 from unittest import mock
 
-from unit.utils.test_app import TestApp
+from unit.utils.search_test_app import SearchTestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
 
 from dp_conceptual_search.ons.search.index import Index
@@ -11,7 +11,7 @@ from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
-class SearchDepartmentsApiTestCase(TestApp):
+class SearchDepartmentsApiTestCase(SearchTestApp):
 
     maxDiff = None
 
