@@ -8,7 +8,7 @@ def date_decay_function(field: str, fn: str, scale: str, offset: str, decay: flo
     """
     Builds a decay function useful for boosting more recent content
     :param field:
-    :param fn:
+    :param fn: The decay function to be used. Can be gauss, linear or exp (exponential)
     :param scale:
     :param offset:
     :param decay:

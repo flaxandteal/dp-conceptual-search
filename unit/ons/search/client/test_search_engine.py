@@ -238,7 +238,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Build the expected query dict - note this should not change
         expected = {
-            "from": from_start,
             "query": {
                 "bool": {
                     "filter": filter_query,
@@ -247,6 +246,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                     ]
                 }
             },
+            "from": from_start,
             "size": size,
             "sort": query_sort(SortField.relevance),
             "highlight": self.highlight_dict
@@ -276,7 +276,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Set correct from_start and page size for type counts query
         from_start = 0
-        size = SEARCH_CONFIG.results_per_page
+        size = 0
 
         # Get a list of all available content types
         content_types: List[ContentType] = AvailableContentTypes.available_content_types()
@@ -300,7 +300,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Build the expected query dict - note this should not change
         expected = {
-            "from": from_start,
             "query": {
                 "bool": {
                     "filter": filter_query,
@@ -309,6 +308,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                     ]
                 }
             },
+            "from": from_start,
             "size": size,
             "sort": query_sort(SortField.relevance),
             "aggs": aggs
@@ -353,7 +353,6 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Build the expected query dict - note this should not change
         expected = {
-            "from": from_start,
             "query": {
                 "bool": {
                     "filter": filter_query,
@@ -362,6 +361,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                     ]
                 }
             },
+            "from": from_start,
             "size": size,
             "sort": query_sort(SortField.relevance)
         }

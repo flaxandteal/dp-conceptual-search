@@ -15,7 +15,7 @@ from dp_conceptual_search.search.dsl.date_decay_function import date_decay_funct
 
 # Build a date decay function to promote recent releases
 date_function = date_decay_function(AvailableFields.RELEASE_DATE.value.name,
-                                    "exp", "356d", "30d", decay=0.95)
+                                    "exp", "365d", "30d", decay=0.95)
 
 
 def word_vector_keywords_query(labels: List[str]) -> Q.Query:
@@ -55,14 +55,14 @@ def build_content_query(search_term: str, labels: List[str], search_vector_scrip
     # Build function scores
     script_score_dict = search_vector_script.to_dict()
 
-    # Generate additional keywords query
+    # Generate additional word vector keywords query
     additional_keywords_query = FunctionScore(
         query=wv_keywords_query,
         functions=[script_score_dict],
         boost_mode=BoostMode.REPLACE.value
     )
 
-    # Build a script to boost original query
+    # Build a script to boost original babbage query (pre-conceptual search)
     boost_script = ScriptScore(
         script="_score * boostFactor",
         params={
@@ -77,11 +77,12 @@ def build_content_query(search_term: str, labels: List[str], search_vector_scrip
         boost_mode=BoostMode.REPLACE.value
     )
 
-    # Combine as DisMax with FunctionScore
+    # Combine the original babbage query with the new keywords search vector in a single Distance Maximum (DisMax) query
     query = Q.Bool(
         should=[dis_max_query, additional_keywords_query]
     )
 
+    # Finally, wrap in a function score to boost by release date
     return FunctionScore(
         query=query,
         functions=[date_function.to_dict()],

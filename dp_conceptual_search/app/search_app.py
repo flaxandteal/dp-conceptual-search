@@ -20,7 +20,7 @@ class SearchApp(Server):
         # Attach an Elasticsearh client
         self._elasticsearch = None
 
-        # Initialise (un)supervised model member
+        # Initialise unsupervised model member (used for spell check API)
         self._unsupervised_model = None
         self._supervised_model = None
 

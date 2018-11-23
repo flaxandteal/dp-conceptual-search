@@ -2,10 +2,17 @@
 Implementation of conceptual search client
 """
 import logging
-from typing import List
+from uuid import uuid4
 from numpy import ndarray
+from typing import List, Tuple
 
-from dp_conceptual_search.config.config import SEARCH_CONFIG
+from elasticsearch_dsl.response.hit import Hit
+
+from dp_fasttext.client import Client
+from dp_fasttext.ml.utils import clean_string, replace_nouns_with_singulars, decode_float_list, encode_float_list
+
+from dp_conceptual_search.log import logger
+
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.search.dsl.vector_script_score import VectorScriptScore
 
@@ -13,11 +20,18 @@ from dp_conceptual_search.ons.search import SortField, ContentType
 from dp_conceptual_search.ons.search.exceptions import InvalidUsage
 from dp_conceptual_search.ons.search.fields import AvailableFields, Field
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
+from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 from dp_conceptual_search.ons.search.queries.ons_query_builders import build_type_counts_query
+from dp_conceptual_search.ons.search.exceptions import MalformedSearchTerm, UnknownSearchVector
+
+from dp_conceptual_search.ons.conceptual.client.fasttext_client import FastTextClientService
 from dp_conceptual_search.ons.conceptual.queries.ons_query_builders import build_content_query
 
 
 class ConceptualSearchEngine(SearchEngine):
+
+    CONNECTION_HEADER = "Connection"
+    CONNECTION_CLOSE = "close"
     EMBEDDING_VECTOR: Field = AvailableFields.EMBEDDING_VECTOR.value
 
     def vector_script_score(self, vector: ndarray) -> VectorScriptScore:
@@ -41,13 +55,13 @@ class ConceptualSearchEngine(SearchEngine):
         :param size:
         :param sort_by:
         :param highlight:
-        :param filter_functions:
-        :param type_filters:
+        :param filter_functions: content types to generate filter scores for (content type boosting)
+        :param type_filters: content types to filter in query
         :param kwargs:
         :return:
         """
         if sort_by is not SortField.relevance:
-            logging.debug("SortField != relevance, conceptual search is disabled", extra={
+            logging.debug("sort order is not equal to relevance, conceptual search is disabled", extra={
                 "query": search_term,
                 "sort_by": sort_by.name
             })
@@ -100,13 +114,13 @@ class ConceptualSearchEngine(SearchEngine):
         search_vector: ndarray = kwargs.get("search_vector", None)
 
         # Build the content query with no type filters, function scores or sorting
-        s: SearchEngine = self.content_query(search_term,
-                                             self.default_page_number,
-                                             SEARCH_CONFIG.results_per_page,
-                                             type_filters=type_filters,
-                                             highlight=False,
-                                             labels=labels,
-                                             search_vector=search_vector)
+        s: ConceptualSearchEngine = self.content_query(search_term,
+                                                       0,  # hard code page number to 0, as it does not impact the aggregations
+                                                       0,  # hard code page size to 0, as it does not impact the aggregations
+                                                       type_filters=type_filters,
+                                                       highlight=False,
+                                                       labels=labels,
+                                                       search_vector=search_vector)
 
         # Build the aggregations
         aggregations = build_type_counts_query()
@@ -115,3 +129,107 @@ class ConceptualSearchEngine(SearchEngine):
         s.aggs.bucket(self.agg_bucket, aggregations)
 
         return s
+
+    async def embedding_vector_for_uri(self, uri: str) -> ndarray:
+        """
+        Returns the embedding vector for the page at the given uri
+        :param uri:
+        :return:
+        """
+        # First, build the query
+        s: ConceptualSearchEngine = self.match_by_uri(uri)
+
+        # Execute the query
+        response: ONSResponse = await s.execute()
+
+        # Check we got back exactly 1 hit
+        if len(response) != 1:
+            raise Exception("Expected exactly one hit for uri '{0}', got {1}".format(uri, len(response)))
+
+        # Get the hit
+        hit: Hit = response[0]
+        # Convert to dict
+        hit_dict: dict = hit.to_dict()
+
+        # Get the embedding vector
+        if self.EMBEDDING_VECTOR.name not in hit_dict:
+            raise IndexError("Embedding vector field '{0}' not found in hit for uri '{1}'".format(
+                self.EMBEDDING_VECTOR.name, uri
+            ))
+
+        encoded_embedding_vector: str = hit_dict.get(self.EMBEDDING_VECTOR.name)
+        if not isinstance(encoded_embedding_vector, str):
+            raise Exception("Expected string embedding vector, got '{0}'".format(type(encoded_embedding_vector)))
+
+        # Decode the string
+        return decode_float_list(encoded_embedding_vector)
+
+    def get_fasttext_headers(self, context: str):
+        """
+        Build and return headers for fasttext client
+        :param context:
+        :return:
+        """
+        return {
+            Client.REQUEST_ID_HEADER: context,
+            self.CONNECTION_HEADER: self.CONNECTION_CLOSE
+        }
+
+    async def similar_by_vector(self, vector: ndarray, num_labels: int, **kwargs) -> list:
+        """
+        Initialises a fasttext client and makes a HTTP request to get words similar by vector
+        :param vector:
+        :param num_labels:
+        :return:
+        """
+        # Get request context
+        context: str = kwargs.get("context", str(uuid4()))
+
+        client: Client
+        async with FastTextClientService.get_fasttext_client() as client:
+            # Encode vector
+            encoded_vector = encode_float_list(vector)
+
+            # Build request context header
+            headers = self.get_fasttext_headers(context)
+
+            similar_words = await client.unsupervised.similar_by_vector(encoded_vector, num_labels, headers=headers)
+
+            return similar_words
+
+    async def conceptual_search_params(self, search_term: str, num_labels: int, threshold: float, **kwargs) -> \
+            Tuple[List[str], ndarray]:
+        """
+        Queries external fasttext server for labels and search vector
+        :param search_term:
+        :param num_labels:
+        :param threshold:
+        :return:
+        """
+        # Get/generate request context
+        context = kwargs.get("context", str(uuid4()))
+
+        # Initialise dp-fasttext client
+        client: Client
+        async with FastTextClientService.get_fasttext_client() as client:
+            # Build request context header
+            headers = self.get_fasttext_headers(context)
+
+            # First, clean the search term and replace all nouns with singulars
+            clean_search_term = replace_nouns_with_singulars(clean_string(search_term))
+
+            if len(clean_search_term) == 0:
+                logger.error(context, "cleaned search term is empty")
+                raise MalformedSearchTerm(search_term)
+
+            # Get search vector from dp-fasttext
+            search_vector: ndarray = await client.supervised.get_sentence_vector(clean_search_term, headers=headers)
+
+            if search_vector is None:
+                logger.error(context, "Unable to retrieve search vector for query '{0}'".format(search_term))
+                raise UnknownSearchVector(search_term)
+
+            # Get keyword labels and their probabilities from dp-fasttext
+            labels, probabilities = await client.supervised.predict(search_term, num_labels, threshold, headers=headers)
+
+            return labels, search_vector
