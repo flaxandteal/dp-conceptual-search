@@ -17,14 +17,10 @@ from dp_conceptual_search.api.search.conceptual import routes as conceptual_rout
 search_blueprint = Blueprint('search', url_prefix='/search')
 
 
-search_engine_cls = SearchEngine
-
-
-@search_blueprint.route('/departments', methods=['GET', 'POST'], strict_slashes=True)
+@search_blueprint.route('/departments', methods=['GET'], strict_slashes=True)
 async def ons_departments_query(request: ONSRequest) -> HTTPResponse:
     """
-    Handles departments queries to the ONS list type. Note, filtering by list_type does not apply
-    to the featured result (hence we only offer an 'ONS' list type for this API).
+    Handles departments queries to the departments index
     :param request:
     :return:
     """
@@ -40,7 +36,7 @@ async def ons_departments_query(request: ONSRequest) -> HTTPResponse:
 @search_blueprint.route('/content', methods=['GET', 'POST'], strict_slashes=True)
 async def ons_content_query(request: ONSRequest) -> HTTPResponse:
     """
-    Handles content queries to the <list_type> API.
+    Handles content queries to the API.
     :param request:
     :return:
     """
@@ -48,7 +44,7 @@ async def ons_content_query(request: ONSRequest) -> HTTPResponse:
         return await conceptual_routes.conceptual_content_query(request)
 
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.content_query(request)
@@ -59,7 +55,7 @@ async def ons_content_query(request: ONSRequest) -> HTTPResponse:
 @search_blueprint.route('/counts', methods=['GET', 'POST'], strict_slashes=True)
 async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     """
-    Handles type counts queries to the <list_type> API.
+    Handles type counts queries to the API.
     :param request:
     :return:
     """
@@ -67,7 +63,7 @@ async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
         return await conceptual_routes.conceptual_counts_query(request)
 
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.type_counts_query(request)
@@ -75,16 +71,15 @@ async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     return json(request, search_result.to_dict(), 200)
 
 
-@search_blueprint.route('/featured', methods=['GET', 'POST'], strict_slashes=True)
+@search_blueprint.route('/featured', methods=['GET'], strict_slashes=True)
 async def ons_featured_result_query(request: ONSRequest) -> HTTPResponse:
     """
-    Handles type counts queries to the ONS list type. Note, filtering by list_type does not apply
-    to the featured result (hence we only offer an 'ons' list type for this API)
+    Handles featured result queries (i.e product and home page census pages)
     :param request:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.featured_result_query(request)
@@ -102,7 +97,7 @@ async def search_by_uri(request: ONSRequest, path: str):
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.search_by_uri(request, path)

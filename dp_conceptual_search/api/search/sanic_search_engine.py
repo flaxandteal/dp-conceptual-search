@@ -9,10 +9,11 @@ from sanic.exceptions import ServerError, InvalidUsage
 
 from dp4py_logging.time import timeit
 
+from dp_conceptual_search.config.config import FASTTEXT_CONFIG
+
 from dp_conceptual_search.log import logger
 from dp_conceptual_search.app.search_app import SearchApp
-from dp_conceptual_search.config.config import FASTTEXT_CONFIG
-from dp_conceptual_search.api.request.ons_request import ONSRequest
+from dp_conceptual_search.api.request import ONSRequest
 from dp_conceptual_search.search.client.exceptions import RequestSizeExceededException
 
 from dp_conceptual_search.ons.search.index import Index
@@ -78,7 +79,7 @@ class SanicSearchEngine(object):
         logger.trace(request.request_id, "Executing departments query", extra={
             "query": engine.to_dict()
         })
-        response: ONSResponse = await engine.execute()
+        response: ONSResponse = await execute(request, engine)
 
         search_result: SearchResult = response.to_departments_query_search_result(page, page_size)
 
