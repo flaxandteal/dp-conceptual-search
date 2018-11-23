@@ -1,5 +1,7 @@
 dp-conceptual-search
 ==================
+Service responsible for executing search queries against Elasticsearch. Implements 'conceptual' (non-keyword) matching
+using word vector embeddings and k nearest neighbours scoring.
 
 # Configuration
 
@@ -19,10 +21,14 @@ dp-conceptual-search
 | COLOURED_LOGGING_ENABLED     | false                     | Enable/disable coloured logging.
 | PRETTY_LOGGING               | false                     | Enable/disable JSON formatting for logging.
 | LOG_LEVEL                    | INFO                      | Log level (INFO, DEBUG, TRACE or ERROR)
+| CONCEPTUAL_SEARCH_ENABLED    | false                     | Feature flag for conceptual search routes (requires `dp-fasttext`)
+| REDIRECT_CONCEPTUAL_SEARCH   | false                     | Enable/disable redirect to conceptual search routes from search 
 | DP_FASTTEXT_HOST             | localhost                 | Host address for `dp-fasttext` server
 | DP_FASTTEXT_PORT             | 5100                      | Host port for `dp-fasttext` server
 
-# Install
+# Getting Started
+
+## Build
 
 To install locally (not recommended), run ```make```. The code requires python3.6, and it is recommended that you setup 
 a [virtual environment](https://docs.python.org/3/library/venv.html).
@@ -33,7 +39,7 @@ conceptual search and user recommendation enabled, the simplest approach is to u
 The `docker-compose.yml` file provided will pull a custom Elasticsearch 2.4.4 image with this plugin pre-installed when 
 working locally (be sure to switch off any instances of Elasticsearch that might already be running first).  
 
-# Running
+## Run
 
 There are two options for running the server:
 Use ```python manager.py``` to use the internal Sanic server, or  ```./run_gunicorn.sh``` to initialise as a 
