@@ -350,7 +350,7 @@ class HealthCheckTestCase(SearchTestApp):
         request, response = self.get(target, 500)
         expected_response = HealthCheckResponse()
         expected_response.set_response_for_service(Service.elasticsearch, "available", 200)
-        expected_response.set_response_for_service(Service.dp_fasttext, "unavailable", 500)
+        expected_response.set_response_for_service(Service.dp_fasttext, "unreachable", 500)
 
         expected_response = expected_response.to_dict()
 

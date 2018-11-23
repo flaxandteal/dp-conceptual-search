@@ -16,9 +16,6 @@ from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
 conceptual_search_blueprint = Blueprint('conceptual search', url_prefix='/search/conceptual')
 
 
-search_engine_cls = ConceptualSearchEngine
-
-
 @conceptual_search_blueprint.route('/', methods=['GET', 'POST'], strict_slashes=False)
 async def search(request: ONSRequest) -> HTTPResponse:
     """
@@ -27,7 +24,7 @@ async def search(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, ConceptualSearchEngine, Index.ONS)
 
     result = await sanic_search_engine.search(request)
 
@@ -43,7 +40,7 @@ async def conceptual_content_query(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, ConceptualSearchEngine, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.content_query(request)
@@ -60,7 +57,7 @@ async def conceptual_counts_query(request: ONSRequest) -> HTTPResponse:
     :return:
     """
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, ConceptualSearchEngine, Index.ONS)
 
     # Perform the request
     search_result: SearchResult = await sanic_search_engine.type_counts_query(request)

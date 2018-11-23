@@ -15,9 +15,15 @@ from dp_conceptual_search.ons.conceptual.client import FastTextClientService
 class DpFastTextHealthCheck(HealthCheck):
 
     AVAILABLE = "available"
+    UNREACHABLE = "unreachable"
     UNAVAILABLE = "unavailable"
 
     async def healthcheck(self, request: ONSRequest) -> Tuple[str, int]:
+        """
+        Checks if dp-fasttext is healthy
+        :param request:
+        :return:
+        """
         client: Client
         async with FastTextClientService.get_fasttext_client() as client:
             headers = {
@@ -32,5 +38,6 @@ class DpFastTextHealthCheck(HealthCheck):
                     return self.AVAILABLE, 200
             except Exception as e:
                 logger.error(request.request_id, "Caught exception checking health of dp-fasttext", exc_info=e)
+                return self.UNREACHABLE, 500
 
-                return self.UNAVAILABLE, 500
+            return self.UNAVAILABLE, 500
