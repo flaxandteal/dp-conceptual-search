@@ -26,8 +26,10 @@ To install locally (not recommended), run ```make```. The code requires python3.
 a [virtual environment](https://docs.python.org/3/library/venv.html).
 Alternatively (preferred approach), you can use the supplied Dockerfile to run in a container. When running with 
 conceptual search and user recommendation enabled, the simplest approach is to use ```docker-compose``` with the
-```docker-compose.yml``` provided to bring up dedicated instances of mongoDB and Elasticsearch. Note that for conceptual
-search, the latter requires a [plugin for vector scoring](https://github.com/sully90/fast-elasticsearch-vector-scoring).  
+```docker-compose.yml``` provided (run `docker-compose build` before `docker-compose up`). Note that for conceptual search,
+ Elasticsearch requires a [plugin for vector scoring](https://github.com/ONSDigital/fast-elasticsearch-vector-scoring).
+The `docker-compose.yml` file provided will pull a custom Elasticsearch 2.4.4 image with this plugin pre-installed when 
+working locally (be sure to switch off any instances of Elasticsearch that might already be running first).  
 
 # Running
 
@@ -36,8 +38,12 @@ Use ```python manager.py``` to use the internal Sanic server, or  ```./run_gunic
 gunicorn server (supports multi-processing for multiple workers and threads per worker). By default, the service 
 provides APIs which only mimic the search functionality of babbage. To enable conceptual search (vector scoring), you
 will need to set the environment variable ```CONCEPTUAL_SEARCH_ENABLED=true``` and have the appropriate models available
-on disk. This repository comes with the [full word2vec embeddings model](ml/data/word2vec/ons_supervised.vec) and a 
-*test* [supervised model](unit/ml/test_data/supervised_models/ons_supervised.bin).
+on disk. This repository comes with a [word2vec embeddings model](ml/data/word2vec/ons_supervised.vec) for spell checking.
+
+# Indexing content
+
+Make sure you have checked out the `feature/vector_embedding_dp_fasttext` branch of `zebedee-reader` and have 
+[`dp-fasttext`](https://github.com/ONSdigital/dp-fasttext) running in order to generate the embedding vectors.
 
 # Swagger
 
@@ -49,35 +55,31 @@ To run the unit tests, use: ```make test```.
 
 # Structure
 
-The code is organised into four main modules:
+The code is organised into the following modules:
 
 * ```search```
 * ```ons```
 * ```app```
 * ```api```
+* ```config```
+* ```unit```
 
 The ```search``` module implements common functionality for search, working with mongoDB, 
 loading (un)supervised word embedding modules, spell checking, and user / session tracking. The core recommendation
 engine is also implemented here, and is responsible for updating user session vectors using the supplied models.
 
 The ```ons``` module contains code specific to the ONS search implementation, such as Elasticsearch queries, index names, 
-content types, sort fields, filter functions, type filters, and pagination. Any modifications to the queries being 
-executed in either the vanilla search engine (babbage replica), or the new conceptual search engine, should
-be made in this module. The implementation of both search engines follow the same pattern:
+content types, sort fields, filter functions, type filters, and pagination.
 
-1. Define methods to build queries in a ```queries.py``` file, using the ```elasticsearch_dsl``` module.
-2. Define  a ```SearchEngine``` class which extends the ```AbstractSearchClient``` (see ```ons/search/search_engine.py```)
-3. Define utilty methods on  ```SearchEngine``` class as required, following the clone patten as seen in the 
-```ons/search/search_engine.SearchEngine``` class
-4. Manipulate ```SearchEngine``` class in server routes to execute queries.
+All routes (handlers) are defined in the ```api``` package (in files called ```routes.py```).
 
-To implement conceptual search, we simply extend the ```ons/search/search_engine.SearchEngine``` class and redefine the 
-original content query (see ```ons/search/queries.py```) to take advantage of our pre-trained models and
-indexed embedding vectors (see ```ons/search/conceptual/queries.py``` and ```ons/search/conceptual/search_engine.py```).
-As such, all the core logic for pagination, field highlighting, aggregations, sorting and type filtering need only be implemented once
-in ```ons/search/search_engine.AbstractSearchClient```.
+The ```Sanic``` HTTP server is defined in ```app/app.py```. Here we register all blueprints (routes) and configure
+app wide logging.
 
-Finally, the ```app``` and ```api``` modules host the ```sanic``` asynchronous HTTP server and all routes. Details of which routes are registered and various app configurations can be found in ```app/app.py```.
+App wide configs are defined in ```config/config.py``` and collected under a single section in ```config/__init__.py```.
+
+Finally, all unit tests can be found in the ```unit``` package. See the ```test``` make target and ```manager.py``` for information
+on how to run the tests.
 
 ### Licence
 
