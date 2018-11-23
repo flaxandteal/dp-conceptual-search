@@ -1,9 +1,6 @@
 from typing import List
 
 from dp_conceptual_search.search.query_helper import match_by_uri
-
-from dp_conceptual_search.config import SEARCH_CONFIG
-
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
 from dp_conceptual_search.ons.search import SortField, AvailableTypeFilters, ContentType
@@ -56,8 +53,8 @@ class SearchEngine(AbstractSearchEngine):
         :param size:
         :param sort_by:
         :param highlight:
-        :param filter_functions:
-        :param type_filters:
+        :param filter_functions: content types to generate filter scores for (content type boosting)
+        :param type_filters: content types to filter in query
         :param kwargs:
         :return:
         """
@@ -92,8 +89,9 @@ class SearchEngine(AbstractSearchEngine):
         :return:
         """
         # Build the content query with no type filters, function scores or sorting
-        s: SearchEngine = self.content_query(search_term, self.default_page_number,
-                                             SEARCH_CONFIG.results_per_page,
+        s: SearchEngine = self.content_query(search_term,
+                                             0,  # hard code page number to 0, as it does not impact the aggregations
+                                             0,  # hard code page number to 0, as it does not impact the aggregations
                                              type_filters=type_filters, highlight=False)
 
         # Build the aggregations

@@ -52,9 +52,9 @@ ML_CONFIG.unsupervised_model_filename = os.environ.get("UNSUPERVISED_MODEL_FILEN
                                                        "./dp_conceptual_search/ml/data/word2vec/ons_supervised.vec")
 
 FASTTEXT_CONFIG = Section("FastText config")
-FASTTEXT_CONFIG.fastText_host = os.environ.get("DP_FASTTEXT_HOST", "localhost")
-FASTTEXT_CONFIG.fastText_port = int(os.environ.get("DP_FASTTEXT_PORT", 5100))
-FASTTEXT_CONFIG.num_labels = int(os.environ.get("FASTTEXT_NUM_LABELS", 10))
+FASTTEXT_CONFIG.fasttext_host = os.environ.get("DP_FASTTEXT_HOST", "localhost")
+FASTTEXT_CONFIG.fasttext_port = int(os.environ.get("DP_FASTTEXT_PORT", 5100))
+FASTTEXT_CONFIG.num_labels = int(os.environ.get("FASTTEXT_NUM_LABELS", 5))
 FASTTEXT_CONFIG.threshold = float(os.environ.get("FASTTEXT_THRESHOLD", 0.0))
 
 

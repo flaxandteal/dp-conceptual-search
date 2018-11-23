@@ -243,6 +243,6 @@ class SanicSearchEngine(object):
         # Execute
         response: ONSResponse = await execute(request, engine)
 
-        search_result: SearchResult = response.to_featured_result_query_search_result()
+        search_result: SearchResult = response.to_single_search_result()
         return search_result
 
