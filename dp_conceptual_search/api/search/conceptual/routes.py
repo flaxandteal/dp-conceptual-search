@@ -8,9 +8,9 @@ from dp4py_sanic.api.response import json
 
 from dp_conceptual_search.api.request import ONSRequest
 from dp_conceptual_search.ons.search.index import Index
+from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.api.search.sanic_search_engine import SanicSearchEngine
-from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
 
 
 conceptual_search_blueprint = Blueprint('conceptual search', url_prefix='/search/conceptual')

@@ -43,6 +43,7 @@ API_CONFIG.enabled_prometheus_metrics = bool_env('ENABLE_PROMETHEUS_METRICS', Fa
 API_CONFIG.testing = bool_env("TESTING", False)
 API_CONFIG.conceptual_search_enabled = bool_env("CONCEPTUAL_SEARCH_ENABLED", False)
 API_CONFIG.redirect_conceptual_search = bool_env("REDIRECT_CONCEPTUAL_SEARCH", False)
+API_CONFIG.recommended_search_enabled = bool_env("RECOMMENDED_SEARCH_ENABLED", False)
 
 # ML
 

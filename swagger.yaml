@@ -400,7 +400,7 @@ paths:
         404:
           description: No document with the given URI found
 
-  /search/recommend/similar/:
+  /recommend/similar/:
     post:
       tags:
         - recommend
@@ -427,6 +427,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/SearchResponse'
+        400:
+          description: Invalid request
+        500:
+          description: Internal Server Error
 
   /spellcheck:
     get:
@@ -447,6 +451,8 @@ paths:
             type: array
             items:
               $ref: '#/definitions/SuggestResponse'
+        500:
+          description: Internal Server Error
 
   /healthcheck:
     get:

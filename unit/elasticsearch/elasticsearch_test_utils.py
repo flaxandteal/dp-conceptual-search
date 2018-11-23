@@ -1,5 +1,11 @@
+from numpy.random import rand
+
 from unittest.mock import MagicMock
 from unit.mocks.mock_es_client import MockElasticsearchClient
+
+from dp_fasttext.ml.utils import encode_float_list
+
+from dp_conceptual_search.ons.search.fields import Field, AvailableFields
 
 
 def mock_search(index=None, doc_type=None, body=None, params=None, **kwargs) -> dict:
@@ -53,6 +59,32 @@ def mock_shards_json() -> dict:
     }
 
     return shards
+
+
+def mock_single_hit() -> list:
+    """
+    Mocks a single hit with an encoded embedding vector
+    :return:
+    """
+    embedding_vector_field: Field = AvailableFields.EMBEDDING_VECTOR.value
+
+    test_vector = rand(10)
+    test_vector_encoded = encode_float_list(test_vector)
+    hit = {
+        "_id": "test 1",
+        "_type": "ghostbuster",
+        "_source": {
+            "name": "Egon Spengler",
+            "occupation": "Ghostbuster",
+            "location": "New York City, New York",
+            "description": {
+                "keywords": ["Test"]
+            },
+            embedding_vector_field.name: test_vector_encoded
+        },
+    }
+
+    return [hit]
 
 
 def mock_hits() -> list:
@@ -202,12 +234,14 @@ def mock_match_uri_response(uri: str) -> dict:
     return response
 
 
-def mock_search_response() -> dict:
+def mock_search_response(hits=None) -> dict:
     """
     Returns a full mock response to be used for testing
     :return:
     """
-    hits = mock_hits()
+    if hits is None:
+        hits = mock_hits()
+
     response = {
         "_shards": mock_shards_json(),
         "hits": {
