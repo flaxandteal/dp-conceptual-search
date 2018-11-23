@@ -115,7 +115,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/SearchResponse'
+            $ref: '#/definitions/MapSearchResponse'
         400:
           description: Query term not specified
         500:
