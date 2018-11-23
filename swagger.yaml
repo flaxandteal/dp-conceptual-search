@@ -11,12 +11,115 @@ schemes:
 host: localhost:5000
 tags:
   - name: "search"
-  - name: "conceptual_search"
   - name: "recommend"
   - name: "spellcheck"
   - name: "healthcheck"
 
 paths:
+
+  /search:
+    get:
+      tags:
+        - search
+      summary: "Default ONS query API"
+      description: "Default ONS query API which combines the content, type counts and featured result APIs"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+        - in: query
+          name: sort_by
+          required: false
+          type: string
+          enum:
+            - first_letter
+            - title
+            - relevance
+            - release_date
+            - release_date_asc
+          description: >
+            Sort order:
+              * `first_letter` - First letter sort using the `title_first_letter` mapping (`first_letter` analyzer)
+              * `title` - Sort using `title.title_raw` mapping
+              * `relevance` - Default sort option. Uses Elasticsearch score and release date (descending)
+              * `release_date` - Sort by release date in descending order
+              * `release_date_asc` - Sort by release date in ascending order
+        - in: query
+          name: filter
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/MapSearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - search
+      summary: "Default ONS query API"
+      description: "Default ONS query API"
+      parameters:
+        - in: query
+          name: q
+          description: "Query search term"
+          type: string
+          required: true
+        - in: query
+          name: page
+          description: "Current page"
+          type: integer
+          required: false
+        - in: query
+          name: size
+          description: "Page size"
+          type: integer
+          required: false
+        - in: query
+          name: sort_by
+          required: false
+          type: string
+          enum:
+            - first_letter
+            - title
+            - relevance
+            - release_date
+            - release_date_asc
+          description: >
+            Sort order:
+              * `first_letter` - First letter sort using the `title_first_letter` mapping (`first_letter` analyzer)
+              * `title` - Sort using `title.title_raw` mapping
+              * `relevance` - Default sort option. Uses Elasticsearch score and release date (descending)
+              * `release_date` - Sort by release date in descending order
+              * `release_date_asc` - Sort by release date in ascending order
+        - in: query
+          name: filter
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/MapSearchResponse'
+        400:
+          description: Query term not specified
+        500:
+          description: Internal server error
 
   /search/departments:
     get:
@@ -541,6 +644,14 @@ definitions:
         type: number
         description: "Confidence of the result"
         example: 0.85
+  MapSearchResponse:
+    properties:
+      content:
+        $ref: '#/definitions/SearchResponse'
+      counts:
+        $ref: '#/definitions/SearchResponse'
+      featured:
+        $ref: '#/definitions/SearchResponse'
   HealthCheck:
     type: object
     properties:

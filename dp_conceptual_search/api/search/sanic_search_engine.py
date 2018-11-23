@@ -1,7 +1,7 @@
 """
 This file contains utility methods for performing search queries using abstract search engines and clients
 """
-from typing import ClassVar, List
+from typing import ClassVar, List, Dict
 
 from elasticsearch.exceptions import ConnectionError
 
@@ -19,10 +19,11 @@ from dp_conceptual_search.search.client.exceptions import RequestSizeExceededExc
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.sort_fields import SortField
 from dp_conceptual_search.ons.search.content_type import ContentType
-from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine
+from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
 from dp_conceptual_search.ons.search.response.client.ons_response import ONSResponse
 from dp_conceptual_search.ons.search.client.abstract_search_engine import AbstractSearchEngine
+from dp_conceptual_search.ons.conceptual.client import ConceptualSearchEngine, FastTextClientService
 
 
 async def execute(request: ONSRequest, engine: AbstractSearchEngine) -> ONSResponse:
@@ -41,6 +42,11 @@ async def execute(request: ONSRequest, engine: AbstractSearchEngine) -> ONSRespo
 
 
 class SanicSearchEngine(object):
+
+    CONTENT = "content"
+    TYPE_COUNTS = "counts"
+    FEATURED = "featured"
+
     def __init__(self, app: SearchApp, search_engine_cls: ClassVar[AbstractSearchEngine], index: Index):
         """
         Helper class for working with abstract search engine instances
@@ -58,6 +64,29 @@ class SanicSearchEngine(object):
         :return:
         """
         return self._search_engine_cls(using=self.app.elasticsearch.client, index=self.index.value)
+
+    @timeit
+    async def search(self, request: ONSRequest) -> Dict[str, dict]:
+        """
+        Combines content, type counts and featured results queries
+        :param request:
+        :return:
+        """
+
+        # Build the individual responses
+        content_response: SearchResult = await self.content_query(request)
+        type_counts_response: SearchResult = await self.type_counts_query(request)
+        featured_result_response: SearchResult = await self.featured_result_query(request)
+
+        # Add to result
+        result_dict = {
+            self.CONTENT: content_response.to_dict(),
+            self.TYPE_COUNTS: type_counts_response.to_dict(),
+            self.FEATURED: featured_result_response.to_dict()
+        }
+
+        # Return
+        return result_dict
 
     @timeit
     async def departments_query(self, request: ONSRequest) -> SearchResult:
@@ -195,11 +224,11 @@ class SanicSearchEngine(object):
     @timeit
     async def featured_result_query(self, request: ONSRequest) -> SearchResult:
         """
-        Executes the ONS featured result query using the given SearchEngine class
+        Executes the ONS featured result query using the default search engine class
         :param request:
         :return:
         """
-        engine: AbstractSearchEngine = self.get_search_engine_instance()
+        engine: AbstractSearchEngine = SearchEngine(using=self.app.elasticsearch.client, index=self.index.value)
 
         # Perform the query
         search_term = request.get_search_term()
