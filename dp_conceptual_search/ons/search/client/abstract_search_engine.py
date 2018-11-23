@@ -125,8 +125,8 @@ class AbstractSearchEngine(SearchClient, abc.ABC):
         :param size:
         :param sort_by:
         :param highlight:
-        :param filter_functions:
-        :param type_filters:
+        :param filter_functions: content types to generate filter scores for (content type boosting)
+        :param type_filters: content types to filter in query
         :param kwargs:
         :return:
         """

@@ -19,6 +19,8 @@ dp-conceptual-search
 | COLOURED_LOGGING_ENABLED     | false                     | Enable/disable coloured logging.
 | PRETTY_LOGGING               | false                     | Enable/disable JSON formatting for logging.
 | LOG_LEVEL                    | INFO                      | Log level (INFO, DEBUG, TRACE or ERROR)
+| DP_FASTTEXT_HOST             | localhost                 | Host address for `dp-fasttext` server
+| DP_FASTTEXT_PORT             | 5100                      | Host port for `dp-fasttext` server
 
 # Install
 

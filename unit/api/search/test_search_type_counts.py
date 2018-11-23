@@ -9,7 +9,6 @@ from unittest import mock
 from unit.utils.search_test_app import SearchTestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
-from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
@@ -20,24 +19,24 @@ from dp_conceptual_search.ons.search.queries.ons_query_builders import build_con
 
 class SearchTypeCountsApiTestCase(SearchTestApp):
 
-    @staticmethod
-    def paginate():
-        """
-        Calls paginate and makes some basic assertions
-        :return:
-        """
-        import random
-
-        # Generate a random page number between 1 and 10
-        current_page = random.randint(1, 10)
-
-        # Generate a random page size between 11 and 20
-        size = random.randint(11, 20)
-
-        # Calculate correct start page number
-        from_start = 0 if current_page <= 1 else (current_page - 1) * size
-
-        return from_start, current_page, size
+    # @staticmethod
+    # def paginate():
+    #     """
+    #     Calls paginate and makes some basic assertions
+    #     :return:
+    #     """
+    #     import random
+    #
+    #     # Generate a random page number between 1 and 10
+    #     current_page = random.randint(1, 10)
+    #
+    #     # Generate a random page size between 11 and 20
+    #     size = random.randint(11, 20)
+    #
+    #     # Calculate correct start page number
+    #     from_start = 0 if current_page <= 1 else (current_page - 1) * size
+    #
+    #     return from_start, current_page, size
 
     @property
     def search_term(self):
@@ -56,8 +55,8 @@ class SearchTypeCountsApiTestCase(SearchTestApp):
         # Make the request
         # Set correct from_start and page size for type counts query
         from_start = 0
-        current_page = from_start + 1
-        size = SEARCH_CONFIG.results_per_page
+        current_page = 0
+        size = 0
 
         # Set sort_by
         sort_by: SortField = SortField.relevance

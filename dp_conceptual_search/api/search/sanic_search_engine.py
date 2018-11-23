@@ -72,7 +72,7 @@ class SanicSearchEngine(object):
         :param search_term:
         :return:
         """
-        # Initialise dp-fastText client
+        # Initialise dp-fasttext client
         client: Client
         async with FastTextClientService.get_fasttext_client() as client:
             # Set request context header
@@ -283,6 +283,6 @@ class SanicSearchEngine(object):
         # Execute
         response: ONSResponse = await execute(request, engine)
 
-        search_result: SearchResult = response.to_featured_result_query_search_result()
+        search_result: SearchResult = response.to_single_search_result()
         return search_result
 

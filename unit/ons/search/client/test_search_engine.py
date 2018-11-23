@@ -276,7 +276,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Set correct from_start and page size for type counts query
         from_start = 0
-        size = SEARCH_CONFIG.results_per_page
+        size = 0
 
         # Get a list of all available content types
         content_types: List[ContentType] = AvailableContentTypes.available_content_types()
