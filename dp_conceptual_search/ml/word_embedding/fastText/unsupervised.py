@@ -8,6 +8,7 @@ from gensim.models.keyedvectors import Word2VecKeyedVectors
 
 class UnsupervisedModel(object):
     def __init__(self, filename: str):
+        self.filename = filename
         self.model = Word2VecKeyedVectors.load_word2vec_format(filename)
 
         # Collect ranked list of words in vocab

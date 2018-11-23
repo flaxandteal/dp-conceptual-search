@@ -41,14 +41,21 @@ APP_CONFIG.description = 'Dedicated search API for digital publishing.'
 API_CONFIG = Section("API config")
 API_CONFIG.enabled_prometheus_metrics = bool_env('ENABLE_PROMETHEUS_METRICS', False)
 API_CONFIG.testing = bool_env("TESTING", False)
+API_CONFIG.conceptual_search_enabled = bool_env("CONCEPTUAL_SEARCH_ENABLED", False)
+API_CONFIG.redirect_conceptual_search = bool_env("REDIRECT_CONCEPTUAL_SEARCH", False)
 
 # ML
 
 ML_CONFIG = Section("Machine Learning config")
-ML_CONFIG.supervised_model_filename = os.environ.get("SUPERVISED_MODEL_FILENAME",
-                                                     "./unit/ml/test_data/supervised_models/ons_supervised.bin")
 ML_CONFIG.unsupervised_model_filename = os.environ.get("UNSUPERVISED_MODEL_FILENAME",
                                                        "./dp_conceptual_search/ml/data/word2vec/ons_supervised.vec")
+
+FASTTEXT_CONFIG = Section("FastText config")
+FASTTEXT_CONFIG.fasttext_host = os.environ.get("DP_FASTTEXT_HOST", "localhost")
+FASTTEXT_CONFIG.fasttext_port = int(os.environ.get("DP_FASTTEXT_PORT", 5100))
+FASTTEXT_CONFIG.num_labels = int(os.environ.get("FASTTEXT_NUM_LABELS", 5))
+FASTTEXT_CONFIG.threshold = float(os.environ.get("FASTTEXT_THRESHOLD", 0.0))
+
 
 # Elasticsearch
 

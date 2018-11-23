@@ -6,7 +6,7 @@ from typing import List
 
 from unittest import mock
 
-from unit.utils.test_app import TestApp
+from unit.utils.search_test_app import SearchTestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client, mock_hits_highlighted
 
 from dp_conceptual_search.config import CONFIG
@@ -15,13 +15,11 @@ from dp_conceptual_search.search.search_type import SearchType
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
 from dp_conceptual_search.ons.search.content_type import AvailableContentTypes, ContentType
-from dp_conceptual_search.ons.search.queries import content_query, function_score_content_query
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
+from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_function_score_content_query
 
 
-class SearchContentApiTestCase(TestApp):
-
-    maxDiff = None
+class SearchContentApiTestCase(SearchTestApp):
 
     @staticmethod
     def paginate():
@@ -116,6 +114,8 @@ class SearchContentApiTestCase(TestApp):
             }
         ]
 
+        content_query = build_content_query(self.search_term)
+
         # Build the expected query dict - note this should not change
         expected = {
             "from": from_start,
@@ -123,7 +123,7 @@ class SearchContentApiTestCase(TestApp):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        function_score_content_query(content_query(self.search_term), content_types).to_dict(),
+                        build_function_score_content_query(content_query, content_types).to_dict(),
                     ]
                 }
             },

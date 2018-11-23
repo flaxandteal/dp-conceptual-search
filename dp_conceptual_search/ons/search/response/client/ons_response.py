@@ -130,6 +130,13 @@ class ONSResponse(Response):
 
     def to_featured_result_query_search_result(self) -> SearchResult:
         """
+        Wrapper for to_single_search_result to be explicit for featured results
+        :return:
+        """
+        return self.to_single_search_result()
+
+    def to_single_search_result(self) -> SearchResult:
+        """
         Converts an Elasticsearch response into a ContentQueryResult
         :return:
         """

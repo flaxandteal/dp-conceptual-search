@@ -2,6 +2,8 @@ from typing import List
 
 from elasticsearch_dsl import query as Q
 
+from dp_conceptual_search.search.dsl.script_score import ScriptScore
+
 
 def match_by_uri(uri: str) -> Q.Query:
     """
@@ -60,3 +62,17 @@ def multi_match(field_list: List[str], search_term: str, **kwargs) -> Q.Query:
 
     q = Q.MultiMatch(**query_dict)
     return q
+
+
+def boost_score(boost_factor=1.0) -> ScriptScore:
+    """
+    Builds a simple script score for arbitrary boosting of queries using function scores
+    :param boost_factor:
+    :return:
+    """
+    return ScriptScore(
+        script="_score * boostFactor",
+        params={
+            "boostFactor": boost_factor
+        }
+    )

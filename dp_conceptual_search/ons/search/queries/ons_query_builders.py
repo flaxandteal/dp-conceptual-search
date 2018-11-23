@@ -11,7 +11,7 @@ from dp_conceptual_search.ons.search.content_type import ContentType
 from dp_conceptual_search.search.query_helper import match, multi_match
 
 
-def type_counts_query() -> Aggregation:
+def build_type_counts_query() -> Aggregation:
     """
     Helper method for generating ONS type counts aggregation
     :return:
@@ -19,7 +19,7 @@ def type_counts_query() -> Aggregation:
     return Aggregation("terms", field=AvailableFields.TYPE.value.name)
 
 
-def departments_query(search_term: str) -> Q.Query:
+def build_departments_query(search_term: str) -> Q.Query:
     """
     Returns the ONS departments query
     :param search_term:
@@ -28,7 +28,7 @@ def departments_query(search_term: str) -> Q.Query:
     return Q.Match(**{"terms": {"query": search_term, "type": "boolean"}})
 
 
-def content_query(search_term: str, **kwargs) -> Q.DisMax:
+def build_content_query(search_term: str, **kwargs) -> Q.DisMax:
     """
     Returns the default ONS content query
 
@@ -59,7 +59,7 @@ def content_query(search_term: str, **kwargs) -> Q.DisMax:
     return q
 
 
-def function_score_content_query(query: Q.Query, content_types: List[ContentType], boost: float=1.0) -> Q.Query:
+def build_function_score_content_query(query: Q.Query, content_types: List[ContentType], boost: float=1.0) -> Q.Query:
     """
     Generate a function score query using ContentType weights
     :param query:

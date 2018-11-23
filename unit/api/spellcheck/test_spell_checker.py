@@ -1,10 +1,10 @@
 """
 Tests the spellcheck spell checker API
 """
-from unit.utils.test_app import TestApp
+from unit.utils.search_test_app import SearchTestApp
 
 
-class SpellCheckTestCase(TestApp):
+class SpellCheckTestCase(SearchTestApp):
 
     @property
     def sample_words(self) -> dict:

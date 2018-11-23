@@ -1,11 +1,13 @@
 """
 Define an enum of all services to health check
 """
-from .healthchecks import check_elasticsearch_health
+from .healthchecks.healthcheck import HealthCheck
+
+from .healthchecks import ElasticsearchHealthCheck, DpFastTextHealthCheck
 
 from enum import Enum
-from functools import partial
 
 
 class Service(Enum):
-    elasticsearch = partial(check_elasticsearch_health)
+    elasticsearch: HealthCheck = ElasticsearchHealthCheck()
+    dp_fasttext: HealthCheck = DpFastTextHealthCheck()

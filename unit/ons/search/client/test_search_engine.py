@@ -9,11 +9,13 @@ from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
 
 from dp_conceptual_search.config import SEARCH_CONFIG
 from dp_conceptual_search.search.search_type import SearchType
+from dp_conceptual_search.search.query_helper import match_by_uri
+
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
 from dp_conceptual_search.ons.search.fields import get_highlighted_fields, Field
-from dp_conceptual_search.ons.search.queries import content_query, type_counts_query
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters, AvailableContentTypes, ContentType
+from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query, build_type_counts_query
 
 
 class SearchEngineTestCase(AsyncTestCase, TestCase):
@@ -85,6 +87,32 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
         from_start = 0 if current_page <= 1 else (current_page - 1) * size
 
         return from_start, current_page, size
+
+    def test_match_uri(self):
+        """
+        Tests that the match by uri method correctly calls the underlying Elasticsearch client
+        :return:
+        """
+        test_uri = "this/is/a/test/uri"
+        # Build the expected query dict - note this should not change
+        expected = {
+            "query": match_by_uri(test_uri).to_dict()
+        }
+
+        # Define the async function to be ran
+        async def async_test_function():
+            # Create an instance of the SearchEngine
+            engine = self.get_search_engine()
+
+            engine: SearchEngine = engine.match_by_uri(test_uri)
+
+            # Ensure search method on SearchClient is called correctly on execute
+            response = await engine.execute(ignore_cache=True)
+
+            self.mock_client.search.assert_called_with(index=[self.index], doc_type=[], body=expected)
+
+        # Run the above function in a dedicated event loop
+        self.run_async(async_test_function)
 
     def test_sort_by(self):
         """
@@ -215,7 +243,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        content_query(self.search_term).to_dict(),
+                        build_content_query(self.search_term).to_dict(),
                     ]
                 }
             },
@@ -248,7 +276,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
 
         # Set correct from_start and page size for type counts query
         from_start = 0
-        size = SEARCH_CONFIG.results_per_page
+        size = 0
 
         # Get a list of all available content types
         content_types: List[ContentType] = AvailableContentTypes.available_content_types()
@@ -263,9 +291,11 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
             }
         ]
 
+        aggs_query = build_type_counts_query().to_dict()
+
         # Build expected aggs query
         aggs = {
-            "docCounts": type_counts_query().to_dict()
+            "docCounts": aggs_query
         }
 
         # Build the expected query dict - note this should not change
@@ -275,7 +305,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        content_query(self.search_term).to_dict(),
+                        build_content_query(self.search_term).to_dict(),
                     ]
                 }
             },
@@ -328,7 +358,7 @@ class SearchEngineTestCase(AsyncTestCase, TestCase):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        content_query(self.search_term).to_dict(),
+                        build_content_query(self.search_term).to_dict(),
                     ]
                 }
             },

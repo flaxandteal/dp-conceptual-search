@@ -4,13 +4,15 @@ This file contains all routes for the /search API
 from sanic import Blueprint
 from sanic.response import HTTPResponse
 
-from dp_conceptual_search.api.response import json
-from dp_conceptual_search.api.request import ONSRequest
-from dp_conceptual_search.api.search.sanic_search_engine import SanicSearchEngine
+from dp4py_sanic.api.response.json_response import json
 
+from dp_conceptual_search.config import CONFIG
+from dp_conceptual_search.api.request import ONSRequest
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.ons.search.client.search_engine import SearchEngine
 from dp_conceptual_search.ons.search.response.search_result import SearchResult
+from dp_conceptual_search.api.search.sanic_search_engine import SanicSearchEngine
+from dp_conceptual_search.api.search.conceptual import routes as conceptual_routes
 
 search_blueprint = Blueprint('search', url_prefix='/search')
 
@@ -38,6 +40,9 @@ async def ons_content_query(request: ONSRequest) -> HTTPResponse:
     :param request:
     :return:
     """
+    if CONFIG.API.redirect_conceptual_search:
+        return await conceptual_routes.conceptual_content_query(request)
+
     # Initialise the search engine
     sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
@@ -54,6 +59,9 @@ async def ons_counts_query(request: ONSRequest) -> HTTPResponse:
     :param request:
     :return:
     """
+    if CONFIG.API.redirect_conceptual_search:
+        return await conceptual_routes.conceptual_counts_query(request)
+
     # Initialise the search engine
     sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
@@ -77,3 +85,22 @@ async def ons_featured_result_query(request: ONSRequest) -> HTTPResponse:
     search_result: SearchResult = await sanic_search_engine.featured_result_query(request)
 
     return json(request, search_result.to_dict(), 200)
+
+
+@search_blueprint.route('/uri/', methods=['GET', 'POST'])
+@search_blueprint.route('/uri/<path:path>', methods=['GET', 'POST'])
+async def search_by_uri(request: ONSRequest, path: str):
+    """
+    Search for a page by it's uri
+    :param request:
+    :param path:
+    :return:
+    """
+    # Initialise the search engine
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
+
+    # Perform the request
+    search_result: SearchResult = await sanic_search_engine.search_by_uri(request, path)
+
+    return json(request, search_result.to_dict(), 200)
+

@@ -4,20 +4,19 @@ Tests the ONS featured result search API
 from typing import List
 
 from unittest import mock
+from unit.utils.search_test_app import SearchTestApp
 from unit.elasticsearch.elasticsearch_test_utils import mock_search_client
-
-from unit.utils.test_app import TestApp
 
 from dp_conceptual_search.ons.search.index import Index
 from dp_conceptual_search.search.search_type import SearchType
-from dp_conceptual_search.ons.search.queries import content_query
 from dp_conceptual_search.ons.search.content_type import ContentType
 from dp_conceptual_search.ons.search.type_filter import AvailableTypeFilters
 from dp_conceptual_search.ons.search.sort_fields import query_sort, SortField
+from dp_conceptual_search.ons.search.queries.ons_query_builders import build_content_query
 from dp_conceptual_search.app.elasticsearch.elasticsearch_client_service import ElasticsearchClientService
 
 
-class SearchFeaturedApiTestCase(TestApp):
+class SearchFeaturedApiTestCase(SearchTestApp):
 
     @staticmethod
     def paginate():
@@ -95,7 +94,7 @@ class SearchFeaturedApiTestCase(TestApp):
                 "bool": {
                     "filter": filter_query,
                     "must": [
-                        content_query(self.search_term).to_dict(),
+                        build_content_query(self.search_term).to_dict(),
                     ]
                 }
             },
