@@ -13,7 +13,7 @@ from dp_conceptual_search.app.search_app import SearchApp
 # Import blueprints
 from dp_conceptual_search.api.search.routes import search_blueprint
 from dp_conceptual_search.api.search.conceptual.routes import conceptual_search_blueprint
-from dp_conceptual_search.api.search.recommend.routes import recommend_blueprint
+from dp_conceptual_search.api.recommend.routes import recommend_blueprint
 from dp_conceptual_search.api.spellcheck.routes import spell_check_blueprint
 from dp_conceptual_search.api.healthcheck.routes import healthcheck_blueprint
 

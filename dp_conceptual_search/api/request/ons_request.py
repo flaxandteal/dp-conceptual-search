@@ -36,7 +36,7 @@ class ONSRequest(Request):
         if hasattr(self, "json") and isinstance(self.json, dict):
             if "uri" not in self.json:
                 logger.error(self.request_id, "uri parameter not found in POST data", extra={
-                    "status": 4000
+                    "status": 400
                 })
                 raise InvalidUsage("uri parameter not found in POST data")
             return self.json.get("uri")

@@ -1,5 +1,5 @@
 """
-Defines /search/recommend routes
+Defines /recommend routes
 """
 from sanic.blueprints import Blueprint
 
@@ -16,7 +16,7 @@ from dp_conceptual_search.ons.search.response.client.ons_response import ONSResp
 from dp_conceptual_search.ons.recommend.client.recommend_search_engine import RecommendationSearchEngine
 
 
-recommend_blueprint = Blueprint('recommend', url_prefix='/search/recommend')
+recommend_blueprint = Blueprint('recommend', url_prefix='/recommend')
 
 
 @recommend_blueprint.route('/similar/', methods=['POST'])

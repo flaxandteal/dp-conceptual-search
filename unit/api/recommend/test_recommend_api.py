@@ -81,7 +81,7 @@ class RecommendApiTestCase(SearchTestApp):
     @mock.patch.object(FastTextClientService, 'get_fasttext_client', mock_fasttext_client)
     def test_similar_by_uri_api(self):
         """
-        Tests the /search/recommend/similar API
+        Tests the /recommend/similar API
         :return:
         """
         # Make the request
@@ -125,7 +125,7 @@ class RecommendApiTestCase(SearchTestApp):
         }
 
         # Set the target
-        target = "/search/recommend/similar?{q}".format(q=url_encoded_params)
+        target = "/recommend/similar?{q}".format(q=url_encoded_params)
 
         # Build the expected query dict - note this should not change
         expected = {
