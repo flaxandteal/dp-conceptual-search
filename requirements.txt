@@ -1,4 +1,4 @@
-nltk==3.2.5
+nltk==3.4.5
 sortedcontainers == 1.5.9
 numpy==1.14.5
 sanic==0.8.1
@@ -12,7 +12,7 @@ uvloop==0.11.0
 unicode==2.6
 Pygments==2.2.0
 gensim==3.4.0
-nltk==3.2.5
+nltk==3.4.5
 git+https://github.com/ONSdigital/dp4py-logging.git@master#egg=dp4py_logging
 git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
 git+https://github.com/ONSdigital/dp4py-sanic.git@master#egg=dp4py_sanic
