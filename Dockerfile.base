@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.6.8
 
 COPY . /dp-conceptual-search
 WORKDIR /dp-conceptual-search
