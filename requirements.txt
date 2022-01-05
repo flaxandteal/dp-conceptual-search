@@ -1,5 +1,12 @@
+setuptools==38.4.0
+
 gitdb2==2.0.6
 prometheus_client==0.4.2
+aiohttp==3.4.4
+multidict==4.4.0
+python-json-logger==0.1.9
+sanic==0.8.1
+
 nltk==3.2.5
 sortedcontainers == 1.5.9
 numpy==1.14.5
@@ -17,5 +24,5 @@ gensim==3.4.0
 nltk==3.2.5
 git+https://github.com/ONSdigital/dp4py-logging.git@master#egg=dp4py_logging
 git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
-git+https://github.com/ONSdigital/dp4py-sanic.git@master#egg=dp4py_sanic
+# git+https://github.com/ONSdigital/dp4py-sanic.git@master#egg=dp4py_sanic
 git+https://github.com/ONSdigital/dp-fasttext.git@develop#egg=dp_fasttext
