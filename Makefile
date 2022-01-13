@@ -23,7 +23,7 @@ requirements:
 
 .PHONY: version
 version:
-	pip install git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
+	pip install gitdb2==2.0.6 gitdb==0.6.4 git+https://github.com/ONSdigital/dp4py-config.git@master#egg=dp4py_config
 	python git_sha.py > app_version
 
 .PHONY: test_requirements

@@ -1,5 +1,6 @@
 FROM python:3.6.8
 
+RUN pip install pip==20.0.1
 COPY . /dp-conceptual-search
 WORKDIR /dp-conceptual-search
 
