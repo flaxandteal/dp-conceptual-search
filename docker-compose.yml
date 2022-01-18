@@ -6,7 +6,7 @@ services:
           context: .
           dockerfile: Dockerfile.base
         depends_on:
-          - elasticsearch
+          - onyx-elasticsearch
 
     conceptual-search:
         image: dp-conceptual-search-base:latest
@@ -14,19 +14,21 @@ services:
         environment:
           - GA_SALT=${GA_SALT}
           - GA_SUBSTR_INDEX=${GA_SUBSTR_INDEX}
-          - ELASTIC_SEARCH_SERVER=elasticsearch:9200
+          - ELASTIC_SEARCH_SERVER=onyx-elasticsearch:9200
           - CONCEPTUAL_SEARCH_ENABLED=true
           - COLOURED_LOGGING_ENABLED=true
           - PRETTY_LOGGING=true
+        volumes:
+          - ./dp_conceptual_search:/dp-conceptual-search/dp_conceptual_search
         ports:
           - '5000:5000'
         links:
-          - elasticsearch
+          - onyx-elasticsearch
 
     # Custom ES image with plugin pre-installed
-    elasticsearch:
+    onyx-elasticsearch:
         image: sully0190/elasticsearch-fast-vector-scoring:2.4.4
-        container_name: "elasticsearch"
+        container_name: "onyx-elasticsearch"
         ports:
           - "9300:9300"
           - "9200:9200"

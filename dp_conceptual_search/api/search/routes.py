@@ -44,7 +44,7 @@ async def search(request: ONSRequest) -> HTTPResponse:
         return await conceptual_routes.search(request)
 
     # Initialise the search engine
-    sanic_search_engine = SanicSearchEngine(request.app, search_engine_cls, Index.ONS)
+    sanic_search_engine = SanicSearchEngine(request.app, SearchEngine, Index.ONS)
 
     result = await sanic_search_engine.search(request)
 
