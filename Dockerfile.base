@@ -4,4 +4,8 @@ RUN pip install pip==20.0.1
 COPY . /dp-conceptual-search
 WORKDIR /dp-conceptual-search
 
+RUN useradd -rm -d /home/dpuser -s /bin/bash -u 1000 dpuser
+RUN touch app_version && chown dpuser app_version
+USER dpuser
+
 RUN make build version
